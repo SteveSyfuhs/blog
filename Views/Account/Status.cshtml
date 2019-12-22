@@ -1,0 +1,53 @@
+﻿
+@{
+    ViewData["Title"] = "Status";
+}
+
+@functions {
+    private static string CollapseSchemaUrl(string url)
+    {
+        var knownSchemas = new[]
+        {
+            "http://schemas.microsoft.com/identity/claims/",
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/"
+        };
+
+        foreach (var schema in knownSchemas)
+        {
+            if (url.StartsWith(schema))
+            {
+                return "https://.../" + url.Substring(schema.Length);
+            }
+        }
+
+        return url;
+    }
+}
+
+<nav class="pagination container" aria-label="Pagination">
+
+    <h1>Sign in Status</h1>
+
+    <table class="login-status">
+        <thead>
+            <tr>
+                <td>
+                    Claim
+                </td>
+                <td>
+                    Value
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var claim in Context.User.Claims)
+            {
+
+                <tr>
+                    <td><code>@CollapseSchemaUrl(claim.Type)</code></td>
+                    <td>@claim.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</nav>

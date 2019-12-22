@@ -1,0 +1,116 @@
+﻿@inject IOptionsSnapshot<BlogSettings> settings
+@inject IBlogService service
+@{
+    var host = Context.Request.Scheme + "://" + Context.Request.Host;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head prefix="og: http://ogp.me/ns#">
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1" />
+    <meta name="description" content="@ViewData["Description"]" />
+    <link rel="stylesheet" href="~/css/abovethefold.scss" inline />
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-WPB5KN');</script>
+    @RenderSection("Head", required: false)
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@ViewData["Title"]" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:url" content="@(host + Context.Request.Path)" />
+    <meta property="og:image" content="@host/img/icon180x180.png" />
+    <meta property="og:image:width" content="180" />
+    <meta property="og:image:height" content="180" />
+
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/icon16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="~/img/icon180x180.png" />
+    <link rel="shortcut icon" href="/img/icon16x16.png" />
+
+    <meta name="msapplication-square150x150logo" content="/img/icon180x180.png" />
+    <link rel="edituri" type="application/rsd+xml" title="RSD" href="~/rsd.xml" />
+    <link rel="alternate" type="application/rss+xml" href="~/feed/rss/" />
+    <link rel="alternate" type="application/atom+xml" href="~/feed/atom/" />
+    <link rel="search" href="~/search" />
+</head>
+<body itemscope itemtype="http://schema.org/WebPage">
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WPB5KN"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <header class="siteheader">
+        <div class="container">
+            <div class="header-search">
+                <a href="/search">Search</a>
+            </div>
+            <p itemprop="name"><a href="~/">@settings.Value.Name</a></p>
+            By <span itemprop="author">@settings.Value.Owner</span>
+        </div>
+    </header>
+
+    <main itemprop="mainEntity" itemscope itemtype="http://schema.org/Blog">
+        <noscript>
+            <p class="container">Some features of this website do not work as expected when JavaScript is disabled</p>
+        </noscript>
+        @RenderBody()
+    </main>
+
+    <footer class="sitefooter">
+        <div class="container">
+            <nav>
+
+                <div class="copyright">Copyright &copy; @DateTimeOffset.UtcNow.Year Steve Syfuhs</div>
+
+                <ul>
+                    <li class="categories">
+                        <h3>Categories</h3>
+                        <ul>
+                            @foreach (var cat in await service.GetCategories())
+                            {
+                                <li>
+                                    <a href="/category/@cat">@cat</a>
+                                </li>
+                            }
+                        </ul>
+                    </li>
+
+                    <li class="categories">
+                        <h3>Actions</h3>
+
+                        <ul>
+                            @{
+                                if (User.Identity.IsAuthenticated)
+                                {
+                                    <li><a asp-controller="Blog" asp-action="Edit">New post</a></li>
+                                    <li>
+                                        <ul>
+                                            <li><a href="~/logout/" title="Sign out as administrator">Sign out</a></li>
+                                            <li><a href="~/account/status" title="View sign in status">Sign In Status</a></li>
+                                        </ul>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li><a href="~/login/?returnUrl=@Context.Request.Path" rel="nofollow" title="Sign in as administrator">Sign in</a></li>
+                                }
+                            }
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </footer>
+
+    <link rel="stylesheet" href="~/css/belowthefold.scss" />
+    @RenderSection("Scripts", required: false)
+    <script src="~/js/site.js" async defer></script>
+    <script id="dsq-count-scr" src="//syfuhs.disqus.com/count.js" async></script>
+</body>
+</html>

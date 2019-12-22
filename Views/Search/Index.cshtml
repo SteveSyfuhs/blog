@@ -1,0 +1,62 @@
+﻿@model SearchResults
+@inject IOptionsSnapshot<BlogSettings> settings
+
+@functions {
+    private static string Pluralize(string singular, string plural, bool condition)
+    {
+        if (condition)
+        {
+            return singular;
+        }
+        else
+        {
+            return plural;
+        }
+    }
+}
+
+<nav class="container">
+
+    <form action="/search" method="get">
+        <input class="searchbox" type="search" name="q" value="@Model?.Query" placeholder="Search..." maxlength="100" autofocus />
+    </form>
+
+    @if (Model != null)
+    {
+        <div class="search-results">
+
+            <h1>@Model.Results Search @Pluralize("Result", "Results", Model.Results == 1) for @Model.Query</h1>
+
+            <ul class="results-list">
+                @foreach (var post in Model.Posts)
+                {
+                    <li>
+                        <a href="@post.GetLink()">@post.Title</a>
+                        <div>@Html.Raw(post.Excerpt.Substring(0, post.Excerpt.Length > 200 ? 200 : post.Excerpt.Length))...</div>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
+        {
+            <a rel="prev" href="@ViewData["prev"]" title="Older posts">&laquo; Older</a>
+        }
+
+        @if (Model.Page > 0)
+        {
+            <a rel="next" href="@ViewData["next"]" title="Newer posts">Newer &raquo;</a>
+        }
+
+        @section Head {
+            @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
+            {
+                <link rel="prev" href="@ViewData["prev"]" />
+            }
+            @if (Model.Page > 0)
+            {
+                <link rel="next" href="@ViewData["next"]" />
+            }
+        }
+    }
+</nav>
