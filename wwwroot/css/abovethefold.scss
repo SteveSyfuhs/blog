@@ -32,6 +32,10 @@ body {
     overflow-wrap: break-word;
 }
 
+nav.container:first-child, nav.search-page {
+    min-height: 100vh;
+}
+
 @media only screen and (max-width : 568px) {
     .container {
         max-width: 100%;
@@ -61,6 +65,10 @@ body {
         a {
             color: $link_color;
         }
+    }
+
+    .container {
+        min-height: 0;
     }
 }
 
