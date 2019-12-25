@@ -152,7 +152,7 @@ namespace blog.Models
 
             var posts = allPosts.Skip(skip).Take(_settings.Value.PostsPerPage);
 
-            ViewData["Title"] = _settings.Value.Name + " " + category;
+            ViewData["Title"] = $"{category} | {_settings.Value.Name}";
             ViewData["Description"] = $"Articles posted in the {category} category";
 
             var postCount = posts.Count();

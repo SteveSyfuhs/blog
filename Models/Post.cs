@@ -41,7 +41,12 @@ namespace blog.Models
 
         public string GetLink()
         {
-            return Slug;
+            if (Slug.StartsWith('/'))
+            {
+                return Slug;
+            }
+
+            return "/" + Slug;
         }
 
         public string GeneratePermalink(HttpRequest request)
