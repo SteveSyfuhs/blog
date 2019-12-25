@@ -238,6 +238,15 @@ namespace blog.Models
             existing.Content = post.Content.Trim();
             existing.Excerpt = post.Excerpt.Trim();
 
+            if (!string.IsNullOrWhiteSpace(post.MediaUrl))
+            {
+                existing.MediaUrl = new Uri(post.MediaUrl.Trim()).OriginalString;
+            }
+            else
+            {
+                existing.MediaUrl = null;
+            }
+
             await _blog.SavePost(existing);
 
             return Redirect(post.GetLink());

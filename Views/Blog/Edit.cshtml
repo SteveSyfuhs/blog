@@ -22,6 +22,12 @@
     <span class="desc" id="desc_slug">The part of the URL that identifies this blog post</span>
     <br />
 
+    <label asp-for="@Model.MediaUrl" class="label">Media Url</label>
+    <input asp-for="@Model.MediaUrl" placeholder="The Media Url" aria-describedby="desc_media" />
+    <span class="desc" id="desc_slug">The URL of the post media</span>
+    <br />
+
+
     <label for="categories" class="label">Tags</label>
     <input type="text" name="categories" id="categories" value="@string.Join(", ", Model.Categories)" aria-describedby="desc_categories" />
     <span class="desc" id="desc_categories">A comma separated list of keywords</span>
