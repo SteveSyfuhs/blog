@@ -25,14 +25,23 @@ body {
 
 .container {
     min-width: 300px;
-    max-width: 80%;
     margin: 0 auto;
     padding: 0 1.5em;
     overflow-wrap: break-word;
+
+    .article-body {
+        max-width: 80%;
+        margin: 0 auto;
+    }
+}
+
+article.container {
+    padding: 15px 0;
 }
 
 nav.container:first-child, nav.search-page {
     min-height: 50vh;
+    max-width: 80%;
 }
 
 @media only screen and (max-width : 568px) {
@@ -141,6 +150,11 @@ time {
         }
     }
 
+    .no-media, footer {
+        width: 80%;
+        margin: 0 auto;
+    }
+
     > div {
 
         p {
@@ -247,15 +261,31 @@ time {
         border-bottom: 1px solid #ddd
     }
 
-    .table caption + thead tr:first-child td, .table caption + thead tr:first-child th, .table colgroup + thead tr:first-child td, .table colgroup + thead tr:first-child th, .table thead:first-child tr:first-child td, .table thead:first-child tr:first-child th {
+    .table caption + thead tr:first-child td,
+    .table caption + thead tr:first-child th,
+    .table colgroup + thead tr:first-child td,
+    .table colgroup + thead tr:first-child th,
+    .table thead:first-child tr:first-child td,
+    .table thead:first-child tr:first-child th {
         border-top: 0
     }
 
-    .table-condensed tbody > tr > td, .table-condensed tbody > tr > th, .table-condensed tfoot > tr > td, .table-condensed tfoot > tr > th, .table-condensed thead > tr > td, .table-condensed thead > tr > th {
+    .table-condensed tbody > tr > td,
+    .table-condensed tbody > tr > th,
+    .table-condensed tfoot > tr > td,
+    .table-condensed tfoot > tr > th,
+    .table-condensed thead > tr > td,
+    .table-condensed thead > tr > th {
         padding: 5px
     }
 
-    .table-bordered, .table-bordered > tbody > tr > td, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > td, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > thead > tr > th {
+    .table-bordered,
+    .table-bordered > tbody > tr > td,
+    .table-bordered > tbody > tr > th,
+    .table-bordered > tfoot > tr > td,
+    .table-bordered > tfoot > tr > th,
+    .table-bordered > thead > tr > td,
+    .table-bordered > thead > tr > th {
         border: 1px solid #ddd
     }
 }
@@ -265,6 +295,8 @@ time {
     article {
         header {
             background: none !important;
+            max-width: 80%;
+            margin: 0 auto;
         }
     }
 }
@@ -272,7 +304,7 @@ time {
 @media only screen and (min-width : 1224px) {
     article {
         header.media {
-            padding: 50px;
+            padding: 50px 10% 0 10%;
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
