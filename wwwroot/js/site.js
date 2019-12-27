@@ -1,4 +1,4 @@
-﻿(function (window, document) {
+(function (window, document) {
 
     // Lazy load stylesheets
     requestAnimationFrame(function () {
@@ -90,10 +90,16 @@
 
                         if (!(rect.bottom < 0 || rect.top - 100 - viewHeight >= 0)) {
                             img.onload = function (e) {
-                                e.target.className = "loaded";
+                                var className = e.target.className;
+
+                                if (!className) {
+                                    className = "";
+                                }
+
+                                e.target.className = className.replace(" notloaded", "") + " loaded";
                             };
 
-                            img.className = "notloaded";
+                            img.className += " notloaded";
                             img.src = img.getAttribute("data-src");
                             img.removeAttribute("data-src");
                             changed = true;
