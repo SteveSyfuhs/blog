@@ -21,3 +21,10 @@ steps:
     installationPath: $(Agent.ToolsDirectory)/dotnet
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'Syfuhs(959aa2f3-5d0e-4a08-8334-f5f497a892a4)'
+    appType: 'webApp'
+    appName: 'syfuhsweb'
+    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    deploymentMethod: 'auto'
