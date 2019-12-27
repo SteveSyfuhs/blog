@@ -193,6 +193,11 @@ namespace blog.Models
             {
                 post.SetDomain(_settings.Value.BaseDomain);
 
+                if (!post.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase))
+                {
+                    return LocalRedirectPermanent(post.Slug);
+                }
+
                 return View(post);
             }
 
