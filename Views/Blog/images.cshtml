@@ -1,0 +1,15 @@
+﻿@model IEnumerable<ImageFile>
+@inject IOptionsSnapshot<BlogSettings> settings
+@{
+    int currentPage = int.Parse(ViewContext.RouteData.Values["page"] as string ?? "0");
+}
+
+<ul class="image-list">
+    @foreach (var image in Model)
+    {
+        <li>
+            <a href="@image.Url"><img src="@image.Url" /></a>
+            <div>@image.Url</div>
+        </li>
+    }
+</ul>

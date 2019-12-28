@@ -27,5 +27,7 @@ namespace blog
         void ResetCache();
 
         Task<SearchResults> Search(string q, int skip, int take);
+
+        Task<IEnumerable<ImageFile>> ListImages();
     }
 }

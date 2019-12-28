@@ -1,26 +1,25 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using blog.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using blog.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using System.Text.RegularExpressions;
-using System.Xml;
-using System.Globalization;
-using System.Text;
 
 namespace blog
 {
     public class FileBlogService : IBlogService
     {
-        private List<Post> _cache = new List<Post>();
-        private IHttpContextAccessor _contextAccessor;
-        private string _folder;
+        private readonly List<Post> _cache = new List<Post>();
+        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly string _folder;
 
         private readonly object _sync = new object();
 
@@ -34,8 +33,13 @@ namespace blog
             lock (_sync)
             {
                 _cache.Clear();
-                Initialize();
+                InitializeSync();
             }
+        }
+
+        protected void InitializeSync()
+        {
+            Task.Run(() => Initialize()).Wait();
         }
 
         public FileBlogService(IWebHostEnvironment env, IHttpContextAccessor contextAccessor, bool delayInitialize)
@@ -45,8 +49,15 @@ namespace blog
 
             if (!delayInitialize)
             {
-                Initialize();
+                InitializeSync();
             }
+        }
+
+        public virtual Task<IEnumerable<ImageFile>> ListImages()
+        {
+            IEnumerable<ImageFile> result = new List<ImageFile>();
+
+            return Task.FromResult(result);
         }
 
         public virtual Task<IEnumerable<Post>> GetPosts(int count, int skip = 0)
@@ -220,14 +231,14 @@ namespace blog
             return Path.Combine(_folder, post.ID + ".xml");
         }
 
-        protected void Initialize()
+        protected async Task Initialize()
         {
-            LoadPosts();
+            await LoadPosts();
 
             SortCache();
         }
 
-        protected virtual void LoadPosts()
+        protected virtual Task LoadPosts()
         {
             if (!Directory.Exists(_folder))
             {
@@ -242,6 +253,8 @@ namespace blog
 
                 LoadPost(file, stream);
             }
+
+            return Task.CompletedTask;
         }
 
         protected void LoadPost(string file, Stream stream)

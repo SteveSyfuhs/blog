@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Atom;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,6 +15,15 @@ using System.Xml;
 
 namespace blog.Models
 {
+    public class ImageFile
+    {
+        public string Url { get; set; }
+
+        public string Title { get; set; }
+
+        public int Size { get; set; }
+    }
+
     public class BlogController : Controller
     {
         private readonly IBlogService _blog;
@@ -140,6 +150,16 @@ namespace blog.Models
             var stream = await feed.Content.ReadAsStreamAsync();
 
             return new StreamReader(stream);
+        }
+
+        [Route("/edit/images")]
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> ListImages(int page)
+        {
+            var images = await _blog.ListImages();
+
+            return View("images", images);
         }
 
         [Route("/tag/{category}/{page:int?}")]

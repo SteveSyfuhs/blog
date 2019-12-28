@@ -325,7 +325,7 @@ code.error {
 
 @media only screen and (max-width : 700px) {
     .searchbox {
-        width:100%;
+        width: 100%;
     }
 
     .search-results {
@@ -340,4 +340,27 @@ code.error {
     margin: 0 0 15px 0;
     padding-top: 15px;
     text-align: center;
+}
+
+ul.image-list {
+    padding: 0;
+    margin: 0 auto;
+    width: 100%;
+
+    li {
+        display: inline-block;
+        vertical-align: top;
+
+        width: 30%;
+        margin: 1%;
+
+        div {
+            width: 100%;
+            overflow-wrap: break-word;
+        }
+
+        img {
+            width: 100%;
+        }
+    }
 }

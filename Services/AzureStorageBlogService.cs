@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
-using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -15,6 +15,7 @@ namespace blog
     {
         private const string PostContainerName = "posts";
         private const string FilesContainerName = "files";
+        private const string ImagesContainerName = "images";
 
         private readonly BlogSettings settings;
 
@@ -26,14 +27,14 @@ namespace blog
         {
             this.settings = settings;
 
-            Initialize();
+            InitializeSync();
         }
 
         protected override async Task PersistPost(Post post, XDocument doc)
         {
             string filePath = $"{post.ID}.xml";
 
-            var container = LoadBlobContainer(PostContainerName);
+            var container = await LoadBlobContainer(PostContainerName);
 
             CloudBlockBlob blob = container.GetBlockBlobReference(filePath);
 
@@ -54,11 +55,22 @@ namespace blog
 
             string relative = $"{name}_{suffix}.{ext}";
 
-            var container = LoadBlobContainer(FilesContainerName);
+            var image = TrustedImageExtensions.Contains(ext);
+
+            CloudBlobContainer container;
+
+            if (image)
+            {
+                container = await LoadBlobContainer(ImagesContainerName);
+            }
+            else
+            {
+                container = await LoadBlobContainer(FilesContainerName);
+            }
 
             CloudBlockBlob blob = container.GetBlockBlobReference(relative);
 
-            if (TrustedImageExtensions.Contains(ext))
+            if (image)
             {
                 blob.Properties.ContentType = $"image/{ext}";
             }
@@ -68,27 +80,53 @@ namespace blog
             return blob.Uri.OriginalString;
         }
 
-        protected override void LoadPosts()
+        protected override async Task LoadPosts()
         {
-            CloudBlobContainer container = LoadBlobContainer(PostContainerName);
+            await IterateBlobItems(LoadPost, PostContainerName);
+        }
+
+        public override async Task<IEnumerable<ImageFile>> ListImages()
+        {
+            var images = new List<ImageFile>();
+
+            await IterateBlobItems(
+                blob =>
+                {
+                    images.Add(new ImageFile
+                    {
+                        Title = blob.Name,
+                        Url = blob.Uri.OriginalString
+                    });
+
+                    return Task.CompletedTask;
+                },
+                ImagesContainerName
+            );
+
+            return images;
+        }
+
+        private async Task IterateBlobItems(Func<CloudBlob, Task> loader, string containerName)
+        {
+            CloudBlobContainer container = await LoadBlobContainer(containerName);
 
             BlobContinuationToken continuationToken = null;
 
             do
             {
-                var resultSegment = container.ListBlobsSegmented(string.Empty, true, BlobListingDetails.Metadata, null, continuationToken, null, null);
+                var resultSegment = await container.ListBlobsSegmentedAsync(
+                    string.Empty,
+                    true,
+                    BlobListingDetails.Metadata,
+                    null,
+                    continuationToken,
+                    null,
+                    null
+                );
 
-                foreach (var blobItem in resultSegment.Results)
+                foreach (CloudBlob blobItem in resultSegment.Results)
                 {
-                    if (blobItem is CloudBlob blob && blob.Name.EndsWith(".xml"))
-                    {
-                        using (var stream = new MemoryStream())
-                        {
-                            blob.DownloadToStream(stream);
-
-                            LoadPost(blob.Name, stream);
-                        }
-                    }
+                    await loader(blobItem);
                 }
 
                 continuationToken = resultSegment.ContinuationToken;
@@ -97,14 +135,28 @@ namespace blog
             while (continuationToken != null);
         }
 
-        private CloudBlobContainer LoadBlobContainer(string containerName)
+        private async Task LoadPost(CloudBlob blob)
+        {
+            if (blob.Name.EndsWith(".xml"))
+            {
+                using (var stream = new MemoryStream())
+                {
+                    await blob.DownloadToStreamAsync(stream);
+
+                    LoadPost(blob.Name, stream);
+                }
+            }
+        }
+
+        private async Task<CloudBlobContainer> LoadBlobContainer(string containerName)
         {
             CloudStorageAccount account = CloudStorageAccount.Parse(settings.ConnectionString);
 
             CloudBlobClient client = account.CreateCloudBlobClient();
 
             var container = client.GetContainerReference(containerName);
-            container.CreateIfNotExists();
+
+            await container.CreateIfNotExistsAsync();
 
             return container;
         }
