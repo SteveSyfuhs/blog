@@ -351,7 +351,6 @@ ul.image-list {
     li {
         display: inline-block;
         vertical-align: top;
-
         width: 30%;
         margin: 1%;
 
@@ -361,12 +360,13 @@ ul.image-list {
         }
 
         img {
-            width: 100%;
+            max-width: 100%;
         }
     }
 }
+
 .commento-avatar {
-       display: none !important;
+    display: none !important;
 }
 
 .commento-name, .commento-subtitle {

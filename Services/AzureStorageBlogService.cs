@@ -6,6 +6,7 @@ using Microsoft.Azure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -103,7 +104,7 @@ namespace blog
                 ImagesContainerName
             );
 
-            return images;
+            return images.OrderBy(i => i.Url);
         }
 
         private async Task IterateBlobItems(Func<CloudBlob, Task> loader, string containerName)
