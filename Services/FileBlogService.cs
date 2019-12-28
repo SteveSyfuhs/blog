@@ -87,7 +87,8 @@ namespace blog
 
         public virtual Task<Post> GetPostBySlug(string slug)
         {
-            var post = _cache.FirstOrDefault(p => p.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
+            var post = _cache.FirstOrDefault(p => SlugEquals(slug, p));
+
             bool isAdmin = IsAdmin();
 
             if (post != null && post.PubDate <= DateTime.UtcNow && (post.IsPublished || isAdmin))
@@ -96,6 +97,25 @@ namespace blog
             }
 
             return Task.FromResult<Post>(null);
+        }
+
+        private static bool SlugEquals(string slug, Post p)
+        {
+            var searchingSlug = slug;
+
+            if (searchingSlug.EndsWith('/'))
+            {
+                searchingSlug = searchingSlug[0..^1];
+            }
+
+            var postSlug = p.Slug;
+
+            if (postSlug.EndsWith('/'))
+            {
+                postSlug = postSlug[0..^1];
+            }
+
+            return postSlug.Equals(searchingSlug, StringComparison.OrdinalIgnoreCase);
         }
 
         public virtual Task<Post> GetPostById(string id)

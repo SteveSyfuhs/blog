@@ -126,6 +126,7 @@ noscript p {
 }
 
 .sitefooter {
+    display: flex;
     bottom: 0;
     left: 0;
     width: 100%;
@@ -363,4 +364,24 @@ ul.image-list {
             width: 100%;
         }
     }
+}
+.commento-avatar {
+       display: none !important;
+}
+
+.commento-name, .commento-subtitle {
+    margin-left: 0 !important;
+}
+
+.commento-card {
+    border-left-color: #ccc !important;
+}
+
+.commento-body {
+    padding-bottom: 5px;
+}
+
+.commento-card {
+    padding-top: 0 !important;
+    border-top: none !important;
 }
