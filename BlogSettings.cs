@@ -17,5 +17,9 @@
         public bool BuiltinCommentsEnabled { get; set; }
 
         public string ConnectionString { get; set; }
+
+        public string URadUserId { get; set; }
+        
+        public string URadUserKey { get; set; }
     }
 }

@@ -151,6 +151,10 @@ namespace blog.Models
                 "gist",
                 "<script src=\"https://gist.github.com/{0}.js\"></script>" //SteveSyfuhs/c3c3bd7d8d2da771d10b9d453d68b5eb
             ),
+            KeyValuePair.Create(
+                "iframe",
+                "<iframe src=\"{0}\" {1}></iframe>"
+            ),
         };
 
         public string RenderContent()
@@ -161,7 +165,12 @@ namespace blog.Models
 
             foreach (var embed in EmbeddedReplaces)
             {
-                result = Regex.Replace(result.ToString(), @$"\[{embed.Key}:(.*?)\]", (Match m) => string.Format(embed.Value, m.Groups[1].Value));
+                result = Regex.Replace(result.ToString(), @$"\[{embed.Key}:(.*?) (.*?)\]", (Match m) =>
+                {
+                    var str = string.Format(embed.Value, m.Groups[1].Value, m.Groups.Count > 2 ? m.Groups[2].Value : "");
+
+                    return str;
+                });
             }
 
             foreach (var rep in HardReplace)

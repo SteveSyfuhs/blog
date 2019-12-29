@@ -1,0 +1,139 @@
+﻿@model RadModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Chart</title>
+</head>
+<body>
+    <canvas id="myChart"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+    <script>
+        var unit = '@Model.Chart';
+
+        function idFactor(id) {
+	        switch (id.substr(0,2)) {
+		        case "11": return 0.006315; // sbm20
+		        case "12": return 0.010000; // si29bg
+		        case "13": return 0.006315; // sbm20
+		        case "41": return 0.006315; // sbm20
+		        case "51": return 0.006315; // sbm20
+		        case "64": return 0.005940;	// lnd712
+		        case "82": return 0.010000; // si29bg
+		        default: return 0;
+	        }
+        }
+
+        var factor = function (val) {
+            return val;
+        };
+
+        var unitLabel = unit;
+
+        if (unit == 'radiation') {
+            factor = function (val) { return val * idFactor('@Model.Device'); }
+            unit = 'cpm';
+            unitLabel = 'μSv/h';
+        }
+        else if (unit == 'cpm') {
+            unitLabel = 'CPM';
+        }
+        else if (unit == 'temperature') {
+            factor = function (val) { return (val * 1.8) + 32; }
+            unitLabel = '°F';
+        }
+        else if (unit == 'voltage') {
+            unitLabel = 'V';
+        }
+        else if (unit == 'duty') {
+            unitLabel = '%';
+        }
+
+        fetch('/api/rad/@Model.Device/all/33600/30000')
+            .then((response) => {
+                return response.json();
+            })
+            .then((myJson) => {
+                var ctx = document.getElementById('myChart').getContext('2d');
+
+                var labels = [];
+                var data = [];
+
+                var averages = [];
+                var current = 0;
+                var max = 0;
+
+                for (var i in myJson) {
+                    var index = parseInt(i);
+                    var record = myJson[index];
+
+                    if (typeof record === 'undefined') {
+                        break;
+                    }
+
+                    var dataPoint = factor(record[unit]);
+
+                    current += dataPoint;
+
+                    var t = new Date(record.time * 1000);
+
+                    labels[index] = t;
+                    data[index] = { y: dataPoint, x: t };
+
+                    var avg = current / (index + 1);
+
+                    averages[index] = { y: avg, x: t };
+                }
+
+                var chart = new Chart(ctx, {
+                    type: 'line',
+                    labels: labels,
+                    data: {
+                        datasets: [{
+                            label: unitLabel,
+                            data: data,
+                            borderColor: 'rgba(0,112, 190, 0.3)',
+                            backgroundColor: 'rgba(0,112, 190, 0.1)'
+                        },
+                        {
+                            label: unitLabel + ' (average)',
+                            data: averages,
+                            }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            xAxes: [{
+                                type: 'time',
+                                distribution: 'series'
+                            }]
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    var label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+                                    var val = Math.round(tooltipItem.yLabel * 10000) / 10000;
+
+                                    label = val + ' ' + label;
+
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
+</body>
+</html>

@@ -23,6 +23,8 @@ namespace blog
 
         private readonly object _sync = new object();
 
+        public BlogSettings Settings { get; }
+
         public Task<int> GetPostCount()
         {
             return Task.FromResult(_cache.Count);
@@ -42,10 +44,12 @@ namespace blog
             Task.Run(() => Initialize()).Wait();
         }
 
-        public FileBlogService(IWebHostEnvironment env, IHttpContextAccessor contextAccessor, bool delayInitialize)
+        public FileBlogService(IWebHostEnvironment env, IHttpContextAccessor contextAccessor, bool delayInitialize, BlogSettings settings)
         {
             _folder = Path.Combine(env.WebRootPath, "posts");
             _contextAccessor = contextAccessor;
+            
+            Settings = settings;
 
             if (!delayInitialize)
             {

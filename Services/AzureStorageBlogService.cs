@@ -18,16 +18,12 @@ namespace blog
         private const string FilesContainerName = "files";
         private const string ImagesContainerName = "images";
 
-        private readonly BlogSettings settings;
-
         public AzureStorageBlogService(
             IWebHostEnvironment env,
             IHttpContextAccessor contextAccessor,
             BlogSettings settings
-        ) : base(env, contextAccessor, true)
+        ) : base(env, contextAccessor, true, settings)
         {
-            this.settings = settings;
-
             InitializeSync();
         }
 
@@ -153,7 +149,7 @@ namespace blog
 
         private async Task<CloudBlobContainer> LoadBlobContainer(string containerName)
         {
-            CloudStorageAccount account = CloudStorageAccount.Parse(settings.ConnectionString);
+            CloudStorageAccount account = CloudStorageAccount.Parse(Settings.ConnectionString);
 
             CloudBlobClient client = account.CreateCloudBlobClient();
 

@@ -40,7 +40,6 @@ namespace blog
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
@@ -50,7 +49,6 @@ namespace blog
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            // Output caching (https://github.com/madskristensen/WebEssentials.AspNetCore.OutputCaching)
             services.AddOutputCaching(options =>
             {
                 options.Profiles["default"] = new OutputCacheProfile
@@ -70,7 +68,6 @@ namespace blog
 
             services.AddControllersWithViews();
 
-            // HTML minification (https://github.com/Taritsyn/WebMarkupMin)
             services
                 .AddWebMarkupMin(options =>
                 {
@@ -84,7 +81,6 @@ namespace blog
                 });
             services.AddSingleton<IWmmLogger, WmmNullLogger>(); // Used by HTML minifier
 
-            // Bundling, minification and Sass transpilation (https://github.com/ligershark/WebOptimizer)
             services.AddWebOptimizer(pipeline =>
             {
                 pipeline.MinifyJsFiles();
@@ -93,7 +89,6 @@ namespace blog
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -103,7 +98,6 @@ namespace blog
             }
 
             app.UseStatusCodePagesWithRedirects("/error/{0}");
-            //app.UseExceptionHandler("/Error");
 
             app.UseWebOptimizer();
 
@@ -135,7 +129,8 @@ namespace blog
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Blog}/{action=Index}/{id?}");
+                    pattern: "{controller=Blog}/{action=Index}/{id?}"
+                );
             });
         }
     }

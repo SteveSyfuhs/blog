@@ -6,6 +6,8 @@ namespace blog
 {
     public interface IBlogService
     {
+        BlogSettings Settings { get; }
+
         Task<int> GetPostCount();
 
         Task<IEnumerable<Post>> GetPosts(int count, int skip = 0);
