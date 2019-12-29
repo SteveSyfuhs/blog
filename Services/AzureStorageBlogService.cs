@@ -42,25 +42,26 @@ namespace blog
             await blob.UploadTextAsync(doc.ToString());
         }
 
-        private static readonly HashSet<string> TrustedImageExtensions = new HashSet<string>
+        private static readonly Dictionary<string, string> TrustedImageExtensions = new Dictionary<string, string>
         {
-            "png",
-            "jpg",
-            "jpeg"
+            { "png", "image/png" },
+            { "jpg", "image/jpeg" },
+            { "jpe", "image/jpeg" },
+            { "jpeg", "image/jpeg" },
+            { "gif", "image/gif" },
+            { "svg", "image/svg+xml" },
         };
 
         protected override async Task<string> PersistDataFile(byte[] bytes, string fileName, string suffix)
         {
-            string ext = Path.GetExtension(fileName).Substring(1);
+            string ext = Path.GetExtension(fileName).Substring(1).ToLowerInvariant();
             string name = Path.GetFileNameWithoutExtension(fileName);
 
             string relative = $"{name}_{suffix}.{ext}";
-
-            var image = TrustedImageExtensions.Contains(ext);
-
+            
             CloudBlobContainer container;
 
-            if (image)
+            if (TrustedImageExtensions.TryGetValue(ext, out string contentType))
             {
                 container = await LoadBlobContainer(ImagesContainerName);
             }
@@ -69,11 +70,12 @@ namespace blog
                 container = await LoadBlobContainer(FilesContainerName);
             }
 
-            CloudBlockBlob blob = container.GetBlockBlobReference(relative);
+            var blob = container.GetBlockBlobReference(relative);
 
-            if (image)
+            if (!string.IsNullOrWhiteSpace(contentType))
             {
-                blob.Properties.ContentType = $"image/{ext}";
+                blob.Properties.ContentType = contentType;
+                blob.Properties.CacheControl = "max-age=31536000";
             }
 
             await blob.UploadFromByteArrayAsync(bytes, 0, bytes.Length);

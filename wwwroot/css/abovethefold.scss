@@ -240,6 +240,12 @@ time {
         background: $light-bg-color;
     }
 
+    .gist {
+        tr:nth-child(2n) {
+            background: none;
+        }
+    }
+
     th {
         border-bottom: 1px solid $comments_border-color;
         text-align: left;

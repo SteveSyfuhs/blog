@@ -9,6 +9,12 @@ using System.Text.RegularExpressions;
 
 namespace blog.Models
 {
+    public enum PostType
+    {
+        Post,
+        Page
+    }
+
     public class Post
     {
         private string domain;
@@ -26,6 +32,8 @@ namespace blog.Models
 
         [Required]
         public string Content { get; set; }
+
+        public PostType Type { get; set; }
 
         public DateTime PubDate { get; set; } = DateTime.UtcNow;
 
@@ -105,16 +113,61 @@ namespace blog.Models
             return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
         }
 
+        public string GetMedia()
+        {
+            if (string.IsNullOrWhiteSpace(MediaUrl))
+            {
+                return null;
+            }
+
+            var mediaUrl = MediaUrl;
+
+            foreach (var rep in HardReplace)
+            {
+                mediaUrl = mediaUrl.Replace(rep.Key, rep.Value);
+            }
+
+            return mediaUrl;
+        }
+
+        private static readonly List<KeyValuePair<string, string>> HardReplace = new List<KeyValuePair<string, string>>
+        {
+            KeyValuePair.Create("http://", "https://"),
+            KeyValuePair.Create("https://syfuhs.blob.core.windows.net", "https://syfuhsblog.blob.core.windows.net"),
+            KeyValuePair.Create("https://syfuhs.net/wp-content/", "https://syfuhsblog.blob.core.windows.net/"),
+            KeyValuePair.Create("https://www.syfuhs.net/", "https://syfuhs.net/"),
+            KeyValuePair.Create("https://syfuhs.net/IMAGES/", "https://syfuhsblog.blob.core.windows.net/images/")
+        };
+
+        private static readonly List<KeyValuePair<string, string>> EmbeddedReplaces = new List<KeyValuePair<string, string>>
+        {
+            KeyValuePair.Create(
+                "youtube",
+                "<div class=\"video\">" +
+                "<iframe width=\"560\" height=\"315\" title=\"YouTube embed\" src=\"about:blank\" data-src=\"https://www.youtube-nocookie.com/embed/{0}?modestbranding=1&amp;hd=1&amp;rel=0&amp;theme=light\" allowfullscreen></iframe>" +
+                "</div>"
+            ),
+            KeyValuePair.Create(
+                "gist",
+                "<script src=\"https://gist.github.com/{0}.js\"></script>" //SteveSyfuhs/c3c3bd7d8d2da771d10b9d453d68b5eb
+            ),
+        };
+
         public string RenderContent()
         {
             var result = Content;
 
-            // Set up lazy loading of images/iframes
             result = result.Replace(" src=\"", " src=\"data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==\" data-src=\"");
 
-            // Youtube content embedded using this syntax: [youtube:xyzAbc123]
-            var video = "<div class=\"video\"><iframe width=\"560\" height=\"315\" title=\"YouTube embed\" src=\"about:blank\" data-src=\"https://www.youtube-nocookie.com/embed/{0}?modestbranding=1&amp;hd=1&amp;rel=0&amp;theme=light\" allowfullscreen></iframe></div>";
-            result = Regex.Replace(result.ToString(), @"\[youtube:(.*?)\]", (Match m) => string.Format(video, m.Groups[1].Value));
+            foreach (var embed in EmbeddedReplaces)
+            {
+                result = Regex.Replace(result.ToString(), @$"\[{embed.Key}:(.*?)\]", (Match m) => string.Format(embed.Value, m.Groups[1].Value));
+            }
+
+            foreach (var rep in HardReplace)
+            {
+                result = result.Replace(rep.Key, rep.Value);
+            }
 
             return result.ToString();
         }

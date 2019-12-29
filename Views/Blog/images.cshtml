@@ -1,15 +1,31 @@
 ﻿@model IEnumerable<ImageFile>
 @inject IOptionsSnapshot<BlogSettings> settings
-@{
-    int currentPage = int.Parse(ViewContext.RouteData.Values["page"] as string ?? "0");
+
+@functions {
+    private static string ExtractFolder(string url)
+    {
+        var lastIndex = url.LastIndexOf('/');
+
+        return url.Substring(0, lastIndex);
+    }
 }
 
 <ul class="image-list">
-    @foreach (var image in Model)
+    @foreach (var folder in Model.GroupBy(i => ExtractFolder(i.Url)))
     {
         <li>
-            <a href="@image.Url"><img src="@image.Url" /></a>
-            <div>@image.Url</div>
+            <h3>@folder.Key</h3>
+            <ul>
+                @foreach (var image in folder)
+                {
+                    <li>
+                        <a href="@image.Url" target="_blank">
+                            <img src="#" data-src="@image.Url" />
+                        </a>
+                        <div>@image.Url.Substring(folder.Key.Length + 1)</div>
+                    </li>
+                }
+            </ul>
         </li>
     }
 </ul>

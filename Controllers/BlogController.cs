@@ -155,7 +155,7 @@ namespace blog.Models
         [Route("/edit/images")]
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> ListImages(int page)
+        public async Task<IActionResult> ListImages()
         {
             var images = await _blog.ListImages();
 
@@ -262,6 +262,7 @@ namespace blog.Models
             existing.IsPublished = post.IsPublished;
             existing.Content = post.Content.Trim();
             existing.Excerpt = post.Excerpt.Trim();
+            existing.Type = post.Type;
 
             if (!string.IsNullOrWhiteSpace(post.MediaUrl))
             {

@@ -17,6 +17,13 @@
     <span class="desc" id="desc_title">The title as it appears on the website</span>
     <br />
 
+    <label asp-for="@Model.Type" class="label">Post Type</label>
+
+    <select asp-for="Type" asp-items="Html.GetEnumSelectList<PostType>()">
+    </select>
+    <br />
+    <br />
+
     <label asp-for="@Model.Slug" class="label">Slug</label>
     <input asp-for="@Model.Slug" placeholder="The URL name" aria-describedby="desc_slug" />
     <span class="desc" id="desc_slug">The part of the URL that identifies this blog post</span>

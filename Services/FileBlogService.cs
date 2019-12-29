@@ -65,6 +65,7 @@ namespace blog
             bool isAdmin = IsAdmin();
 
             var posts = _cache
+                .Where(p => p.Type == PostType.Post)
                 .Where(p => p.PubDate <= DateTime.UtcNow && (p.IsPublished || isAdmin))
                 .Skip(skip)
                 .Take(count);
@@ -77,6 +78,7 @@ namespace blog
             bool isAdmin = IsAdmin();
 
             var posts = from p in _cache
+                        where p.Type == PostType.Post
                         where p.PubDate <= DateTime.UtcNow && (p.IsPublished || isAdmin)
                         where p.Categories.Contains(category, StringComparer.OrdinalIgnoreCase)
                         select p;
@@ -157,6 +159,7 @@ namespace blog
                                 new XElement("pubDate", post.PubDate.ToString("yyyy-MM-dd HH:mm:ss")),
                                 new XElement("lastModified", post.LastModified.ToString("yyyy-MM-dd HH:mm:ss")),
                                 new XElement("mediaUrl", post.MediaUrl),
+                                new XElement("postType", post.Type),
                                 new XElement("excerpt", post.Excerpt),
                                 new XElement("content", post.Content),
                                 new XElement("ispublished", post.IsPublished),
@@ -289,6 +292,7 @@ namespace blog
                 Title = ReadValue(doc, "title"),
                 Excerpt = ReadValue(doc, "excerpt"),
                 MediaUrl = ReadValue(doc, "mediaUrl"),
+                Type = Enum.Parse<PostType>(ReadValue(doc, "postType", "Post"), true),
                 Content = ReadValue(doc, "content"),
                 Slug = ReadValue(doc, "slug").ToLowerInvariant(),
                 PubDate = DateTime.Parse(ReadValue(doc, "pubDate")),
