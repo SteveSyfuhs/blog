@@ -43,6 +43,7 @@ namespace blog
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddApplicationInsightsTelemetry();
 
             services.AddSingleton(Configuration.GetSection("blog").Get<BlogSettings>());
             services.AddSingleton<IBlogService, AzureStorageBlogService>();
