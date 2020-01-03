@@ -1,19 +1,26 @@
 ﻿@model IEnumerable<Post>
 
-<nav class="container" aria-label="Pagination">
+    <nav class="container" aria-label="Pagination">
 
-    <h1>404 Oops. That Disappeared.</h1>
+        <h1>404 Oops. That Disappeared.</h1>
 
-    <h4>Do any of these help?</h4>
-
-    <ul class="post-list">
-        @foreach (var post in Model)
+        @if (!string.IsNullOrWhiteSpace(ViewData["ErrorUrl"] as string))
         {
-            <li>
-                <a href="@post.GetLink()">@post.Title</a>
-                <div>@post.Excerpt</div>
-            </li>
+            <h3 class="error-path">
+                The path <code>@ViewData["ErrorUrl"]</code> didn't return anything interesting.
+            </h3>
         }
-    </ul>
 
-</nav>
+        <h4>Do any of these help?</h4>
+
+        <ul class="post-list">
+            @foreach (var post in Model)
+            {
+                <li>
+                    <a href="@post.GetLink()">@post.Title</a>
+                    <div>@post.Excerpt</div>
+                </li>
+            }
+        </ul>
+
+    </nav>

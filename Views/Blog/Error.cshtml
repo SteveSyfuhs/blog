@@ -3,6 +3,13 @@
     <h1>@ViewData["ErrorCode"] Oops. That Didn't Work as Planned.</h1>
 
     <div class="error-page">
+        @if (!string.IsNullOrWhiteSpace(ViewData["ErrorUrl"] as string))
+        {
+        <h3 class="error-path">
+            The request to <code>@ViewData["ErrorUrl"]</code> failed.
+        </h3>
+        }
+
         @if (!string.IsNullOrWhiteSpace(ViewData["ErrorCodeName"] as string))
         {
             <p><code class="error">@ViewData["ErrorCodeName"]</code> This isn't recoverable at the moment.</p>

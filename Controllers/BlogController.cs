@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.SyndicationFeed;
@@ -61,6 +62,10 @@ namespace blog.Models
         [Route("/error/{statusCode:int?}")]
         public async Task<IActionResult> Error([FromRoute] int statusCode = 0)
         {
+            var feature = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+
+            ViewData["ErrorUrl"] = feature?.OriginalPath;
+
             var status = (HttpStatusCode)statusCode;
 
             switch (status)

@@ -98,7 +98,7 @@ namespace blog
                 app.UseStatusCodePages("text/plain", "Status code page, status code: {0}");
             }
 
-            app.UseStatusCodePagesWithRedirects("/error/{0}");
+            app.UseStatusCodePagesWithReExecute("/error/{0}");
 
             app.UseWebOptimizer();
 

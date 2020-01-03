@@ -97,6 +97,7 @@ namespace blog
             }
         }
 
+        [Route("/syndication.axd")]
         [Route("/feed/{type?}")]
         public async Task Rss(string type = "rss")
         {
@@ -105,7 +106,7 @@ namespace blog
 
             using (XmlWriter xmlWriter = XmlWriter.Create(Response.Body, new XmlWriterSettings() { Async = true, Indent = true }))
             {
-                var posts = await _blog.GetPosts(1);
+                var posts = await _blog.GetPosts(25);
 
                 var writer = await GetWriter(type, xmlWriter, posts.Max(p => p.PubDate));
 
