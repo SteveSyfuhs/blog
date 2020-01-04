@@ -153,7 +153,7 @@ namespace blog.Models
             ),
             KeyValuePair.Create(
                 "iframe",
-                "<iframe src=\"{0}\" {1}></iframe>"
+                "<iframe src={0}></iframe>"
             ),
         };
 
@@ -165,7 +165,10 @@ namespace blog.Models
 
             foreach (var embed in EmbeddedReplaces)
             {
-                result = Regex.Replace(result.ToString(), @$"\[{embed.Key}:(.*?) (.*?)\]", (Match m) =>
+                //\[(({embed.Key}:[a-z]+)\s*([^>]*))\]
+                //"\[{embed.Key}:(.*?)\]"
+
+                result = Regex.Replace(result.ToString(), $@"\[{embed.Key}:(.*?)\]", (Match m) =>
                 {
                     var str = string.Format(embed.Value, m.Groups[1].Value, m.Groups.Count > 2 ? m.Groups[2].Value : "");
 
