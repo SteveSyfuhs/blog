@@ -401,7 +401,7 @@ section#comments .container {
     }
 
     .commento-card {
-        border-left-color: #ededed !important;
+        border-left: unset !important;
     }
 
     .commento-body {
@@ -411,10 +411,15 @@ section#comments .container {
     .commento-card {
         padding-top: 0 !important;
         border-top: none !important;
+
+        * {
+            font-size: unset !important;
+        }
     }
 
-    * {
-        font-size: unset !important;
+    .commento-anonymous-checkbox-container {
+        margin-top: 9px;
+        margin-bottom: 9px;
     }
 
     pre, code {
