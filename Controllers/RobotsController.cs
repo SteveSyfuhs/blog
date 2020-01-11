@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using blog.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Atom;
 using Microsoft.SyndicationFeed.Rss;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,8 +37,10 @@ namespace blog
             return sb.ToString();
         }
 
+        [Route("/sitemap.axd")]
+        [Route("/sitemap-{index}.xml")]
         [Route("/sitemap.xml")]
-        public async Task SitemapXml()
+        public async Task SitemapXml(string index = "1")
         {
             string host = Request.Scheme + "://" + Request.Host;
 
@@ -97,38 +101,54 @@ namespace blog
             }
         }
 
+        [Route("/comments/feed/{type?}")]
+        public async Task CommentsFeed(string type = "rss")
+        {
+            var posts = await _blog.GetPosts(int.MaxValue);
+
+            var comments = posts.SelectMany(p => p.Comments);
+
+            await SerializeFeed(
+                type,
+                comments,
+                () => comments.OrderByDescending(c => c.PubDate).Select(c => c.PubDate).FirstOrDefault(),
+                SerializeComment
+            );
+        }
+
+        [Route("/atom.aspx")]
+        public async Task Atom()
+        {
+            await Rss("atom");
+        }
+
+        [Route("/rss.aspx")]
         [Route("/syndication.axd")]
         [Route("/feed/{type?}")]
         public async Task Rss(string type = "rss")
+        {
+            var posts = await _blog.GetPosts(25);
+
+            await SerializeFeed(
+                type,
+                posts,
+                lastUpdated: () => posts.Max(p => p.PubDate),
+                serializer: SerializePost
+            );
+        }
+
+        private async Task SerializeFeed<T>(string type, IEnumerable<T> items, Func<DateTime> lastUpdated, Func<string, T, AtomEntry> serializer)
         {
             Response.ContentType = "application/xml";
             string host = Request.Scheme + "://" + Request.Host;
 
             using (XmlWriter xmlWriter = XmlWriter.Create(Response.Body, new XmlWriterSettings() { Async = true, Indent = true }))
             {
-                var posts = await _blog.GetPosts(25);
+                var writer = await GetWriter(type, xmlWriter, lastUpdated());
 
-                var writer = await GetWriter(type, xmlWriter, posts.Max(p => p.PubDate));
-
-                foreach (Models.Post post in posts)
+                foreach (var thing in items)
                 {
-                    var item = new AtomEntry
-                    {
-                        Title = post.Title,
-                        Description = post.Content,
-                        Id = host + post.GetLink(),
-                        Published = post.PubDate,
-                        LastUpdated = post.LastModified,
-                        ContentType = "html",
-                    };
-
-                    foreach (string category in post.Categories)
-                    {
-                        item.AddCategory(new SyndicationCategory(category));
-                    }
-
-                    item.AddContributor(new SyndicationPerson(_settings.Value.Owner, email: "site@syfuhs.net"));
-                    item.AddLink(new SyndicationLink(new Uri(item.Id)));
+                    var item = serializer(host, thing);
 
                     await writer.Write(item);
 
@@ -139,6 +159,45 @@ namespace blog
             }
 
             await Response.Body.FlushAsync();
+        }
+
+        private AtomEntry SerializeComment(string host, Comment comment)
+        {
+            var item = new AtomEntry
+            {
+                Title = "comment",
+                Description = comment.Content,
+                Id = host + comment.ID,
+                Published = comment.PubDate,
+                LastUpdated = comment.PubDate,
+                ContentType = "html",
+            };
+
+            item.AddContributor(new SyndicationPerson(comment.Author, comment.Email, "Contributor"));
+            item.AddLink(new SyndicationLink(new Uri(item.Id)));
+            return item;
+        }
+
+        private AtomEntry SerializePost(string host, Post post)
+        {
+            var item = new AtomEntry
+            {
+                Title = post.Title,
+                Description = post.Content,
+                Id = host + post.GetLink(),
+                Published = post.PubDate,
+                LastUpdated = post.LastModified,
+                ContentType = "html",
+            };
+
+            foreach (string category in post.Categories)
+            {
+                item.AddCategory(new SyndicationCategory(category));
+            }
+
+            item.AddContributor(new SyndicationPerson(_settings.Value.Owner, email: "site@syfuhs.net"));
+            item.AddLink(new SyndicationLink(new Uri(item.Id)));
+            return item;
         }
 
         private async Task<ISyndicationFeedWriter> GetWriter(string type, XmlWriter xmlWriter, DateTime updated)
