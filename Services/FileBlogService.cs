@@ -48,7 +48,7 @@ namespace blog
         {
             _folder = Path.Combine(env.WebRootPath, "posts");
             _contextAccessor = contextAccessor;
-            
+
             Settings = settings;
 
             if (!delayInitialize)
@@ -424,6 +424,11 @@ namespace blog
                 {
                     var count = 0;
 
+                    if (post.Slug.Contains(q, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        count += 10000;
+                    }
+
                     count += regex.Matches(post.Title).Count * 10;
                     count += regex.Matches(post.Excerpt).Count;
 
@@ -435,11 +440,11 @@ namespace blog
                 }
             }
 
-            var results = searchResults.OrderByDescending(r => r.Key).Where(r => r.Key > 0).Select(r => r.Value);
+            var results = searchResults.OrderByDescending(r => r.Key).Where(r => r.Key > 0);
 
             if (!searchable)
             {
-                results = _cache;
+                results = _cache.Select(c => KeyValuePair.Create(0, c));
             }
 
             var total = results.Count();
@@ -459,7 +464,7 @@ namespace blog
 
         private static IEnumerable<string> SplitWords(string q)
         {
-            return q.ToLowerInvariant().Split(' ', ',', ';', ':', '=', '+').Except(StopWords);
+            return q.ToLowerInvariant().Split(' ', ',', ';', ':', '=', '+', '-').Except(StopWords);
         }
 
         private static readonly string[] StopWords = new[]

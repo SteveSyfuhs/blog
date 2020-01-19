@@ -13,6 +13,6 @@ namespace blog.Models
 
         public IEnumerable<string> Words { get; set; }
 
-        public IEnumerable<Post> Posts { get; set; }
+        public IEnumerable<KeyValuePair<int, Post>> Posts { get; set; }
     }
 }

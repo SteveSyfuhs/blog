@@ -30,9 +30,9 @@
             <ul class="results-list">
                 @foreach (var post in Model.Posts)
                 {
-                    <li>
-                        <a href="@post.GetLink()">@post.Title</a>
-                        <div>@Html.Raw(post.Excerpt.Substring(0, post.Excerpt.Length > 200 ? 200 : post.Excerpt.Length))...</div>
+                    <li data-weight="@post.Key">
+                        <a href="@post.Value.GetLink()">@post.Value.Title</a>
+                        <div>@Html.Raw(post.Value.Excerpt.Substring(0, post.Value.Excerpt.Length > 200 ? 200 : post.Value.Excerpt.Length))...</div>
                     </li>
                 }
             </ul>

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Atom;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -71,7 +72,7 @@ namespace blog.Models
             switch (status)
             {
                 case HttpStatusCode.NotFound:
-                    return View("NotFound", await _blog.GetPostsByCategory("Featured"));
+                    return await TryNotFound(feature);
             }
 
             if (statusCode >= 400 && statusCode < 599)
@@ -81,6 +82,52 @@ namespace blog.Models
             }
 
             return View("Error");
+        }
+
+        private async Task<IActionResult> TryNotFound(IStatusCodeReExecuteFeature feature)
+        {
+            IEnumerable<Post> searchResults = null;
+
+            if (!string.IsNullOrWhiteSpace(feature?.OriginalPath))
+            {
+                var path = feature.OriginalPath;
+
+                if (path.EndsWith('/'))
+                {
+                    path = path[0..^1];
+                }
+
+                var index = path.LastIndexOf('/') + 1;
+
+                if (index >= 0)
+                {
+                    var file = Path.GetFileNameWithoutExtension(path.Substring(index));
+
+                    if (!string.IsNullOrWhiteSpace(file))
+                    {
+                        var postResults = await _blog.Search(file, 0, 1);
+
+                        var firstPost = postResults.Posts.FirstOrDefault();
+
+                        if (firstPost.Key > 10000)
+                        {
+                            return Redirect(firstPost.Value.GetLink());
+                        }
+
+                        if (postResults.Results > 0)
+                        {
+                            searchResults = postResults.Posts.Select(p => p.Value);
+                        }
+                    }
+                }
+            }
+
+            if (searchResults == null || searchResults.Count() <= 0)
+            {
+                searchResults = await _blog.GetPostsByCategory("Featured");
+            }
+
+            return View("NotFound", searchResults);
         }
 
         [Authorize]

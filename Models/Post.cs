@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,6 +16,7 @@ namespace blog.Models
         Page
     }
 
+    [DebuggerDisplay("{Title} | {Slug}")]
     public class Post
     {
         private string domain;
