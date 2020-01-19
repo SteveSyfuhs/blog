@@ -254,6 +254,32 @@ namespace blog.Models
             return Post(Request.Path.Value);
         }
 
+        [Route("/{year:int}/{month:int}/{day:int?}")]
+        [OutputCache(Profile = "default")]
+        public async Task<IActionResult> PostByMonth(int year, int month, int? day)
+        {
+            try
+            {
+                var dtMonth = new DateTime(year, month, 1, 0, 0, 0);
+
+                ViewData["Title"] = $"Posts for {dtMonth:Y}";
+                ViewData["IncludeTitle"] = true;
+            }
+            catch (ArgumentException)
+            {
+                return NotFound();
+            }
+
+            var allPosts = await _blog.GetPostsByMonth(year, month);
+
+            if (day.HasValue)
+            {
+                allPosts = allPosts.Where(a => a.PubDate.Day == day.Value);
+            }
+
+            return View("Views/Blog/Index.cshtml", allPosts);
+        }
+
         [Route("/{slug?}")]
         [OutputCache(Profile = "default")]
         public async Task<IActionResult> Post(string slug)

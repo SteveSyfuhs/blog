@@ -2,6 +2,18 @@
 @inject IOptionsSnapshot<BlogSettings> settings
 @{
     int currentPage = int.Parse(ViewContext.RouteData.Values["page"] as string ?? "0");
+    bool includeTitle = ViewData.ContainsKey("IncludeTitle") && (bool)ViewData["IncludeTitle"];
+}
+
+@if (includeTitle)
+{
+    <div class="post">
+        <header class="no-media">
+            <div class="">
+                <h1>@ViewData["Title"]</h1>
+            </div>
+        </header>
+    </div>
 }
 
 @foreach (var post in Model)

@@ -14,6 +14,8 @@ namespace blog
 
         Task<IEnumerable<Post>> GetPostsByCategory(string category);
 
+        Task<IEnumerable<Post>> GetPostsByMonth(int year, int month);
+
         Task<Post> GetPostBySlug(string slug);
 
         Task<Post> GetPostById(string id);

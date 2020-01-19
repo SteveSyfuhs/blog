@@ -24,6 +24,14 @@ namespace blog
             _settings = settings;
         }
 
+        [Route("/xmlrpc.php")]
+        [Route("/wp-admin/{path?}")]
+        [Route("/wp-login.php")]
+        public IActionResult Sinkhole()
+        {
+            return new EmptyResult();
+        }
+
         [Route("/robots.txt")]
         [OutputCache(Profile = "default")]
         public string RobotsTxt()

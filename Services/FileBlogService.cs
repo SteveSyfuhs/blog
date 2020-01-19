@@ -91,6 +91,20 @@ namespace blog
 
         }
 
+        public Task<IEnumerable<Post>> GetPostsByMonth(int year, int month)
+        {
+            bool isAdmin = IsAdmin();
+
+            var posts = from p in _cache
+                        where p.Type == PostType.Post
+                        where p.PubDate.Year == year
+                        where p.PubDate.Month == month
+                        where (p.IsPublished || isAdmin)
+                        select p;
+
+            return Task.FromResult(posts);
+        }
+
         public virtual Task<Post> GetPostBySlug(string slug)
         {
             var post = _cache.FirstOrDefault(p => SlugEquals(slug, p));
