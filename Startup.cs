@@ -112,9 +112,21 @@ namespace blog
                 }
             });
 
+            var rewriter = new RewriteOptions();
+
             if (Configuration.GetValue<bool>("forcessl"))
             {
-                app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
+                rewriter.AddRedirectToHttps();
+            }
+
+            if (Configuration.GetValue<bool>("dropwww"))
+            {
+                rewriter.Add(new StripWwwRule());
+            }
+
+            if (rewriter.Rules.Count > 0)
+            {
+                app.UseRewriter(rewriter);
             }
 
             app.UseAuthentication();
@@ -133,6 +145,27 @@ namespace blog
                     pattern: "{controller=Blog}/{action=Index}/{id?}"
                 );
             });
+        }
+
+        private class StripWwwRule : IRule
+        {
+            public void ApplyRule(RewriteContext context)
+            {
+                HttpRequest request = context.HttpContext.Request;
+
+                if (request.Host.Value.StartsWith("www.", StringComparison.OrdinalIgnoreCase))
+                {
+                    var target = request.Host.Value.Substring(4);
+
+                    string redirectUrl = $"{request.Scheme}://{target}{request.Path}{request.QueryString}";
+
+                    context.HttpContext.Response.Headers[HeaderNames.Location] = redirectUrl;
+                    context.HttpContext.Response.StatusCode = StatusCodes.Status302Found;
+
+                    context.Result = RuleResult.EndResponse;
+                }
+            }
+
         }
     }
 }

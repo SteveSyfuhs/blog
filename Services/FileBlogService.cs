@@ -193,11 +193,9 @@ namespace blog
 
             await PersistPost(post, doc);
 
-            if (!_cache.Contains(post))
-            {
-                _cache.Add(post);
-                SortCache();
-            }
+            _cache.Clear();
+
+            await Initialize();
         }
 
         protected virtual async Task PersistPost(Post post, XDocument doc)
