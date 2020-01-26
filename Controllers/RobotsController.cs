@@ -24,12 +24,23 @@ namespace blog
             _settings = settings;
         }
 
-        [Route("/xmlrpc.php")]
         [Route("/wp-admin/{path?}")]
-        [Route("/wp-login.php")]
+        [Route("{file}.php")]
+        [Route("/wp-json/wp/v2/{resource?}")]
+        [Route("/inc/{file?}")]
+        [Route("/administrator/")]
         public IActionResult Sinkhole()
         {
             return new EmptyResult();
+        }
+
+        [Route("/index.php")]
+        [Route("/aggbug.ashx")]
+        [Route("/article/{id}.aspx")]
+        [Route("/author/{author}/")]
+        public IActionResult AggBug()
+        {
+            return Redirect("~/");
         }
 
         [Route("/robots.txt")]
@@ -45,7 +56,9 @@ namespace blog
             return sb.ToString();
         }
 
+        [Route("/author-sitemap.xml")]
         [Route("/sitemap.axd")]
+        [Route("/image-sitemap-{index}.xml")]
         [Route("/sitemap-{index}.xml")]
         [Route("/sitemap.xml")]
         public async Task SitemapXml(string index = "1")
