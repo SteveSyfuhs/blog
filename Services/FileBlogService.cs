@@ -476,7 +476,7 @@ namespace blog
 
         private static IEnumerable<string> SplitWords(string q)
         {
-            return q.ToLowerInvariant().Split(' ', ',', ';', ':', '=', '+', '-').Except(StopWords);
+            return q.ToLowerInvariant().Split(' ', ',', ';', ':', '=', '+', '-').Except(StopWords).Select(w => Regex.Escape(w));
         }
 
         private static readonly string[] StopWords = new[]
