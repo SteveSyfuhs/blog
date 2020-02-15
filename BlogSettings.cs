@@ -8,7 +8,7 @@
         
         public string Owner { get; set; } = "Steve Syfuhs";
         
-        public int PostsPerPage { get; set; } = 5;
+        public int PostsPerPage { get; set; } = 3;
         
         public int CommentsCloseAfterDays { get; set; } = 10;
 
