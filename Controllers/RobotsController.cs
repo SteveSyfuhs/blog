@@ -143,6 +143,7 @@ namespace blog
             await Rss("atom");
         }
 
+        [Route("/SyndicationService.asmx/GetRss")]
         [Route("/rss.aspx")]
         [Route("/syndication.axd")]
         [Route("/feed/{type?}")]
