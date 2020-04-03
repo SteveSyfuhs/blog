@@ -9,8 +9,18 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>Chart</title>
+    <link rel="stylesheet" href="~/css/abovethefold.scss" inline />
 </head>
-<body>
+<body> 
+    <div class="chart-select">
+        <label class="ddl-label" for="ddlTimeWindow">Chart the last</label>
+        <select id="ddlTimeWindow" onchange="renderChart()">
+            <option value="1">1 hour</option>
+            <option value="2">2 hours</option>
+            <option value="4">4 hours</option>
+            <option value="24">24 hours</option>
+        </select>
+    </div>
     <canvas id="myChart"></canvas>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 
@@ -32,36 +42,41 @@
 	        }
         }
 
-        var factor = function (val) {
-            return val;
-        };
+        function renderChart() {
+            var lifetime = parseInt(document.getElementById('ddlTimeWindow').value);
 
-        var unitLabel = unit;
+            lifetime *= 60 * 60;
 
-        if (unit == 'radiation') {
-            factor = function (val) { return val * idFactor('@Model.Device'); }
-            unit = 'cpm';
-            unitLabel = 'μSv/h';
-        }
-        else if (unit == 'cpm') {
-            unitLabel = 'CPM';
-        }
-        else if (unit == 'temperature') {
-            factor = function (val) { return (val * 1.8) + 32; }
-            unitLabel = '°F';
-        }
-        else if (unit == 'voltage') {
-            unitLabel = 'V';
-        }
-        else if (unit == 'duty') {
-            unitLabel = '%';
-        }
-
-        fetch('/api/rad/@Model.Device/all/33600/30000')
+        fetch('/api/rad/@Model.Device/all/' + lifetime)
             .then((response) => {
                 return response.json();
             })
             .then((myJson) => {
+                var factor = function (val) {
+                    return val;
+                };
+
+                var unitLabel = unit;
+
+                if (unit == 'radiation') {
+                    factor = function (val) { return val * idFactor('@Model.Device'); }
+                    unit = 'cpm';
+                    unitLabel = 'μSv/h';
+                }
+                else if (unit == 'cpm') {
+                    unitLabel = 'CPM';
+                }
+                else if (unit == 'temperature') {
+                    factor = function (val) { return (val * 1.8) + 32; }
+                    unitLabel = '°F';
+                }
+                else if (unit == 'voltage') {
+                    unitLabel = 'V';
+                }
+                else if (unit == 'duty') {
+                    unitLabel = '%';
+                }
+
                 var ctx = document.getElementById('myChart').getContext('2d');
 
                 var labels = [];
@@ -69,7 +84,6 @@
 
                 var averages = [];
                 var current = 0;
-                var max = 0;
 
                 for (var i in myJson) {
                     var index = parseInt(i);
@@ -93,7 +107,11 @@
                     averages[index] = { y: avg, x: t };
                 }
 
-                var chart = new Chart(ctx, {
+                if (this.chart) {
+                    this.chart = null;
+                }
+
+                this.chart = new Chart(ctx, {
                     type: 'line',
                     labels: labels,
                     data: {
@@ -134,6 +152,9 @@
                     }
                 });
             });
+        }
+
+        renderChart();
     </script>
 </body>
 </html>
