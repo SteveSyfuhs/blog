@@ -73,6 +73,11 @@ nav.container:first-child, nav.search-page {
         text-decoration: none;
     }
 
+    a.author {
+        color: $link_color;
+        /*text-decoration: underline;*/
+    }
+
     .header-search {
         a {
             color: $link_color;

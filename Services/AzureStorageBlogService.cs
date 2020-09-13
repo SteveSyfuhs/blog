@@ -46,6 +46,7 @@ namespace blog
             { "jpeg", "image/jpeg" },
             { "gif", "image/gif" },
             { "svg", "image/svg+xml" },
+            { "jfif", "image/jpeg" }
         };
 
         protected override async Task<string> PersistDataFile(byte[] bytes, string fileName, string suffix)
@@ -54,7 +55,7 @@ namespace blog
             string name = Path.GetFileNameWithoutExtension(fileName);
 
             string relative = $"{name}_{suffix}.{ext}";
-            
+
             CloudBlobContainer container;
 
             if (TrustedImageExtensions.TryGetValue(ext, out string contentType))
@@ -84,7 +85,7 @@ namespace blog
             await IterateBlobItems(LoadPost, PostContainerName);
         }
 
-        public override async Task<IEnumerable<ImageFile>> ListImages()
+        public override async Task<ImagesModel> ListImages()
         {
             var images = new List<ImageFile>();
 
@@ -94,7 +95,9 @@ namespace blog
                     images.Add(new ImageFile
                     {
                         Title = blob.Name,
-                        Url = blob.Uri.OriginalString
+                        Url = blob.Uri.OriginalString,
+                        Created = blob.Properties.Created ?? DateTimeOffset.MinValue,
+                        Size = blob.Properties.Length
                     });
 
                     return Task.CompletedTask;
@@ -102,7 +105,14 @@ namespace blog
                 ImagesContainerName
             );
 
-            return images.OrderBy(i => i.Url);
+            var model = new ImagesModel();
+
+            foreach (var image in images.OrderBy(i => i.Url))
+            {
+                model.Images.Add(image);
+            }
+
+            return model;
         }
 
         private async Task IterateBlobItems(Func<CloudBlob, Task> loader, string containerName)

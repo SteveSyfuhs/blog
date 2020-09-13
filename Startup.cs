@@ -54,7 +54,8 @@ namespace blog
             {
                 options.Profiles["default"] = new OutputCacheProfile
                 {
-                    Duration = 3600
+                    UseAbsoluteExpiration = true,
+                    Duration = 5 * 60
                 };
             });
 

@@ -32,6 +32,6 @@ namespace blog
 
         Task<SearchResults> Search(string q, int skip, int take);
 
-        Task<IEnumerable<ImageFile>> ListImages();
+        Task<ImagesModel> ListImages();
     }
 }

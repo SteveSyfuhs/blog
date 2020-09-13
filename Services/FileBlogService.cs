@@ -57,9 +57,9 @@ namespace blog
             }
         }
 
-        public virtual Task<IEnumerable<ImageFile>> ListImages()
+        public virtual Task<ImagesModel> ListImages()
         {
-            IEnumerable<ImageFile> result = new List<ImageFile>();
+            var result = new ImagesModel();
 
             return Task.FromResult(result);
         }

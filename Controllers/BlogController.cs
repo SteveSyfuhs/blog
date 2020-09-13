@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using blog.Controllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using WebEssentials.AspNetCore.OutputCaching;
 
 namespace blog.Models
 {
@@ -22,18 +24,28 @@ namespace blog.Models
 
         public string Title { get; set; }
 
-        public int Size { get; set; }
+        public long Size { get; set; }
+
+        public DateTimeOffset Created { get; set; }
+
+        public string Id => Path.GetFileNameWithoutExtension(this.Url);
     }
 
     public class BlogController : Controller
     {
         private readonly IBlogService _blog;
         private readonly IOptionsSnapshot<BlogSettings> _settings;
+        private readonly IOutputCachingService _cache;
 
-        public BlogController(IBlogService blog, IOptionsSnapshot<BlogSettings> settings)
+        public BlogController(
+            IBlogService blog,
+            IOptionsSnapshot<BlogSettings> settings,
+            IOutputCachingService cache
+        )
         {
             _blog = blog;
             _settings = settings;
+            _cache = cache;
         }
 
         [Route("/{page:int?}")]
@@ -213,6 +225,46 @@ namespace blog.Models
             return View("images", images);
         }
 
+        [Route("/edit/images")]
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UploadImage(ImagesModel model)
+        {
+            const long maxUploadSize = 10L * 1024L * 1024L * 1024L;
+
+            if (!ModelState.IsValid)
+            {
+                return View("images");
+            }
+
+            string name = null;
+
+            foreach (var file in model.FormFiles)
+            {
+                var formFileContent = await FileHelpers.ProcessFormFile<ImagesModel>(
+                    file,
+                    ModelState, new[] { ".jpg", ".jpeg", ".png", ".gif", ".jfif" },
+                    maxUploadSize
+                );
+
+                if (formFileContent.Length > 0)
+                {
+                    name = await UploadImage(formFileContent, file.FileName);
+
+                    name = Path.GetFileNameWithoutExtension(name);
+                }
+            }
+
+            return Redirect($"/edit/images#{name}");
+        }
+
+        private async Task<string> UploadImage(byte[] formFileContent, string name)
+        {
+            name = name.Replace(" ", "_");
+
+            return await _blog.SaveFile(formFileContent, name);
+        }
+
         [Route("/tag/{category}/{page:int?}")]
         [Route("/category/{category}/{page:int?}")]
         [OutputCache(Profile = "default")]
@@ -351,6 +403,8 @@ namespace blog.Models
             }
 
             await _blog.SavePost(existing);
+
+            _cache.Clear();
 
             return Redirect(post.GetLink());
         }
