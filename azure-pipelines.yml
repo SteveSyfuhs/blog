@@ -31,14 +31,14 @@ steps:
 #  displayName: Set path
 #- script: nbgv cloud
 #  displayName: Set Version    
-#- script: dotnet build --configuration $(buildConfiguration)
-#  displayName: 'dotnet build $(buildConfiguration)'
+- script: dotnet build blog.sln --configuration $(buildConfiguration)
+  displayName: 'dotnet build $(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
   inputs:
     command: publish
     publishWebProjects: True
-    arguments: 'blog.sln --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --runtime win-x86 --self-contained'
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --runtime win-x86 --self-contained'
     zipAfterPublish: True
 
 - task: PublishBuildArtifacts@1
