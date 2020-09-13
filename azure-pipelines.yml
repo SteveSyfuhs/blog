@@ -26,7 +26,7 @@ steps:
   inputs:
     command: custom
     custom: tool
-    arguments: install --tool-path . nbgv --global
+    arguments: install --tool-path . --global nbgv
   displayName: Install NBGV tool
 
 - script: nbgv cloud
