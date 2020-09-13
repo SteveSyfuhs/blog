@@ -152,13 +152,17 @@ iframe {
 
         li {
             display: inline-block;
-            /*width: 33%*/
         }
 
         .categories {
+            min-width: 33%;
+
             h3 {
-                padding-bottom: 10px;
+                width: 100%;
+                padding-bottom: 5px;
+                /*padding-right: 25px;*/
                 border-bottom: 3px solid $accent_color;
+                display: inline-block;
             }
 
             li {
@@ -176,6 +180,10 @@ iframe {
                 &:not(:first-child):not(:last-child):after {
                     content: "";
                 }
+            }
+
+            li.build-version {
+                text-transform: none;
             }
         }
     }
