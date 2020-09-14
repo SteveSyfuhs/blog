@@ -1,0 +1,11 @@
+﻿@{
+    var viewModel = (MetaModel)ViewBag.Meta;
+}
+
+@if (viewModel != null)
+{
+    foreach (var kv in viewModel.MetaTags)
+    {
+        <meta property="@kv.Key" @kv.Value.Attribute="@kv.Value.Value" />
+    }
+}

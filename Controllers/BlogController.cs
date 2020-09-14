@@ -386,10 +386,26 @@ namespace blog.Models
                     return LocalRedirectPermanent(post.Slug);
                 }
 
+                var meta = new MetaModel();
+
+                AddTwitter(post, meta);
+
+                this.ViewData["Meta"] = meta;
+
                 return View(post);
             }
 
             return NotFound();
+        }
+
+        private void AddTwitter(Post post, MetaModel meta)
+        {
+            meta.MetaTags["twitter:card"] = new Meta { Attribute = "content", Value = "summary_large_image" };
+            meta.MetaTags["twitter:site"] = new Meta { Attribute = "content", Value = _settings.Value.Twitter };
+            meta.MetaTags["twitter:creator"] = new Meta { Attribute = "content", Value = _settings.Value.Twitter };
+            meta.MetaTags["twitter:title"] = new Meta { Attribute = "content", Value = post.Title };
+            meta.MetaTags["twitter:description"] = new Meta { Attribute = "content", Value = post.Excerpt };
+            meta.MetaTags["twitter:image"] = new Meta { Attribute = "content", Value = post.GetMedia() };
         }
 
         [Route("/edit/{id?}")]

@@ -384,12 +384,24 @@ ol.image-list, ul.image-list {
     width: 100%;
 
     h3 {
-        margin: 0 0 2em 2em;
+        margin: 1em;
+        cursor: pointer;
     }
 
     li {
         list-style: none;
     }
+
+    ul {
+        transition: max-height 0.2s ease-out;
+        overflow: hidden;
+        max-height: 100%;
+    }
+
+    ul.slide-hidden {
+        max-height: 0;
+    }
+
 
     ol, ul {
         li {
@@ -424,6 +436,7 @@ ol.image-list, ul.image-list {
         background-color: $comments_bg_color;
         padding: 10px;
         opacity: 0.9;
+        cursor: pointer;
 
         a {
             color: $comments_input_border-color;

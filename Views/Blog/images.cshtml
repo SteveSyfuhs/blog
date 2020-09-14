@@ -104,36 +104,45 @@
     input.addEventListener('change', updateImageDisplay);
 
     function deleteImage(x) {
-        var element = event.target.parentElement.parentElement;
+        var element = event.target.parentElement;
+
+        if (event.target.localName === 'a') {
+            element = element.parentElement;
+        }
 
         fetch('/edit/images?url=' + encodeURI(x), {
             method: "DELETE"
-        }).then(resp => {
-            console.log(resp);
+        }).then(_ => {
             element.parentElement.removeChild(element);
 
         });
+    }
+
+    function toggle() {
+        var element = event.target;
+
+        element.nextElementSibling.classList.toggle('slide-hidden');
     }
 </script>
 
 <ul class="image-list">
     @foreach (var folder in Model.Images.GroupBy(i => ExtractFolder(i.Url)))
     {
-        <li id="@folder.GetHashCode()">
-            <h3>@folder.Key</h3>
+        <li>
+            <h3 onclick="toggle()">@folder.Key</h3>
             <ul>
                 @foreach (var image in folder.OrderByDescending(f => f.Created))
                 {
-                <li>
-                    <a href="@image.Url" target="_blank" id="#@image.Id">
-                        <img src="#" data-src="@image.Url" />
-                    </a>
-                    <div class="delete-image">
-                        <a href="#@folder.GetHashCode()" onclick="deleteImage('@image.Url')">X</a>
-                    </div>
-                    <div>@image.Url.Substring(folder.Key.Length + 1)</div>
-                    <div>@image.Created</div>
-                </li>
+                    <li>
+                        <a href="@image.Url" target="_blank" id="#@image.Id">
+                            <img src="#" data-src="@image.Url" />
+                        </a>
+                        <div class="delete-image" onclick="deleteImage('@image.Url')">
+                            <a>X</a>
+                        </div>
+                        <div>@image.Url.Substring(folder.Key.Length + 1)</div>
+                        <div>@image.Created</div>
+                    </li>
                 }
             </ul>
         </li>

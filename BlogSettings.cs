@@ -7,6 +7,8 @@
         public string Description { get; set; } = "Theoretical Headbanging";
         
         public string Owner { get; set; } = "Steve Syfuhs";
+
+        public string Twitter { get; set; } = "@SteveSyfuhs";
         
         public int PostsPerPage { get; set; } = 3;
         
