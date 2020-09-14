@@ -255,6 +255,16 @@ namespace blog.Models
         }
 
         [Route("/edit/images")]
+        [HttpDelete]
+        [Authorize]
+        public async Task<IActionResult> DeleteImage([FromQuery] string url)
+        {
+            await this._blog.DeleteFile(url);
+
+            return StatusCode((int)HttpStatusCode.NoContent);
+        }
+
+        [Route("/edit/images")]
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> UploadImage(ImagesModel model)

@@ -115,6 +115,24 @@ namespace blog
             return model;
         }
 
+        public override async Task DeleteFile(string file)
+        {
+            var blobUri = new Uri(file).AbsolutePath;
+
+            var substr = blobUri.Substring(1);
+
+            var containerName = substr.Substring(0, substr.IndexOf('/'));
+
+            CloudBlobContainer container = await LoadBlobContainer(containerName);
+
+            var path = substr.Substring(containerName.Length + 1);
+
+            var blob = await container.GetBlobReferenceFromServerAsync(path);
+
+            await blob.DeleteIfExistsAsync();
+
+        }
+
         private async Task IterateBlobItems(Func<CloudBlob, Task> loader, string containerName)
         {
             CloudBlobContainer container = await LoadBlobContainer(containerName);

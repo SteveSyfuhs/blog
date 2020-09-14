@@ -479,6 +479,11 @@ namespace blog
             return q.ToLowerInvariant().Split(' ', ',', ';', ':', '=', '+', '-').Except(StopWords).Select(w => Regex.Escape(w));
         }
 
+        public virtual Task DeleteFile(string file)
+        {
+            return Task.CompletedTask;
+        }
+
         private static readonly string[] StopWords = new[]
         {
             "a",
