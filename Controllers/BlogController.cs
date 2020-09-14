@@ -1,6 +1,7 @@
 ﻿using blog.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.SyndicationFeed;
@@ -223,6 +224,34 @@ namespace blog.Models
             var images = await _blog.ListImages();
 
             return View("images", images);
+        }
+
+        [Route("/edit/upload")]
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UploadEditorImage(IFormFile file)
+        {
+            const long maxUploadSize = 10L * 1024L * 1024L * 1024L;
+
+            if (!ModelState.IsValid)
+            {
+                return View("images");
+            }
+
+            string name = null;
+
+            var formFileContent = await FileHelpers.ProcessFormFile<ImagesModel>(
+                    file,
+                    ModelState, new[] { ".jpg", ".jpeg", ".png", ".gif", ".jfif" },
+                    maxUploadSize
+                );
+
+            if (formFileContent.Length > 0)
+            {
+                name = await UploadImage(formFileContent, file.FileName);
+            }
+
+            return Json(new { location = name });
         }
 
         [Route("/edit/images")]

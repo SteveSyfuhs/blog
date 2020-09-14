@@ -21,6 +21,8 @@
             convert_urls: false,
             branding: false,
 
+            images_upload_url: '/edit/upload',
+
             setup: function (editor) {
                 editor.addButton('imageupload', {
                     icon: "image",
