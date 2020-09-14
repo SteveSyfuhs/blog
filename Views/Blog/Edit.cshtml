@@ -34,6 +34,10 @@
     <span class="desc" id="desc_slug">The URL of the post media</span>
     <br />
 
+    <label asp-for="@Model.HeroImageUrl" class="label">Hero Media Url</label>
+    <input asp-for="@Model.HeroImageUrl" placeholder="The Hero Media Url" aria-describedby="desc_media" />
+    <span class="desc" id="desc_slug">The URL of the post media</span>
+    <br />
 
     <label for="categories" class="label">Tags</label>
     <input type="text" name="categories" id="categories" value="@string.Join(", ", Model.Categories)" aria-describedby="desc_categories" />

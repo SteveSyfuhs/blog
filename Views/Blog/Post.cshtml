@@ -24,7 +24,7 @@
     }
     else
     {
-        <header class="media" style="background-image: url(@Model.GetMedia())">
+        <header class="media" style="background-image: url(@Model.GetMedia(BlogMediaType.PostPrimary))">
             <div>
                 <h1 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h1>
                 <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>

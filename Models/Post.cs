@@ -43,6 +43,8 @@ namespace blog.Models
 
         public string MediaUrl { get; set; }
 
+        public string HeroImageUrl { get; set; }
+
         public bool IsPublished { get; set; } = true;
 
         public IList<string> Categories { get; set; } = new List<string>();
@@ -115,14 +117,18 @@ namespace blog.Models
             return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
         }
 
-        public string GetMedia()
+        public string GetMedia(BlogMediaType type)
         {
-            if (string.IsNullOrWhiteSpace(MediaUrl))
+            var mediaUrl = type switch
+            {
+                BlogMediaType.PostBackground => HeroImageUrl,
+                _ => MediaUrl,
+            };
+
+            if (string.IsNullOrWhiteSpace(mediaUrl))
             {
                 return null;
             }
-
-            var mediaUrl = MediaUrl;
 
             foreach (var rep in HardReplace)
             {

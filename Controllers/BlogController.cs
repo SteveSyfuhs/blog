@@ -405,7 +405,7 @@ namespace blog.Models
             meta.MetaTags["twitter:creator"] = new Meta { Attribute = "content", Value = _settings.Value.Twitter };
             meta.MetaTags["twitter:title"] = new Meta { Attribute = "content", Value = post.Title };
             meta.MetaTags["twitter:description"] = new Meta { Attribute = "content", Value = post.Excerpt };
-            meta.MetaTags["twitter:image"] = new Meta { Attribute = "content", Value = post.GetMedia() };
+            meta.MetaTags["twitter:image"] = new Meta { Attribute = "content", Value = post.GetMedia(BlogMediaType.PostPrimary) };
         }
 
         [Route("/edit/{id?}")]
@@ -455,6 +455,15 @@ namespace blog.Models
             else
             {
                 existing.MediaUrl = null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(post.HeroImageUrl))
+            {
+                existing.HeroImageUrl = new Uri(post.HeroImageUrl.Trim()).OriginalString;
+            }
+            else
+            {
+                existing.HeroImageUrl = null;
             }
 
             await _blog.SavePost(existing);
