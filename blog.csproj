@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArinWhois.NetStandard" Version="0.3.0" />
+    <PackageReference Include="Arin.NET" Version="1.1.3" />
     <PackageReference Include="Azure.ImageOptimizer" Version="1.1.0.39">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

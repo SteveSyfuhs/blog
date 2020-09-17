@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using ArinWhois.Client;
-using ArinWhois.Model;
+using Arin.NET.Client;
+using Arin.NET.Entities;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 
@@ -15,7 +16,7 @@ namespace blog
         private readonly TelemetryClient client;
 
         internal static readonly ConcurrentDictionary<string, AddressCacheItem> Cache = new ConcurrentDictionary<string, AddressCacheItem>();
-        private static readonly TimeSpan Lifetime = TimeSpan.FromDays(3);
+        private static readonly TimeSpan Lifetime = TimeSpan.FromDays(1);
 
         public ArinMiddleware(RequestDelegate next, TelemetryClient client)
         {
@@ -55,17 +56,22 @@ namespace blog
 
             var client = new ArinClient();
 
-            var ipResponse = await client.QueryIpAsync(remoteAddr);
+            var ipResponse = await client.Query(remoteAddr);
 
-            if (ipResponse == null)
+            if (ipResponse is IpResponse response)
             {
+                return CacheResult(remoteAddr, response);
+            }
+            else if (ipResponse is ErrorResponse error)
+            {
+                this.client.TrackException(new HttpRequestException(error?.Title ?? "Unknown HTTP error"));
                 return default;
             }
 
-            return CacheResult(remoteAddr, ipResponse);
+            return default;
         }
 
-        private static AddressCacheItem CacheResult(IPAddress remoteAddr, Response ipResponse)
+        private static AddressCacheItem CacheResult(IPAddress remoteAddr, IpResponse ipResponse)
         {
             var value = new AddressCacheItem
             {
@@ -119,7 +125,7 @@ namespace blog
 
         internal struct AddressCacheItem
         {
-            public Response Value { get; set; }
+            public IpResponse Value { get; set; }
 
             public DateTimeOffset Created { get; set; }
         }
