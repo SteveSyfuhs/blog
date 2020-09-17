@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: windows-latest
 
 variables:
   buildConfiguration: 'Release'
@@ -27,10 +27,9 @@ steps:
     arguments: install --tool-path . nbgv
   displayName: Install NBGV tool
 
-#- script: export PATH=$HOME/.dotnet/tools:$PATH
-#  displayName: Set path
-#- script: nbgv cloud
-#  displayName: Set Version    
+- script: nbgv cloud
+  displayName: Set Version
+
 - script: dotnet build blog.sln --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
