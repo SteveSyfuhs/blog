@@ -18,8 +18,13 @@ namespace blog
                 Cache.TryGetValue(telemetry.Context.Location.Ip, out AddressCacheItem value) &&
                 !propTelemetry.Properties.ContainsKey("org"))
             {
-                propTelemetry.Properties.Add("org", value.Value?.Organization?.Name?.Value);
-                //propTelemetry.Properties.Add("client-ip", clientIPValue);
+                var orgName = value.Value?.Organization?.Name?.Value ??
+                              value.Value?.Network?.OrgRef?.Name;
+
+                if (!string.IsNullOrWhiteSpace(orgName))
+                {
+                    propTelemetry.Properties.Add("org", orgName);
+                }
             }
         }
     }
