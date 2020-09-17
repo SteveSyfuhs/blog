@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ArinWhois.Client;
 using ArinWhois.Model;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 
 namespace blog
@@ -11,20 +12,29 @@ namespace blog
     internal class ArinMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly TelemetryClient client;
 
         internal static readonly ConcurrentDictionary<string, AddressCacheItem> Cache = new ConcurrentDictionary<string, AddressCacheItem>();
         private static readonly TimeSpan Lifetime = TimeSpan.FromDays(3);
 
-        public ArinMiddleware(RequestDelegate next)
+        public ArinMiddleware(RequestDelegate next, TelemetryClient client)
         {
             _next = next;
+            this.client = client;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
             var remoteAddr = context.Connection.RemoteIpAddress;
 
-            await LookupAddress(remoteAddr);
+            try
+            {
+                await LookupAddress(remoteAddr);
+            }
+            catch (Exception ex)
+            {
+                client.TrackException(ex);
+            }
 
             await _next(context);
         }
@@ -52,7 +62,7 @@ namespace blog
                 return default;
             }
 
-           return CacheResult(remoteAddr, ipResponse);
+            return CacheResult(remoteAddr, ipResponse);
         }
 
         private static AddressCacheItem CacheResult(IPAddress remoteAddr, Response ipResponse)
