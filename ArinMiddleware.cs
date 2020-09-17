@@ -15,8 +15,10 @@ namespace blog
         private readonly RequestDelegate _next;
         private readonly TelemetryClient client;
 
-        internal static readonly ConcurrentDictionary<string, AddressCacheItem> Cache = new ConcurrentDictionary<string, AddressCacheItem>();
         private static readonly TimeSpan Lifetime = TimeSpan.FromDays(1);
+
+        internal static readonly ConcurrentDictionary<string, AddressCacheItem> Cache = new ConcurrentDictionary<string, AddressCacheItem>();
+        internal static readonly DateTimeOffset Start = DateTimeOffset.UtcNow;
 
         public ArinMiddleware(RequestDelegate next, TelemetryClient client)
         {

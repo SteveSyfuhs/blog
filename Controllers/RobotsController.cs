@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static blog.ArinMiddleware;
 
 namespace blog
 {
@@ -41,6 +42,24 @@ namespace blog
         public IActionResult AggBug()
         {
             return Redirect("~/");
+        }
+
+        [Route("/status")]
+        public async Task<IActionResult> Status()
+        {
+            var ip = this.HttpContext.Connection.RemoteIpAddress.ToString();
+
+            Cache.TryGetValue(ip, out AddressCacheItem value);
+
+            return Json(new
+            {
+                Cache.Count,
+                Uptime = (DateTimeOffset.UtcNow - Start).ToString(),
+                PostCount = await _blog.GetPostCount(),
+                Caller = ip,
+                this.HttpContext.Connection.Id,
+                Network = value.Value
+            });
         }
 
         [Route("/robots.txt")]

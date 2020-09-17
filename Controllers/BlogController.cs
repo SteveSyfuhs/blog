@@ -51,7 +51,7 @@ namespace blog.Models
 
         [Route("/{page:int?}")]
         [OutputCache(Profile = "default")]
-        public async Task<IActionResult> Index([FromRoute]int page = 0)
+        public async Task<IActionResult> Index([FromRoute] int page = 0)
         {
             var skip = _settings.Value.PostsPerPage * page;
 
