@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore;
+﻿using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -89,6 +90,8 @@ namespace blog
                 pipeline.CompileScssFiles()
                         .InlineImages(1);
             });
+
+            services.AddSingleton<ITelemetryInitializer, ArinTelemetry>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -102,6 +105,8 @@ namespace blog
             app.UseStatusCodePagesWithReExecute("/error/{0}");
 
             app.UseWebOptimizer();
+
+            app.UseMiddleware<ArinMiddleware>();
 
             app.UseStaticFiles(new StaticFileOptions()
             {
