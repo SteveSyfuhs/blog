@@ -62,12 +62,12 @@ namespace blog
 
             var common = new string(CommonDomain(domains));
 
-            if (string.IsNullOrWhiteSpace(common))
+            if (domains.Contains(common))
             {
-                return domains.FirstOrDefault();
+                return common;
             }
 
-            return common;
+            return domains.FirstOrDefault();
         }
 
         private static void ExtractDomain(List<string> domains, Entity entity)
