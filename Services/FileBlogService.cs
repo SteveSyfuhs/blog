@@ -420,6 +420,8 @@ namespace blog
 
         public Task<SearchResults> Search(string q, int skip, int take)
         {
+            var isAdmin = IsAdmin();
+
             var words = SplitWords(q);
 
             var searchResults = new List<KeyValuePair<int, Post>>();
@@ -436,6 +438,11 @@ namespace blog
 
                 foreach (var post in _cache)
                 {
+                    if (!post.IsPublished && !isAdmin)
+                    {
+                        continue;
+                    }
+
                     var count = 0;
 
                     if (post.Slug.Contains(q, StringComparison.InvariantCultureIgnoreCase))
@@ -458,7 +465,7 @@ namespace blog
 
             if (!searchable)
             {
-                results = _cache.Select(c => KeyValuePair.Create(0, c));
+                results = _cache.Where(p => p.IsPublished || isAdmin).Select(c => KeyValuePair.Create(0, c));
             }
 
             var total = results.Count();
