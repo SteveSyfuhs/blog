@@ -56,11 +56,18 @@ namespace blog
                 var entity = entities[i];
 
                 entities.AddRange(entity.Entities);
-                
+
                 ExtractDomain(domains, entity);
             }
 
-            return new string(CommonDomain(domains).Reverse().ToArray());
+            var common = new string(CommonDomain(domains));
+
+            if (string.IsNullOrWhiteSpace(common))
+            {
+                return domains.FirstOrDefault();
+            }
+
+            return common;
         }
 
         private static void ExtractDomain(List<string> domains, Entity entity)
@@ -75,7 +82,7 @@ namespace blog
                     {
                         var domain = email.Substring(indexOf + 1);
 
-                        domains.Add(new string(domain.Reverse().ToArray()));
+                        domains.Add(domain);
                     }
                 }
             }
@@ -83,10 +90,13 @@ namespace blog
 
         private static string CommonDomain(IEnumerable<string> list)
         {
-            var chars = list.First().Substring(0, list.Min(s => s.Length))
-                            .TakeWhile((c, i) => list.All(s => s[i] == c)).ToArray();
+            var reversed = list.Distinct().Select(s => new string(s.Reverse().ToArray()));
 
-            return new string(chars);
+            var chars = reversed
+                            .First().Substring(0, reversed.Min(s => s.Length))
+                            .TakeWhile((c, i) => reversed.All(s => s[i] == c)).ToArray();
+
+            return new string(chars.Reverse().ToArray());
         }
 
         private static string TryGetOrgName(IpResponse value)
