@@ -68,8 +68,15 @@ namespace blog
         {
             string host = Request.Scheme + "://" + Request.Host;
             var sb = new StringBuilder();
+            
+            sb.AppendLine("User-agent: dotbot");
+            sb.AppendLine("Disallow: /");
+            sb.AppendLine("User-agent: rogerbot");
+            sb.AppendLine("Disallow: /");
             sb.AppendLine("User-agent: *");
             sb.AppendLine("Disallow:");
+            
+            
             sb.AppendLine($"sitemap: {host}/sitemap.xml");
 
             return sb.ToString();
