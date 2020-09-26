@@ -83,26 +83,58 @@
                 var data = [];
 
                 var averages = [];
-                var current = 0;
+                
+                var getAverage = function(myJson, i) {
+                    var record = myJson[i];
+
+                    if (typeof record === 'undefined') {
+                        return null;
+                    }
+
+                    dataPoint = factor(record[unit]);
+
+                    return {dataPoint: dataPoint, record: record};
+                }
 
                 for (var i in myJson) {
                     var index = parseInt(i);
-                    var record = myJson[index];
 
-                    if (typeof record === 'undefined') {
+                    var result = getAverage(myJson, index);
+
+                    if (result === null) {
                         break;
                     }
 
-                    var dataPoint = factor(record[unit]);
-
-                    current += dataPoint;
-
-                    var t = new Date(record.time * 1000);
+                    var t = new Date(result.record.time * 1000);
 
                     labels[index] = t;
-                    data[index] = { y: dataPoint, x: t };
+                    data[index] = { y: result.dataPoint, x: t };
 
-                    var avg = current / (index + 1);
+                    var avgS = 0;
+                    var s;
+
+                    var count = 0;
+
+                    for (s = -10; s < 10; s++) {
+                        if (myJson.length <= s) {
+                            break;
+                        }
+
+                        var nextPosition = index + s;
+
+                        if (nextPosition < 0) {
+                            nextPosition = 0;
+                        }
+
+                        var current = getAverage(myJson, nextPosition);
+
+                        if (current !== null) {
+                            avgS += current.dataPoint;
+                            count++;
+                        }
+                    }
+
+                    var avg = avgS / count;
 
                     averages[index] = { y: avg, x: t };
                 }
@@ -124,7 +156,7 @@
                         {
                             label: unitLabel + ' (average)',
                             data: averages,
-                            }]
+                        }]
                     },
 
                     options: {

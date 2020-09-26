@@ -16,8 +16,8 @@ namespace blog
 {
     public class RobotsController : Controller
     {
-        private IBlogService _blog;
-        private IOptionsSnapshot<BlogSettings> _settings;
+        private readonly IBlogService _blog;
+        private readonly IOptionsSnapshot<BlogSettings> _settings;
 
         public RobotsController(IBlogService blog, IOptionsSnapshot<BlogSettings> settings)
         {
@@ -25,6 +25,13 @@ namespace blog
             _settings = settings;
         }
 
+        [Route("/old/{path?}")]
+        [Route("/new/{path?}")]
+        [Route("/wordpress/{path?}")]
+        [Route("/demo/{path?}")]
+        [Route("/site/{path?}")]
+        [Route("/wallet.dat")]
+        [Route("/bitcoin/{path?}")]
         [Route("/wp-admin/{path?}")]
         [Route("{file}.php")]
         [Route("/wp-json/wp/v2/{resource?}")]
@@ -35,6 +42,7 @@ namespace blog
             return new EmptyResult();
         }
 
+        [Route("/post.aspx")]
         [Route("/index.php")]
         [Route("/aggbug.ashx")]
         [Route("/article/{id}.aspx")]
