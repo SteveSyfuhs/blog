@@ -199,15 +199,15 @@ time {
     }
 
     blockquote {
-        border-top: 1px solid $comments_border-color;
-        border-bottom: 1px solid $comments_border-color;
+        border: 1px solid $comments_border-color;
+        border-left: 3px solid $link_color;
         color: lighten($text_color, 30%);
-        font-size: 1.3em;
-        width: 90%;
+        font-size: 1.2em;
+        width: 95%;
         margin: 1.5em auto;
-        font-style: italic;
         font-weight: lighter;
-        padding: 0.6em 0;
+        padding: .6em 0 .6em 0.3em;
+        background-color: $comments_bg_color;
 
         p {
             margin: 0 .5em;

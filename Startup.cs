@@ -1,4 +1,5 @@
-﻿using Microsoft.ApplicationInsights.Extensibility;
+﻿using blog.Rewrite;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
@@ -130,6 +131,13 @@ namespace blog
                 rewriter.Add(new StripWwwRule());
             }
 
+            var azWebRedirect = Configuration.GetValue<string>("redirectazweb");
+
+            if (!string.IsNullOrWhiteSpace(azWebRedirect))
+            {
+                rewriter.Add(new RedirectAzWebRule(azWebRedirect));
+            }
+
             if (rewriter.Rules.Count > 0)
             {
                 app.UseRewriter(rewriter);
@@ -151,27 +159,6 @@ namespace blog
                     pattern: "{controller=Blog}/{action=Index}/{id?}"
                 );
             });
-        }
-
-        private class StripWwwRule : IRule
-        {
-            public void ApplyRule(RewriteContext context)
-            {
-                HttpRequest request = context.HttpContext.Request;
-
-                if (request.Host.Value.StartsWith("www.", StringComparison.OrdinalIgnoreCase))
-                {
-                    var target = request.Host.Value.Substring(4);
-
-                    string redirectUrl = $"{request.Scheme}://{target}{request.Path}{request.QueryString}";
-
-                    context.HttpContext.Response.Headers[HeaderNames.Location] = redirectUrl;
-                    context.HttpContext.Response.StatusCode = StatusCodes.Status302Found;
-
-                    context.Result = RuleResult.EndResponse;
-                }
-            }
-
         }
     }
 }
