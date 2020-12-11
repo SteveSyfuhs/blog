@@ -1,0 +1,14 @@
+﻿@model Author
+
+<div class="author-detail">
+    <div class="row">
+        <div class="author-left col-3">
+            <img src="@Model.ImageUrl" alt="@Model.Name" />
+        </div>
+        <div class="author-right col-6">
+            <h3>About @Model.Name</h3>
+
+            @Html.Raw(Model.Description)
+        </div>
+    </div>
+</div>

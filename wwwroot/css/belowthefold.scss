@@ -486,3 +486,23 @@ section#comments .container {
         font-family: inherit;
     }
 }
+
+.author-detail {
+    margin: 25px 0;
+    padding: 25px 0;
+    background: #f7f7f7;
+
+    .author-left {
+        text-align: center;
+
+        img {
+            max-width: 200px;
+        }
+    }
+
+    .author-right {
+        h3 {
+            margin: 0 0 8px 0;
+        }
+    }
+}

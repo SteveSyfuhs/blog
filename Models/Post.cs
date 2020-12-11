@@ -51,6 +51,10 @@ namespace blog.Models
 
         public IList<Comment> Comments { get; } = new List<Comment>();
 
+        public Author Author { get; set; }
+
+        public bool IncludeAuthor { get; set; }
+
         public string GetLink()
         {
             if (Slug.StartsWith('/'))

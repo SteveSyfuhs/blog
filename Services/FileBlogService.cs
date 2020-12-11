@@ -109,6 +109,8 @@ namespace blog
         {
             var post = _cache.FirstOrDefault(p => SlugEquals(slug, p));
 
+            post.Author = GetAuthor();
+
             bool isAdmin = IsAdmin();
 
             if (post != null && post.PubDate <= DateTime.UtcNow && (post.IsPublished || isAdmin))
@@ -117,6 +119,23 @@ namespace blog
             }
 
             return Task.FromResult<Post>(null);
+        }
+
+        private Author GetAuthor()
+        {
+            var authorPost = _cache.FirstOrDefault(c => SlugEquals("author-footer", c) && c.Type == PostType.Page && c.IsPublished);
+
+            if (authorPost == null)
+            {
+                return null;
+            }
+
+            return new Author
+            {
+                Name = authorPost.Title,
+                Description = authorPost.Content,
+                ImageUrl = authorPost.MediaUrl
+            };
         }
 
         private static bool SlugEquals(string slug, Post p)
@@ -183,7 +202,8 @@ namespace blog
                                 new XElement("content", post.Content),
                                 new XElement("ispublished", post.IsPublished),
                                 new XElement("categories", string.Empty),
-                                new XElement("comments", string.Empty)
+                                new XElement("comments", string.Empty),
+                                new XElement("includeAuthor", post.IncludeAuthor)
                             ));
 
             XElement categories = doc.XPathSelectElement("post/categories");
@@ -316,6 +336,7 @@ namespace blog
                 PubDate = DateTime.Parse(ReadValue(doc, "pubDate")),
                 LastModified = DateTime.Parse(ReadValue(doc, "lastModified", DateTime.Now.ToString())),
                 IsPublished = bool.Parse(ReadValue(doc, "ispublished", "true")),
+                IncludeAuthor = bool.Parse(ReadValue(doc, "includeAuthor", "true"))
             };
 
             LoadCategories(post, doc);
@@ -366,7 +387,9 @@ namespace blog
         private static string ReadValue(XElement doc, XName name, string defaultValue = "")
         {
             if (doc.Element(name) != null)
+            {
                 return doc.Element(name).Value;
+            }
 
             return defaultValue;
         }

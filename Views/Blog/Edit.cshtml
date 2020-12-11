@@ -49,6 +49,10 @@
     <span class="desc" id="desc_excerpt">A brief description of the content of the post</span>
     <br />
 
+    <input asp-for="@Model.IncludeAuthor" />
+    <label asp-for="@Model.IncludeAuthor">Include Author</label>
+    <br />
+
     <textarea asp-for="@Model.Content" rows="20" aria-label="Content">@Model.Content</textarea>
     <br />
 

@@ -447,6 +447,7 @@ namespace blog.Models
             existing.Content = post.Content.Trim();
             existing.Excerpt = post.Excerpt.Trim();
             existing.Type = post.Type;
+            existing.IncludeAuthor = post.IncludeAuthor;
 
             if (!string.IsNullOrWhiteSpace(post.MediaUrl))
             {
