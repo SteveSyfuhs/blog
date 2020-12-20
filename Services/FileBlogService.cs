@@ -109,12 +109,12 @@ namespace blog
         {
             var post = _cache.FirstOrDefault(p => SlugEquals(slug, p));
 
-            post.Author = GetAuthor();
-
             bool isAdmin = IsAdmin();
 
             if (post != null && post.PubDate <= DateTime.UtcNow && (post.IsPublished || isAdmin))
             {
+                post.Author = GetAuthor();
+
                 return Task.FromResult(post);
             }
 
