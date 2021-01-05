@@ -414,7 +414,7 @@ namespace blog.Models
         {
             if (string.IsNullOrEmpty(id))
             {
-                return View(new Post());
+                return View(new Post() { IncludeAuthor = true });
             }
 
             var post = await _blog.GetPostById(id);

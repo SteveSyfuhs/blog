@@ -178,7 +178,9 @@ namespace blog
                 .Where(p => p.IsPublished || isAdmin)
                 .SelectMany(post => post.Categories)
                 .Select(cat => cat.ToLowerInvariant())
-                .Distinct();
+                .GroupBy(c => c)
+                .OrderByDescending(c => c.Count())
+                .Select(s => s.Key);
 
             return Task.FromResult(categories);
         }
