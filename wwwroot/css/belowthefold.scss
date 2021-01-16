@@ -77,6 +77,17 @@ iframe {
     font-family: Raleway,Arial,sans-serif;
 }
 
+.post > div ul {
+    li {
+        text-indent: 0;
+    }
+
+    li:before {
+        content: " ";
+        margin-right: 0;
+    }
+}
+
 .categories {
     list-style: none;
     display: inline;
@@ -84,10 +95,18 @@ iframe {
 
     li {
         display: inline-block;
-
+        /*margin-right: 5px;*/
         &:not(:first-child):not(:last-child):after {
             content: ", ";
         }
+    }
+
+    .cat-count {
+        color: #aaa;
+        background-color: #555;
+        font-weight: bold;
+        padding: 5px 5px 4px 5px;
+        margin: 0 5px;
     }
 }
 
@@ -157,18 +176,18 @@ iframe {
 
         .categories {
             min-width: 33%;
+            margin-bottom: 10px;
 
             h3 {
                 width: 100%;
                 padding-bottom: 5px;
-                /*padding-right: 25px;*/
                 border-bottom: 3px solid $accent_color;
                 display: inline-block;
             }
 
             li {
-                background-color: #363636;
-                padding: 7px 5px;
+                background-color: #444;
+                padding: 7px 1px 5px 7px;
                 margin: 7px 4px 7px 0;
                 font-size: 13px !important;
                 text-transform: capitalize;
@@ -185,6 +204,13 @@ iframe {
 
             li.build-version {
                 text-transform: none;
+                background: none;
+            }
+
+            .signin {
+                li {
+                    padding-right: 7px;
+                }
             }
         }
     }
@@ -492,6 +518,11 @@ section#comments .container {
     margin: 25px 0;
     padding: 25px 0;
     background: #f7f7f7;
+
+    a {
+        color: $link_color !important;
+        border: none !important;
+    }
 
     .author-left {
         text-align: center;

@@ -105,7 +105,7 @@
                             @foreach (var cat in await service.GetCategories())
                             {
                                 <li>
-                                    <a href="/category/@cat">@cat</a>
+                                    <a href="/category/@cat.Category">@cat.Category <span class="cat-count">@cat.Count</span></a>
                                 </li>
                             }
                         </ul>
@@ -127,21 +127,20 @@
                     <li class="categories">
                         <h3>Actions</h3>
 
-                        <ul>
+                        <ul class="signin">
                             @{
                                 if (User.Identity.IsAuthenticated)
                                 {
                                     <li><a asp-controller="Blog" asp-action="Edit">New post</a></li>
-                                    <li>
-                                        <ul>
-                                            <li><a href="~/logout/" title="Sign out as administrator">Sign out</a></li>
-                                            <li><a href="~/account/status" title="View sign in status">Sign In Status</a></li>
-                                        </ul>
-                                    </li>
+
+                                    <li><a href="~/logout/" title="Sign out as administrator">Sign out</a></li>
+                                    <li><a href="~/account/status" title="View sign in status">Sign In Status</a></li>
                                 }
                                 else
                                 {
-                                    <li><a href="~/login/?returnUrl=@Context.Request.Path" rel="nofollow" title="Sign in as administrator">Sign in</a></li>
+                                    <li>
+                                        <a href="~/login/?returnUrl=@Context.Request.Path" rel="nofollow" title="Sign in as administrator">Sign in</a>
+                                    </li>
                                 }
                             }
                         </ul>

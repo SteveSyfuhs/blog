@@ -8,7 +8,7 @@ namespace blog
     {
         BlogSettings Settings { get; }
 
-        Task<int> GetPostCount();
+        Task<int> GetPostCount(bool includePages);
 
         Task<IEnumerable<Post>> GetPosts(int count, int skip = 0);
 
@@ -20,7 +20,7 @@ namespace blog
 
         Task<Post> GetPostById(string id);
 
-        Task<IEnumerable<string>> GetCategories();
+        Task<IEnumerable<(string Category, int Count)>> GetCategories();
 
         Task SavePost(Post post);
 

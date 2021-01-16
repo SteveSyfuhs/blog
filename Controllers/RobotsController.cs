@@ -63,7 +63,7 @@ namespace blog
             {
                 Cache.Count,
                 Uptime = (DateTimeOffset.UtcNow - Start).ToString(),
-                PostCount = await _blog.GetPostCount(),
+                PostCount = await _blog.GetPostCount(includePages: true),
                 Caller = ip,
                 this.HttpContext.Connection.Id,
                 Network = value.Value

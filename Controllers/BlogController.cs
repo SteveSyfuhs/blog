@@ -61,7 +61,7 @@ namespace blog.Models
             ViewData["Description"] = _settings.Value.Description;
 
             var postCount = posts.Count();
-            var allPostsCount = await _blog.GetPostCount();
+            var allPostsCount = await _blog.GetPostCount(includePages: false);
 
             if (skip + postCount < allPostsCount)
             {

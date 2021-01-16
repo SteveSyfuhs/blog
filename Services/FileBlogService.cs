@@ -25,9 +25,21 @@ namespace blog
 
         public BlogSettings Settings { get; }
 
-        public Task<int> GetPostCount()
+        public Task<int> GetPostCount(bool includePages)
         {
-            return Task.FromResult(_cache.Count);
+            var posts = _cache.AsEnumerable();
+
+            if (!includePages)
+            {
+                posts = posts.Where(p => p.Type != PostType.Page);
+            }
+
+            if (!IsAdmin())
+            {
+                posts = posts.Where(p => p.IsPublished);
+            }
+
+            return Task.FromResult(posts.Count());
         }
 
         public void ResetCache()
@@ -170,7 +182,7 @@ namespace blog
             return Task.FromResult<Post>(null);
         }
 
-        public virtual Task<IEnumerable<string>> GetCategories()
+        public virtual Task<IEnumerable<(string Category, int Count)>> GetCategories()
         {
             bool isAdmin = IsAdmin();
 
@@ -180,7 +192,7 @@ namespace blog
                 .Select(cat => cat.ToLowerInvariant())
                 .GroupBy(c => c)
                 .OrderByDescending(c => c.Count())
-                .Select(s => s.Key);
+                .Select(s => (s.Key, s.Count()));
 
             return Task.FromResult(categories);
         }

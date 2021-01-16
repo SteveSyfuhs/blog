@@ -10,9 +10,10 @@
     <link rel="canonical" href="@(host + Model.GetLink())" />
 }
 
-<article class="post container" itemscope itemtype="http://schema.org/BlogPosting" itemprop="blogPost">
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting" itemprop="blogPost">
     @if (string.IsNullOrWhiteSpace(Model.MediaUrl))
     {
+    <div class="container">
         <header class="no-media">
             <h1 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h1>
             <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
@@ -21,24 +22,29 @@
                 <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
             }
         </header>
+    </div>
     }
     else
     {
         <header class="media" style="background-image: url(@Model.GetMedia(BlogMediaType.PostPrimary))">
-            <div>
-                <h1 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h1>
-                <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
-                }
-                @if (Model.Excerpt?.Length <= 300)
-                {
-                    <div class="excerpt">@Model.Excerpt</div>
-                }
+            <div class="container">
+                <div class="header-inner">
+                    <h1 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h1>
+                    <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
+                    }
+                    @if (Model.Excerpt?.Length <= 300)
+                    {
+                        <div class="excerpt">@Model.Excerpt</div>
+                    }
+                </div>
             </div>
         </header>
     }
+
+<div class="container">
 
     <div itemprop="articleBody mainEntityOfPage" class="article-body" cdnify>
         @Html.Raw(Model.RenderContent())
@@ -73,6 +79,7 @@
         <meta itemprop="dateModified" content="@Model.LastModified.ToString("s")" />
         <meta itemprop="mainEntityOfPage" content="@(host + Model.GetLink())" />
     </footer>
+</div>
 </article>
 
 @if (showFullPost && Model.Type == PostType.Post)

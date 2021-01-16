@@ -38,14 +38,16 @@
             </ul>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
-        {
-            <a rel="prev" href="@ViewData["prev"]" title="Older posts">&laquo; Back</a>
-        }
+
 
         @if (Model.Page > 0)
         {
-            <a rel="next" href="@ViewData["next"]" title="Newer posts">Forward &raquo;</a>
+            <a rel="next" href="@ViewData["next"]" title="Go back">&laquo;  Back</a>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
+        {
+            <a rel="prev" href="@ViewData["prev"]" title="More posts">More &raquo;</a>
         }
 
         @section Head {
