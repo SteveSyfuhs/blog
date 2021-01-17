@@ -518,6 +518,11 @@ section#comments .container {
     margin: 25px 0;
     padding: 25px 0;
     background: #f7f7f7;
+    border: 1px solid #dee2e6;
+
+    p {
+        margin: 0.3em !important;
+    }
 
     a {
         color: $link_color !important;
@@ -535,6 +540,14 @@ section#comments .container {
     .author-right {
         h3 {
             margin: 0 0 8px 0;
+        }
+
+        @media (min-width: 1200px) {
+            padding: 0;
+
+            .container {
+                padding: 0;
+            }
         }
     }
 }

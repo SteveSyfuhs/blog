@@ -207,15 +207,13 @@ time {
     }
 
     blockquote {
-        border: 1px solid $comments_border-color;
-        border-left: 3px solid $link_color;
-        color: lighten($text_color, 30%);
-        font-size: 1.2em;
+        border: none;
+        border-left: 3px solid darkorange;
+        color: #6f6f6f;
         width: 95%;
-        margin: 1.5em auto;
-        font-weight: lighter;
+        margin: 0 0 0 -1em;
+        font-weight: normal;
         padding: 1em 1em 1em 1.5em;
-        background-color: #f7f7f7;
 
         p {
             margin: 5px 15px 20px -5px;
@@ -323,6 +321,12 @@ time {
         header {
             background: none !important;
             margin: 0 auto;
+        }
+
+        .container {
+            .article-body {
+                max-width: 100%;
+            }
         }
     }
 }

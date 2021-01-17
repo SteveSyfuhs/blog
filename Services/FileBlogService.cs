@@ -187,11 +187,13 @@ namespace blog
             bool isAdmin = IsAdmin();
 
             var categories = _cache
+                .Where(p => p.Type == PostType.Post)
                 .Where(p => p.IsPublished || isAdmin)
                 .SelectMany(post => post.Categories)
                 .Select(cat => cat.ToLowerInvariant())
                 .GroupBy(c => c)
                 .OrderByDescending(c => c.Count())
+                .ThenBy(c => c.Key)
                 .Select(s => (s.Key, s.Count()));
 
             return Task.FromResult(categories);

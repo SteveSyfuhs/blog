@@ -13,16 +13,16 @@
 <article class="post" itemscope itemtype="http://schema.org/BlogPosting" itemprop="blogPost">
     @if (string.IsNullOrWhiteSpace(Model.MediaUrl))
     {
-    <div class="container">
-        <header class="no-media">
-            <h1 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h1>
-            <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
-            @if (User.Identity.IsAuthenticated)
-            {
-                <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
-            }
-        </header>
-    </div>
+        <div class="container">
+            <header class="no-media">
+                <h1 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h1>
+                <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
+                }
+            </header>
+        </div>
     }
     else
     {
@@ -44,42 +44,43 @@
         </header>
     }
 
-<div class="container">
+    <div class="container">
 
-    <div itemprop="articleBody mainEntityOfPage" class="article-body" cdnify>
-        @Html.Raw(Model.RenderContent())
+        <div itemprop="articleBody mainEntityOfPage" class="article-body" cdnify>
+            @Html.Raw(Model.RenderContent())
+        </div>
+
+        <footer>
+
+            @if (Model.Categories.Any())
+            {
+                <ul class="categories">
+                    <li> Posted in </li>
+                    @foreach (string cat in Model.Categories)
+                    {
+                        <li itemprop="articleSection"><a href="/category/@cat.ToLowerInvariant()">@cat</a></li>
+                    }
+                </ul>
+                <text>and has</text>
+            }
+
+            @if (Model.Type == PostType.Post)
+            {
+                <a href="@Model.GetLink()#commento" itemprop="discussionUrl" title="Go to the comments section">
+                    <span itemprop="commentCount">@Model.Comments.Count</span> comments
+                </a>
+            }
+
+            @if (Model.Author != null && Model.IncludeAuthor)
+            {
+                await Html.RenderPartialAsync("_AuthorComponent.cshtml", Model.Author);
+            }
+
+            <meta itemprop="author" content="@settings.Value.Owner" />
+            <meta itemprop="dateModified" content="@Model.LastModified.ToString("s")" />
+            <meta itemprop="mainEntityOfPage" content="@(host + Model.GetLink())" />
+        </footer>
     </div>
-
-    <footer>
-
-        @if (Model.Categories.Any())
-        {
-            <ul class="categories">
-                <li> Posted in </li>
-                @foreach (string cat in Model.Categories)
-                {
-                    <li itemprop="articleSection"><a href="/category/@cat.ToLowerInvariant()">@cat</a></li>
-                }
-            </ul>
-            <text>and has</text>
-        }
-        <a href="@Model.GetLink()#commento" itemprop="discussionUrl" title="Go to the comments section">
-            <span itemprop="commentCount">@Model.Comments.Count</span> comments
-        </a>
-
-
-
-        @if (Model.Author != null && Model.IncludeAuthor)
-        {
-            await Html.RenderPartialAsync("_AuthorComponent.cshtml", Model.Author);
-        }
-
-
-        <meta itemprop="author" content="@settings.Value.Owner" />
-        <meta itemprop="dateModified" content="@Model.LastModified.ToString("s")" />
-        <meta itemprop="mainEntityOfPage" content="@(host + Model.GetLink())" />
-    </footer>
-</div>
 </article>
 
 @if (showFullPost && Model.Type == PostType.Post)

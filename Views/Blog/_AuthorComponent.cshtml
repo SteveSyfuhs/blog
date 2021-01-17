@@ -6,9 +6,13 @@
             <img src="@Model.ImageUrl" alt="@Model.Name" class="img-thumbnail" />
         </div>
         <div class="author-right col-lg-8">
-            <h3>About @Model.Name</h3>
+            <div class="container">
+                <div class="row">
+                    <h3>About @Model.Name</h3>
 
-            @Html.Raw(Model.Description)
+                    @Html.Raw(Model.Description)
+                </div>
+            </div>
         </div>
     </div>
 </div>
