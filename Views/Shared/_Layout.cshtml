@@ -3,13 +3,30 @@
 @inject IOptionsSnapshot<BlogSettings> settings
 @inject IBlogService service
 
+@functions {
+    private static string GetVersion(Assembly assembly)
+    {
+        var version = assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .InformationalVersion
+            .ToString();
+
+        var plusIndex = version.LastIndexOf('+');
+
+        if (plusIndex > 0 && plusIndex + 12 <= version.Length)
+        {
+            version = version.Substring(0, plusIndex + 12);
+        }
+
+        return version;
+    }
+}
+
 @{
     var host = Context.Request.Scheme + "://" + Context.Request.Host;
 
-    var buildVersion = "v" + Assembly.GetEntryAssembly()
-                        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                        .InformationalVersion
-                        .ToString();
+    var buildVersion =   "v" + GetVersion(Assembly.GetEntryAssembly());
+    var runtimeVersion = "v" + GetVersion(Assembly.GetCallingAssembly());
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -116,7 +133,9 @@
 
                         <ul>
                             <li class="build-version">
-                                @buildVersion
+                                Blog: <span class="cat-count">@buildVersion</span>
+                                <br />
+                                Runtime: <span class="cat-count">@runtimeVersion</span>
                             </li>
                         </ul>
                     </li>
