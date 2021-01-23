@@ -42,7 +42,14 @@ namespace blog
 
         protected void InitializeSync()
         {
-            Task.Run(() => Initialize()).Wait();
+            var mre = new ManualResetEvent(false);
+
+            Initialize().ContinueWith(t =>
+            {
+                mre.Set();
+            });
+
+            mre.WaitOne(TimeSpan.FromSeconds(90));
         }
 
         public FileBlogService(IWebHostEnvironment env, IHttpContextAccessor contextAccessor, bool delayInitialize, BlogSettings settings)
@@ -318,7 +325,7 @@ namespace blog
 
         protected void LoadPost(string file, Stream stream)
         {
-            stream.Seek(0, SeekOrigin.Begin);
+            // stream.Seek(0, SeekOrigin.Begin);
 
             XElement doc = XElement.Load(stream);
 

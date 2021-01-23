@@ -1,14 +1,14 @@
-﻿using blog.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using blog.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace blog
 {
@@ -31,11 +31,19 @@ namespace blog
         {
             string filePath = $"{post.ID}.xml";
 
-            var container = await LoadBlobContainer(PostContainerName);
+            var container = LoadBlobContainer(PostContainerName);
 
-            CloudBlockBlob blob = container.GetBlockBlobReference(filePath);
+            var blob = container.GetBlobClient(filePath);
 
-            await blob.UploadTextAsync(doc.ToString());
+            using (var stream = new MemoryStream())
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write(doc.ToString());
+                writer.Flush();
+                stream.Position = 0;
+
+                await blob.UploadAsync(stream, overwrite: true);
+            }
         }
 
         private static readonly Dictionary<string, string> TrustedImageExtensions = new Dictionary<string, string>
@@ -56,26 +64,36 @@ namespace blog
 
             string relative = $"{name}_{suffix}.{ext}";
 
-            CloudBlobContainer container;
+            BlobContainerClient container;
 
             if (TrustedImageExtensions.TryGetValue(ext, out string contentType))
             {
-                container = await LoadBlobContainer(ImagesContainerName);
+                container = LoadBlobContainer(ImagesContainerName);
             }
             else
             {
-                container = await LoadBlobContainer(FilesContainerName);
+                container = LoadBlobContainer(FilesContainerName);
             }
 
-            var blob = container.GetBlockBlobReference(relative);
+            var blob = container.GetBlobClient(relative);
+
+            var options = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    CacheControl = "max-age=31536000"
+                }
+            };
 
             if (!string.IsNullOrWhiteSpace(contentType))
             {
-                blob.Properties.ContentType = contentType;
-                blob.Properties.CacheControl = "max-age=31536000";
+                options.HttpHeaders.ContentType = contentType;
             }
 
-            await blob.UploadFromByteArrayAsync(bytes, 0, bytes.Length);
+            using (var stream = new MemoryStream(bytes))
+            {
+                await blob.UploadAsync(stream, options);
+            }
 
             return blob.Uri.OriginalString;
         }
@@ -90,14 +108,14 @@ namespace blog
             var images = new List<ImageFile>();
 
             await IterateBlobItems(
-                blob =>
+                (blob, item) =>
                 {
                     images.Add(new ImageFile
                     {
                         Title = blob.Name,
                         Url = blob.Uri.OriginalString,
-                        Created = blob.Properties.Created ?? DateTimeOffset.MinValue,
-                        Size = blob.Properties.Length
+                        Created = item.Properties.CreatedOn ?? DateTimeOffset.MinValue,
+                        Size = item.Properties.ContentLength ?? 0
                     });
 
                     return Task.CompletedTask;
@@ -123,69 +141,44 @@ namespace blog
 
             var containerName = substr.Substring(0, substr.IndexOf('/'));
 
-            CloudBlobContainer container = await LoadBlobContainer(containerName);
+            var container = LoadBlobContainer(containerName);
 
             var path = substr.Substring(containerName.Length + 1);
 
-            var blob = await container.GetBlobReferenceFromServerAsync(path);
+            var blob = container.GetBlobClient(path);
 
             await blob.DeleteIfExistsAsync();
 
         }
 
-        private async Task IterateBlobItems(Func<CloudBlob, Task> loader, string containerName)
+        private async Task IterateBlobItems(Func<BlobClient, BlobItem, Task> loader, string containerName)
         {
-            CloudBlobContainer container = await LoadBlobContainer(containerName);
+            var container = LoadBlobContainer(containerName);
 
-            BlobContinuationToken continuationToken = null;
+            var blobs = container.GetBlobsAsync();
 
-            do
+            await foreach (var blobItem in blobs)
             {
-                var resultSegment = await container.ListBlobsSegmentedAsync(
-                    string.Empty,
-                    true,
-                    BlobListingDetails.Metadata,
-                    null,
-                    continuationToken,
-                    null,
-                    null
-                );
-
-                foreach (CloudBlob blobItem in resultSegment.Results)
-                {
-                    await loader(blobItem);
-                }
-
-                continuationToken = resultSegment.ContinuationToken;
-
+                await loader(container.GetBlobClient(blobItem.Name), blobItem);
             }
-            while (continuationToken != null);
         }
 
-        private async Task LoadPost(CloudBlob blob)
+        private async Task LoadPost(BlobClient blob, BlobItem item)
         {
             if (blob.Name.EndsWith(".xml"))
             {
                 using (var stream = new MemoryStream())
                 {
-                    await blob.DownloadToStreamAsync(stream);
+                    var downloaded = await blob.DownloadAsync();
 
-                    LoadPost(blob.Name, stream);
+                    LoadPost(blob.Name, downloaded.Value.Content);
                 }
             }
         }
 
-        private async Task<CloudBlobContainer> LoadBlobContainer(string containerName)
+        private BlobContainerClient LoadBlobContainer(string containerName)
         {
-            CloudStorageAccount account = CloudStorageAccount.Parse(Settings.ConnectionString);
-
-            CloudBlobClient client = account.CreateCloudBlobClient();
-
-            var container = client.GetContainerReference(containerName);
-
-            await container.CreateIfNotExistsAsync();
-
-            return container;
+            return new BlobContainerClient(Settings.ConnectionString, containerName);
         }
     }
 }
