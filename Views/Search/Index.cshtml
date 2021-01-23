@@ -18,7 +18,12 @@
 <nav class="container search-page">
 
     <form action="/search" method="get">
-        <input class="searchbox" type="search" name="q" value="@Model?.Query" placeholder="Search..." maxlength="100" autofocus />
+
+        <input id="q" class="searchbox" name="q" type="search" maxlength="1000" 
+               autocapitalize="off" autocomplete="off" spellcheck="false" 
+               title="Enter your search term" autofocus="autofocus"
+               aria-autocomplete="both" 
+               value="@Model?.Query" placeholder="Search..." />
     </form>
 
     @if (Model != null)

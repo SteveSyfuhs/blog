@@ -49,6 +49,11 @@
     <br />
     <br />
 
+    <input asp-for="@Model.IsIndexed" />
+    <label asp-for="@Model.IsIndexed">Include in Search Index</label>
+    <br />
+    <br />
+
     <label asp-for="@Model.Excerpt" class="label">Excerpt</label>
     <textarea asp-for="@Model.Excerpt" rows="3" placeholder="Short description of blog post" aria-describedby="desc_excerpt">@Model.Excerpt</textarea>
     <span class="desc" id="desc_excerpt">A brief description of the content of the post</span>

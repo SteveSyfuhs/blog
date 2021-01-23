@@ -54,6 +54,8 @@ namespace blog.Models
         public Author Author { get; set; }
 
         public bool IncludeAuthor { get; set; }
+        
+        public bool IsIndexed { get; set; }
 
         public string GetLink()
         {

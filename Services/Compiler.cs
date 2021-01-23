@@ -10,7 +10,7 @@ namespace WebOptimizer.Sass
     /// <summary>
     /// Compiles Sass files
     /// </summary>
-    /// <seealso cref="WebOptimizer.IProcessor" />
+    /// <seealso cref="IProcessor" />
     public class Compiler : IProcessor
     {
         /// <summary>

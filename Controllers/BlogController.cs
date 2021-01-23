@@ -414,7 +414,7 @@ namespace blog.Models
         {
             if (string.IsNullOrEmpty(id))
             {
-                return View(new Post() { IncludeAuthor = true });
+                return View(new Post() { IncludeAuthor = true, IsIndexed = true });
             }
 
             var post = await _blog.GetPostById(id);
@@ -448,6 +448,7 @@ namespace blog.Models
             existing.Excerpt = post.Excerpt.Trim();
             existing.Type = post.Type;
             existing.IncludeAuthor = post.IncludeAuthor;
+            existing.IsIndexed = post.IsIndexed;
 
             if (!string.IsNullOrWhiteSpace(post.MediaUrl))
             {

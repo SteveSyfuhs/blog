@@ -6,6 +6,7 @@ using Microsoft.SyndicationFeed.Atom;
 using Microsoft.SyndicationFeed.Rss;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -76,18 +77,36 @@ namespace blog
         {
             string host = Request.Scheme + "://" + Request.Host;
             var sb = new StringBuilder();
-            
+
             sb.AppendLine("User-agent: dotbot");
             sb.AppendLine("Disallow: /");
             sb.AppendLine("User-agent: rogerbot");
             sb.AppendLine("Disallow: /");
             sb.AppendLine("User-agent: *");
             sb.AppendLine("Disallow:");
-            
-            
+
+
             sb.AppendLine($"sitemap: {host}/sitemap.xml");
 
             return sb.ToString();
+        }
+
+        [Route("/sitemap.txt")]
+        public async Task SiteMapText()
+        {
+            string host = Request.Scheme + "://" + Request.Host;
+
+            Response.ContentType = "text/plain";
+
+            using (var body = new StreamWriter(Response.Body))
+            {
+                var posts = await _blog.GetPosts(int.MaxValue);
+
+                foreach (Post post in posts)
+                {
+                    await body.WriteLineAsync(host + post.GetLink());
+                }
+            }
         }
 
         [Route("/author-sitemap.xml")]
@@ -108,7 +127,7 @@ namespace blog
 
                 var posts = await _blog.GetPosts(int.MaxValue);
 
-                foreach (Models.Post post in posts)
+                foreach (Post post in posts)
                 {
                     var lastMod = new[] { post.PubDate, post.LastModified };
 

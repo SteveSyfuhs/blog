@@ -19,19 +19,25 @@ namespace blog
         [Route("/search")]
         public async Task<IActionResult> Index([FromQuery]string q, [FromQuery]int page)
         {
+            ViewData["Title"] = _settings.Value.Name + " | " + _settings.Value.Description;
+
             if (string.IsNullOrWhiteSpace(q))
             {
                 return View();
             }
+
+            ViewData["Title"] = q + " | " + ViewData["Title"];
 
             if (page <= 0)
             {
                 page = 0;
             }
 
-            var skip = page * _settings.Value.PostsPerPage;
+            var pageResults = _settings.Value.PostsPerPage * 3;
 
-            var results = await _blog.Search(q, skip, _settings.Value.PostsPerPage);
+            var skip = page * pageResults;
+
+            var results = await _blog.Search(q, skip, pageResults);
 
             results.Page = page;
 

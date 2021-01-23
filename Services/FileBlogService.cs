@@ -1,4 +1,5 @@
 ﻿using blog.Models;
+using FuzzySharp;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -27,19 +28,7 @@ namespace blog
 
         public Task<int> GetPostCount(bool includePages)
         {
-            var posts = _cache.AsEnumerable();
-
-            if (!includePages)
-            {
-                posts = posts.Where(p => p.Type != PostType.Page);
-            }
-
-            if (!IsAdmin())
-            {
-                posts = posts.Where(p => p.IsPublished);
-            }
-
-            return Task.FromResult(posts.Count());
+            return Task.FromResult(PostsWhere(includePages).Count());
         }
 
         public void ResetCache()
@@ -78,26 +67,27 @@ namespace blog
 
         public virtual Task<IEnumerable<Post>> GetPosts(int count, int skip = 0)
         {
-            bool isAdmin = IsAdmin();
-
-            var posts = _cache
-                .Where(p => p.Type == PostType.Post)
-                .Where(p => p.PubDate <= DateTime.UtcNow && (p.IsPublished || isAdmin))
+            var posts = PostsWhere()
                 .Skip(skip)
                 .Take(count);
 
             return Task.FromResult(posts);
         }
 
-        public virtual Task<IEnumerable<Post>> GetPostsByCategory(string category)
+        private IEnumerable<Post> PostsWhere(bool includePages = false)
         {
             bool isAdmin = IsAdmin();
 
-            var posts = from p in _cache
-                        where p.Type == PostType.Post
-                        where p.PubDate <= DateTime.UtcNow && (p.IsPublished || isAdmin)
-                        where p.Categories.Contains(category, StringComparer.OrdinalIgnoreCase)
-                        select p;
+            return _cache
+                    .Where(p => p.Type == PostType.Post || includePages)
+                    .Where(p => p.PubDate <= DateTime.UtcNow)
+                    .Where(p => (p.IsIndexed && p.IsPublished) || isAdmin);
+        }
+
+        public virtual Task<IEnumerable<Post>> GetPostsByCategory(string category)
+        {
+            var posts = PostsWhere()
+                .Where(p => p.Categories.Contains(category, StringComparer.OrdinalIgnoreCase));
 
             return Task.FromResult(posts);
 
@@ -105,25 +95,18 @@ namespace blog
 
         public Task<IEnumerable<Post>> GetPostsByMonth(int year, int month)
         {
-            bool isAdmin = IsAdmin();
-
-            var posts = from p in _cache
-                        where p.Type == PostType.Post
-                        where p.PubDate.Year == year
-                        where p.PubDate.Month == month
-                        where (p.IsPublished || isAdmin)
-                        select p;
+            var posts = PostsWhere()
+                .Where(p => p.PubDate.Year == year)
+                .Where(p => p.PubDate.Month == month);
 
             return Task.FromResult(posts);
         }
 
         public virtual Task<Post> GetPostBySlug(string slug)
         {
-            var post = _cache.FirstOrDefault(p => SlugEquals(slug, p));
+            var post = PostsWhere(includePages: true).FirstOrDefault(p => SlugEquals(slug, p));
 
-            bool isAdmin = IsAdmin();
-
-            if (post != null && post.PubDate <= DateTime.UtcNow && (post.IsPublished || isAdmin))
+            if (post != null)
             {
                 post.Author = GetAuthor();
 
@@ -171,10 +154,9 @@ namespace blog
 
         public virtual Task<Post> GetPostById(string id)
         {
-            var post = _cache.FirstOrDefault(p => p.ID.Equals(id, StringComparison.OrdinalIgnoreCase));
-            bool isAdmin = IsAdmin();
+            var post = PostsWhere(includePages: true).FirstOrDefault(p => p.ID.Equals(id, StringComparison.OrdinalIgnoreCase));
 
-            if (post != null && post.PubDate <= DateTime.UtcNow && (post.IsPublished || isAdmin))
+            if (post != null)
             {
                 return Task.FromResult(post);
             }
@@ -219,7 +201,8 @@ namespace blog
                                 new XElement("ispublished", post.IsPublished),
                                 new XElement("categories", string.Empty),
                                 new XElement("comments", string.Empty),
-                                new XElement("includeAuthor", post.IncludeAuthor)
+                                new XElement("includeAuthor", post.IncludeAuthor),
+                                new XElement("isIndexed", post.IsIndexed)
                             ));
 
             XElement categories = doc.XPathSelectElement("post/categories");
@@ -352,7 +335,8 @@ namespace blog
                 PubDate = DateTime.Parse(ReadValue(doc, "pubDate")),
                 LastModified = DateTime.Parse(ReadValue(doc, "lastModified", DateTime.Now.ToString())),
                 IsPublished = bool.Parse(ReadValue(doc, "ispublished", "true")),
-                IncludeAuthor = bool.Parse(ReadValue(doc, "includeAuthor", "true"))
+                IncludeAuthor = bool.Parse(ReadValue(doc, "includeAuthor", "true")),
+                IsIndexed = bool.Parse(ReadValue(doc, "isIndexed", "true"))
             };
 
             LoadCategories(post, doc);
@@ -475,22 +459,17 @@ namespace blog
                     TimeSpan.FromSeconds(2)
                 );
 
-                foreach (var post in _cache)
+                foreach (var post in PostsWhere(includePages: true))
                 {
-                    if (!post.IsPublished && !isAdmin)
-                    {
-                        continue;
-                    }
-
                     var count = 0;
 
-                    if (post.Slug.Contains(q, StringComparison.InvariantCultureIgnoreCase))
+                    if (Fuzz.PartialRatio(post.Slug, q) >= 90)
                     {
                         count += 10000;
                     }
 
-                    count += regex.Matches(post.Title).Count * 10;
-                    count += regex.Matches(post.Excerpt).Count;
+                    count += Fuzz.PartialTokenSortRatio(post.Title, q) * 10;
+                    count += Fuzz.PartialTokenSortRatio(post.Title, q);
 
                     var contentMatches = regex.Matches(post.Content);
 
