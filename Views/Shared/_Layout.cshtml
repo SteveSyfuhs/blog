@@ -13,20 +13,20 @@
 
         var plusIndex = version.LastIndexOf('+');
 
-        if (plusIndex > 0 && plusIndex + 12 <= version.Length)
+        if (plusIndex > 0 && plusIndex + 11 <= version.Length)
         {
-            version = version.Substring(0, plusIndex + 12);
+            version = version.Substring(0, plusIndex + 11);
         }
 
-        return version;
+        return "v" + version;
     }
 }
 
 @{
     var host = Context.Request.Scheme + "://" + Context.Request.Host;
 
-    var buildVersion =   "v" + GetVersion(Assembly.GetEntryAssembly());
-    var runtimeVersion = "v" + GetVersion(Assembly.GetCallingAssembly());
+    var buildVersion =   GetVersion(Assembly.GetEntryAssembly());
+    var runtimeVersion = GetVersion(Assembly.GetCallingAssembly());
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -133,9 +133,16 @@
 
                         <ul>
                             <li class="build-version">
-                                Blog: <span class="cat-count">@buildVersion</span>
-                                <br />
-                                Runtime: <span class="cat-count">@runtimeVersion</span>
+                                <table>
+                                    <tr>
+                                        <td>Blog:</td>
+                                        <td><span class="cat-count">@buildVersion</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Runtime:</td>
+                                        <td><span class="cat-count">@runtimeVersion</span></td>
+                                    </tr>
+                                </table>
                             </li>
                         </ul>
                     </li>

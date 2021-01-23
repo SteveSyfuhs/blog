@@ -206,6 +206,12 @@ iframe {
             li.build-version {
                 text-transform: none;
                 background: none;
+
+                table {
+                    td:first-child {
+                        text-align: right;
+                    }
+                }
             }
 
             .signin {

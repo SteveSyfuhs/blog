@@ -133,17 +133,34 @@ namespace blog
             return model;
         }
 
+        public override async Task DeletePost(Post post)
+        {
+            string filePath = $"/{PostContainerName}/{post.ID}.xml";
+
+            await DeleteFile(filePath);
+
+            await base.DeletePost(post);
+        }
+
         public override async Task DeleteFile(string file)
         {
-            var blobUri = new Uri(file).AbsolutePath;
+            string substr = file;
 
-            var substr = blobUri.Substring(1);
+            if (Uri.TryCreate(file, UriKind.Absolute, out Uri uri))
+            {
+                substr = uri.AbsolutePath;
+            }
+
+            if (substr.StartsWith('/'))
+            {
+                substr = substr[1..];
+            }
 
             var containerName = substr.Substring(0, substr.IndexOf('/'));
 
             var container = LoadBlobContainer(containerName);
 
-            var path = substr.Substring(containerName.Length + 1);
+            var path = substr[(containerName.Length + 1)..];
 
             var blob = container.GetBlobClient(path);
 

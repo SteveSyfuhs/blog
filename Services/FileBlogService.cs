@@ -249,7 +249,7 @@ namespace blog
             }
         }
 
-        public Task DeletePost(Post post)
+        public virtual Task DeletePost(Post post)
         {
             string filePath = GetFilePath(post);
 
