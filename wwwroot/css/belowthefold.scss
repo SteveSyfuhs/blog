@@ -385,11 +385,21 @@ h3.error-path {
         height: 50px;
         border: 1px dashed $comments_input_border-color;
         background-color: $comments_border-color;
-        padding: 15px;
+        padding: 6px;
     }
 
     .img-upload-preview {
         max-width: 150px;
+    }
+
+    .preview {
+        &.image-list {
+            ol, ul {
+                li {
+                    width: unset;
+                }
+            }
+        }
     }
 }
 
@@ -413,7 +423,7 @@ h3.error-path {
 
 ol.image-list, ul.image-list {
     padding: 0;
-    margin: 0 auto;
+    margin: 5px auto;
     width: 100%;
 
     h3 {

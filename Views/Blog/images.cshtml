@@ -21,7 +21,7 @@
             <span asp-validation-for="FormFiles"></span>
         </dd>
         <dt>
-            <input class="btn" type="submit" value="Upload" />
+            <input class="btn btn-primary" type="submit" value="Upload" />
         </dt>
         <dd>
             <ul class="preview image-list">
@@ -56,9 +56,9 @@
         if (number < 1024) {
             return number + 'bytes';
         } else if (number >= 1024 && number < 1048576) {
-            return (number / 1024).toFixed(1) + 'KB';
+            return (number / 1024).toFixed(1) + 'kb';
         } else if (number >= 1048576) {
-            return (number / 1048576).toFixed(1) + 'MB';
+            return (number / 1048576).toFixed(1) + 'mb';
         }
     }
 
@@ -81,7 +81,7 @@
                 const listItem = document.createElement('li');
                 const para = document.createElement('p');
                 if (validFileType(file)) {
-                    para.textContent = `File name ${file.name}, file size ${returnFileSize(file.size)}.`;
+                    para.textContent = `${file.name}; Size ${returnFileSize(file.size)}`;
                     const image = document.createElement('img');
                     image.src = URL.createObjectURL(file);
                     image.className = "img-upload-preview";
@@ -135,16 +135,36 @@
                 {
                     <li>
                         <a href="@image.Url" target="_blank" id="#@image.Id">
-                            <img src="#" data-src="@image.Url" />
+                            <img src="#" data-src="@image.Url" class="lib-image" />
                         </a>
                         <div class="delete-image" onclick="deleteImage('@image.Url')">
                             <a>X</a>
                         </div>
-                        <div>@image.Url.Substring(folder.Key.Length + 1)</div>
-                        <div>@image.Created</div>
+
+                        <div>
+                            <code>@image.Url.Substring(folder.Key.Length + 1)</code> | @image.Created.ToString("g")
+                            <button class="btn btn-link" onclick="navigator.clipboard.writeText('@image.Url')">Copy</button>
+                        </div>
                     </li>
                 }
             </ul>
         </li>
     }
 </ul>
+
+<script>
+    var elements = document.getElementsByClassName('lib-image');
+
+    for (let element of elements) {
+        element.addEventListener('delayLoaded', function (e) {
+            var img = new Image();
+            img.onload = function () {
+                var div = document.createElement('div');
+                div.innerText = this.width + " x " + this.height + " pixels";
+                e.target.parentElement.parentElement.appendChild(div);
+            };
+
+            img.src = e.target.getAttribute('data-src');
+        });
+    }
+</script>

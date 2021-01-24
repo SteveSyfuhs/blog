@@ -101,6 +101,7 @@
 
                             img.className += " notloaded";
                             img.src = img.getAttribute("data-src");
+                            img.dispatchEvent(new CustomEvent('delayLoaded'));
                             img.removeAttribute("data-src");
                             changed = true;
                         }
