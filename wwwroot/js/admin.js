@@ -1,5 +1,57 @@
 ﻿(function () {
 
+    var mediaImg = document.getElementById('media');
+    var mediaUrl = document.getElementById('MediaUrl');
+
+    var setImage = function (img, url) {
+        if (!img) {
+            return;
+        }
+
+        if (!url) {
+            img.style.display = 'none';
+        }
+        else {
+            img.style.display = 'block';
+            mediaImg.src = url;
+        }
+
+    };
+
+    if (mediaImg && mediaUrl) {
+        setImage(mediaImg, mediaUrl.value);
+
+        mediaUrl.addEventListener('change', function (e) {
+            setImage(mediaImg, e.target.value);
+        });
+    }
+
+    var substringMatcher = function (strs) {
+        return function findMatches(q, cb) {
+            var matches;
+            matches = [];
+            substrRegex = new RegExp(q, 'i');
+            $.each(strs, function (i, str) {
+                if (substrRegex.test(str)) {
+                    matches.push(str);
+                }
+            });
+
+            cb(matches);
+        };
+    };
+
+    $('#categories').tagsinput({
+        typeaheadjs: ({
+            hint: true,
+            highlight: true,
+            minLength: 1
+        }, {
+            name: 'categories',
+            source: substringMatcher(Blog.Categories)
+        })
+    });
+
     var edit = document.getElementById("edit");
 
     if (edit) {
@@ -42,11 +94,13 @@
         // Delete post
         var deleteButton = edit.querySelector(".delete");
 
-        deleteButton.addEventListener("click", function (e) {
-            if (!confirm("Are you sure you want to delete the post?")) {
-                e.preventDefault();
-            }
-        });
+        if (deleteButton) {
+            deleteButton.addEventListener("click", function (e) {
+                if (!confirm("Are you sure you want to delete the post?")) {
+                    e.preventDefault();
+                }
+            });
+        }
 
         // File upload
         function handleFileSelect(event) {

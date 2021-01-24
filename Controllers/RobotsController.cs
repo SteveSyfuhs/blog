@@ -85,7 +85,6 @@ namespace blog
             sb.AppendLine("User-agent: *");
             sb.AppendLine("Disallow:");
 
-
             sb.AppendLine($"sitemap: {host}/sitemap.xml");
 
             return sb.ToString();
@@ -120,7 +119,7 @@ namespace blog
 
             Response.ContentType = "application/xml";
 
-            using (var xml = XmlWriter.Create(Response.Body, new XmlWriterSettings { Indent = true }))
+            await using (var xml = XmlWriter.Create(Response.Body, new XmlWriterSettings { Async = true, Indent = true }))
             {
                 xml.WriteStartDocument();
                 xml.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
@@ -139,6 +138,8 @@ namespace blog
 
                 xml.WriteEndElement();
             }
+
+            await Response.Body.FlushAsync();
         }
 
         [Route("/rsd.xml")]
@@ -217,7 +218,7 @@ namespace blog
             Response.ContentType = "application/xml";
             string host = Request.Scheme + "://" + Request.Host;
 
-            using (XmlWriter xmlWriter = XmlWriter.Create(Response.Body, new XmlWriterSettings() { Async = true, Indent = true }))
+            await using (XmlWriter xmlWriter = XmlWriter.Create(Response.Body, new XmlWriterSettings() { Async = true, Indent = true }))
             {
                 var writer = await GetWriter(type, xmlWriter, lastUpdated());
 

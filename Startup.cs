@@ -93,6 +93,8 @@ namespace blog
             });
 
             services.AddSingleton<ITelemetryInitializer, ArinTelemetry>();
+
+            services.AddResponseCompression();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -104,6 +106,8 @@ namespace blog
             }
 
             app.UseStatusCodePagesWithReExecute("/error/{0}");
+
+            app.UseResponseCompression();
 
             app.UseWebOptimizer();
 

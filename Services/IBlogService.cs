@@ -10,6 +10,8 @@ namespace blog
 
         Task<int> GetPostCount(bool includePages);
 
+        Task<IEnumerable<Post>> GetAllContent(int count, int skip = 0);
+
         Task<IEnumerable<Post>> GetPosts(int count, int skip = 0);
 
         Task<IEnumerable<Post>> GetPostsByCategory(string category);

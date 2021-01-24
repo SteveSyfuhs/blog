@@ -143,79 +143,6 @@ namespace blog.Models
             return View("NotFound", searchResults);
         }
 
-        [Authorize]
-        [Route("/Import")]
-        public async Task<IActionResult> Import()
-        {
-            var posts = await _blog.GetPosts(1);
-
-            if (!posts.Any())
-            {
-                await TryImport();
-            }
-
-            return await Index();
-        }
-
-        private async Task TryImport()
-        {
-            StreamReader reader = await ReadUrl("https://syfuhs.net/feed/atom/");
-
-            using (var xmlReader = XmlReader.Create(reader, new XmlReaderSettings() { }))
-            {
-                var feedReader = new AtomFeedReader(xmlReader);
-
-                while (await feedReader.Read())
-                {
-                    if (feedReader.ElementType == SyndicationElementType.Item)
-                    {
-                        var item = await feedReader.ReadItem() as AtomEntry;
-
-                        var path = item.Links.FirstOrDefault(l => l.RelationshipType == "alternate");
-
-                        var image = item.Links.FirstOrDefault(l => l.RelationshipType == "media");
-
-                        var post = new Post
-                        {
-                            Categories = item.Categories.Select(c => c.Name).ToList(),
-                            Content = item.Description,
-                            Title = HttpUtility.HtmlDecode(item.Title),
-                            Excerpt = HttpUtility.HtmlDecode(item.Summary),
-                            PubDate = item.Published.DateTime,
-                            LastModified = item.LastUpdated.DateTime,
-                            IsPublished = true,
-                            Slug = path.Uri.AbsolutePath
-                        };
-
-                        if (image != null)
-                        {
-                            post.MediaUrl = image.Uri.OriginalString;
-                        }
-
-                        await _blog.SavePost(post);
-                    }
-                }
-            }
-
-            _blog.ResetCache();
-        }
-
-        private async Task<StreamReader> ReadUrl(string uri)
-        {
-            var httpClient = new HttpClient();
-
-            var feed = await httpClient.GetAsync(uri);
-
-            if (!feed.IsSuccessStatusCode)
-            {
-                return null;
-            }
-
-            var stream = await feed.Content.ReadAsStreamAsync();
-
-            return new StreamReader(stream);
-        }
-
         [Route("/edit/images")]
         [Authorize]
         [HttpGet]
@@ -427,6 +354,32 @@ namespace blog.Models
             return NotFound();
         }
 
+        [Route("/manage/{page:int?}")]
+        [HttpGet, Authorize]
+        public async Task<IActionResult> EditPosts([FromRoute] int page)
+        {
+            var pageSize = _settings.Value.PostsPerPage * 5;
+
+            var skip = pageSize * page;
+
+            var posts = await _blog.GetAllContent(pageSize, skip);
+
+            ViewData["Title"] = _settings.Value.Name + " | " + _settings.Value.Description;
+            ViewData["Description"] = _settings.Value.Description;
+
+            var postCount = posts.Count();
+            var allPostsCount = await _blog.GetPostCount(includePages: false);
+
+            if (skip + postCount < allPostsCount)
+            {
+                ViewData["prev"] = $"/manage/{page + 1}/";
+            }
+
+            ViewData["next"] = $"/manage/{(page <= 1 ? null : page - 1 + "/")}";
+
+            return View("Views/Blog/ManagePosts.cshtml", posts);
+        }
+
         [Route("/")]
         [HttpPost, Authorize, AutoValidateAntiforgeryToken]
         public async Task<IActionResult> UpdatePost(Post post)
@@ -439,20 +392,20 @@ namespace blog.Models
             var existing = await _blog.GetPostById(post.ID) ?? post;
             string categories = Request.Form["categories"];
 
-            existing.Categories = categories.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim().ToLowerInvariant()).ToList();
-            existing.Title = post.Title.Trim();
-            existing.Slug = post.Slug.Trim();
+            existing.Categories = categories.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim()).ToList();
+            existing.Title = post.Title?.Trim();
             existing.Slug = !string.IsNullOrWhiteSpace(post.Slug) ? post.Slug.Trim() : Models.Post.CreateSlug(post.Title);
             existing.IsPublished = post.IsPublished;
-            existing.Content = post.Content.Trim();
-            existing.Excerpt = post.Excerpt.Trim();
+            existing.Content = post.Content?.Trim();
+            existing.Excerpt = post.Excerpt?.Trim();
             existing.Type = post.Type;
+            existing.PubDate = post.PubDate;
             existing.IncludeAuthor = post.IncludeAuthor;
             existing.IsIndexed = post.IsIndexed;
 
-            if (!string.IsNullOrWhiteSpace(post.MediaUrl))
+            if (!string.IsNullOrWhiteSpace(post.MediaUrl) && Uri.TryCreate(post.MediaUrl.Trim(), UriKind.Absolute, out Uri mediaUrl))
             {
-                existing.MediaUrl = new Uri(post.MediaUrl.Trim()).OriginalString;
+                existing.MediaUrl = mediaUrl.AbsoluteUri;
             }
             else
             {

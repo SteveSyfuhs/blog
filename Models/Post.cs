@@ -1,18 +1,21 @@
-﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace blog.Models
 {
     public enum PostType
     {
+        [Display(Name = "Blog Post")]
         Post,
+        [Display(Name = "Content Page")]
         Page
     }
 
@@ -37,6 +40,7 @@ namespace blog.Models
 
         public PostType Type { get; set; }
 
+        [BindProperty, DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
         public DateTime PubDate { get; set; } = DateTime.UtcNow;
 
         public DateTime LastModified { get; set; } = DateTime.UtcNow;

@@ -1,4 +1,5 @@
 ﻿@model Post
+@inject IBlogService BlogService
 @{
     bool isNew = string.IsNullOrEmpty(Model.Title);
     ViewData["Title"] = "Edit " + (Model.Title ?? "new post");
@@ -8,72 +9,131 @@
     <link rel="stylesheet" href="~/css/admin.scss" />
 }
 
-<form method="post" id="edit" class="container" asp-controller="Blog" asp-action="UpdatePost">
+<form method="post" id="edit" class="container edit-post" asp-controller="Blog" asp-action="UpdatePost" autocomplete="off">
     <div asp-validation-summary="All"></div>
     <input type="hidden" asp-for="@Model.ID" />
 
-    <label asp-for="@Model.Title" class="label">Title</label>
-    <input asp-for="@Model.Title" required placeholder="Title of blog post" aria-describedby="desc_title" />
-    <span class="desc" id="desc_title">The title as it appears on the website</span>
-    <br />
+    <div class="row post-meta">
+        <div class="col-lg-8">
+            <div class="container border rounded meta-publishing">
+                <div class="row">
+                    <h3>@(string.IsNullOrWhiteSpace(Model.Title) ? "Add New Post" : "Edit Post")</h3>
 
-    <label asp-for="@Model.Type" class="label">Post Type</label>
+                    <label asp-for="@Model.Title" class="label">Title</label>
+                    <span class="desc" id="desc_title">The title as it appears on the website</span>
 
-    <select asp-for="Type" asp-items="Html.GetEnumSelectList<PostType>()">
-    </select>
-    <br />
-    <br />
+                    <input asp-for="@Model.Title" required placeholder="Title of blog post" aria-describedby="desc_title" />
+                </div>
 
-    <label asp-for="@Model.Slug" class="label">Slug</label>
-    <input asp-for="@Model.Slug" placeholder="The URL name" aria-describedby="desc_slug" />
-    <span class="desc" id="desc_slug">The part of the URL that identifies this blog post</span>
-    <br />
+                <div class="row">
+                    <label asp-for="@Model.Slug" class="label">Slug</label>
+                    <span class="desc" id="desc_slug">The part of the URL that identifies this blog post</span>
 
-    <label asp-for="@Model.MediaUrl" class="label">Media Url</label>
-    <input asp-for="@Model.MediaUrl" placeholder="The Media Url" aria-describedby="desc_media" />
-    <span class="desc" id="desc_slug">The URL of the post media</span>
-    <br />
+                    <input asp-for="@Model.Slug" placeholder="The URL name" aria-describedby="desc_slug" />
+                </div>
 
-    <label asp-for="@Model.HeroImageUrl" class="label">Hero Media Url</label>
-    <input asp-for="@Model.HeroImageUrl" placeholder="The Hero Media Url" aria-describedby="desc_media" />
-    <span class="desc" id="desc_slug">The URL of the post media</span>
-    <br />
+                <div class="row">
+                    <label for="categories" class="label">Tags</label>
+                    <span class="desc" id="desc_categories">A comma separated list of keywords</span>
 
-    <label for="categories" class="label">Tags</label>
-    <input type="text" name="categories" id="categories" value="@string.Join(", ", Model.Categories)" aria-describedby="desc_categories" />
-    <span class="desc" id="desc_categories">A comma separated list of keywords</span>
-    <br />
+                    <input type="text" name="categories" id="categories" value="@string.Join(", ", Model.Categories)" aria-describedby="desc_categories" />
+                </div>
 
-    <input asp-for="@Model.IncludeAuthor" />
-    <label asp-for="@Model.IncludeAuthor">Include Author</label>
-    <br />
-    <br />
+                <div class="row media-url">
+                    <div class="col-lg-10">
+                        <label asp-for="@Model.MediaUrl" class="label">Media Url</label>
+                        <span class="desc" id="desc_slug">The URL of the post media</span>
 
-    <input asp-for="@Model.IsIndexed" />
-    <label asp-for="@Model.IsIndexed">Include in Search Index</label>
-    <br />
-    <br />
+                        <input asp-for="@Model.MediaUrl" placeholder="The Media Url" aria-describedby="desc_media" />
+                    </div>
+                    <div class="col-lg-2 text-center">
+                        <img id="media" src="#" class="img-thumbnail" />
 
-    <label asp-for="@Model.Excerpt" class="label">Excerpt</label>
-    <textarea asp-for="@Model.Excerpt" rows="3" placeholder="Short description of blog post" aria-describedby="desc_excerpt">@Model.Excerpt</textarea>
-    <span class="desc" id="desc_excerpt">A brief description of the content of the post</span>
-    <br />
+                        <a href="/edit/images" target="_blank">Image Library</a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <label asp-for="@Model.Excerpt" class="label">Excerpt</label>
+                    <span class="desc" id="desc_excerpt">A brief description of the content of the post</span>
+
+                    <textarea asp-for="@Model.Excerpt" rows="3" placeholder="Short description of blog post" aria-describedby="desc_excerpt">@Model.Excerpt</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+
+            <div class="container border rounded post-publishing">
+                <div class="row">
+                    <h3>Publish</h3>
+
+                    <div class="row">
+                        <label asp-for="@Model.Type" class="label">Type</label>
+                        <span class="desc" id="desc_type">The type of content to create</span>
+
+                        <select asp-for="Type" asp-items="Html.GetEnumSelectList<PostType>()">
+                        </select>
+                    </div>
+                </div>
+                <div class="publish-settings">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <input asp-for="@Model.IsPublished" />
+                            <label asp-for="@Model.IsPublished">Is published</label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <input asp-for="@Model.IncludeAuthor" />
+                            <label asp-for="@Model.IncludeAuthor">Include Author</label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <input asp-for="@Model.IsIndexed" />
+                            <label asp-for="@Model.IsIndexed">Include in Search Index</label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <label asp-for="@Model.PubDate" class="label">Publish Date</label>
+                        <span class="desc" id="desc_pubdate">Select when this content should be published</span>
+
+                        <input class="form-control" asp-for="@Model.PubDate" asp-format="{0:yyyy-MM-ddTHH:mm}" />
+                    </div>
+                </div>
+                <div class="row publishing-zone">
+                    <div class="col-lg-6">
+                        @if (!isNew)
+                        {
+                            <input type="submit" value="Delete Post" class="delete btn btn-link" title="Delete the post..." asp-action="DeletePost" asp-route-id="@Model.ID" />
+                        }
+                    </div>
+                    <div class="col-lg-6 text-end">
+                        <input type="submit" value="Publish" title="Save the post" class="btn btn-primary" />
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
 
     <textarea asp-for="@Model.Content" rows="20" aria-label="Content">@Model.Content</textarea>
     <br />
-
-    <input type="submit" value="Save" title="Save the post" />
-
-    @if (!isNew)
-    {
-        <input type="submit" value="Delete..." class="delete" title="Delete the post..." asp-action="DeletePost" asp-route-id="@Model.ID" />
-    }
-
-    <input asp-for="@Model.IsPublished" />
-    <label asp-for="@Model.IsPublished">Is published</label>
 </form>
 
 @section Scripts {
+    <script>
+        var Blog = { Categories: @Html.Raw(Json.Serialize((await BlogService.GetCategories()).Select(c=>c.Category))) };
+    </script>
+
     <script src="~/lib/tinymce/tinymce.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="
+            crossorigin="anonymous"></script>
+    <script src="~/js/tags.js" async></script>
     <script src="~/js/admin.js" async></script>
 }

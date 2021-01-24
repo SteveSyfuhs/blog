@@ -72,6 +72,15 @@ namespace blog
             return Task.FromResult(result);
         }
 
+        public virtual Task<IEnumerable<Post>> GetAllContent(int count, int skip = 0)
+        {
+            var posts = PostsWhere(includePages: true)
+                   .Skip(skip)
+                   .Take(count);
+
+            return Task.FromResult(posts);
+        }
+
         public virtual Task<IEnumerable<Post>> GetPosts(int count, int skip = 0)
         {
             var posts = PostsWhere()
@@ -87,7 +96,7 @@ namespace blog
 
             return _cache
                     .Where(p => p.Type == PostType.Post || includePages)
-                    .Where(p => p.PubDate <= DateTime.UtcNow)
+                    .Where(p => p.PubDate <= DateTime.UtcNow || isAdmin)
                     .Where(p => (p.IsIndexed && p.IsPublished) || isAdmin);
         }
 
@@ -179,11 +188,11 @@ namespace blog
                 .Where(p => p.Type == PostType.Post)
                 .Where(p => p.IsPublished || isAdmin)
                 .SelectMany(post => post.Categories)
-                .Select(cat => cat.ToLowerInvariant())
-                .GroupBy(c => c)
+                .Select(cat => new { Normal = cat, Lower = cat.ToLowerInvariant() })
+                .GroupBy(c => c.Lower)
                 .OrderByDescending(c => c.Count())
                 .ThenBy(c => c.Key)
-                .Select(s => (s.Key, s.Count()));
+                .Select(s => (s.First().Normal, s.Count()));
 
             return Task.FromResult(categories);
         }
