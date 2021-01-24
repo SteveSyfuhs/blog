@@ -130,10 +130,12 @@
         var Blog = { Categories: @Html.Raw(Json.Serialize((await BlogService.GetCategories()).Select(c=>c.Category))) };
     </script>
 
-    <script src="~/lib/tinymce/tinymce.min.js"></script>
+    <script src="https://cdn.tiny.cloud/1/9mapvblu7t03h4s1hdc0q5k8eiwwz82qzeuchwdbk9yiyiw8/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
             integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="
             crossorigin="anonymous"></script>
+
     <script src="~/js/tags.js" async></script>
     <script src="~/js/admin.js" async></script>
 }

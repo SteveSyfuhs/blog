@@ -60,12 +60,16 @@
 
         tinymce.init({
             selector: '#Content',
-            autoresize_min_height: 200,
-            plugins: 'autosave preview searchreplace visualchars image link media fullscreen code table hr pagebreak autoresize nonbreaking anchor insertdatetime advlist lists textcolor wordcount imagetools colorpicker',
-            menubar: "edit view format insert table",
-            toolbar1: 'formatselect | bold italic blockquote forecolor backcolor | imageupload link | alignleft aligncenter alignright  | numlist bullist outdent indent | fullscreen',
-            selection_toolbar: 'bold italic | quicklink h2 h3 blockquote',
-            autoresize_bottom_margin: 0,
+            min_height: 500,
+            plugins: [
+                'autoresize advlist autolink link image lists charmap print preview hr anchor pagebreak',
+                'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
+                'table emoticons template paste help'
+            ],
+            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | ' +
+                'bullist numlist outdent indent | link image | print preview media fullpage | ' +
+                'forecolor backcolor emoticons',
+            menubar: 'file edit view insert format tools table',
             paste_data_images: true,
             image_advtab: true,
             file_picker_types: 'image',
@@ -76,9 +80,10 @@
             images_upload_url: '/edit/upload',
 
             setup: function (editor) {
-                editor.addButton('imageupload', {
-                    icon: "image",
-                    onclick: function () {
+
+                editor.ui.registry.addButton('imageupload', {
+                    text: 'image',
+                    onAction: function (_) {
                         var fileInput = document.createElement("input");
                         fileInput.type = "file";
                         fileInput.multiple = true;
@@ -87,7 +92,6 @@
                         fileInput.click();
                     }
                 });
-
             }
         });
 
