@@ -76,7 +76,7 @@
             relative_urls: false,
             convert_urls: false,
             branding: false,
-
+            extended_valid_elements: 'script[src|async|defer|type|charset]',
             images_upload_url: '/edit/upload',
 
             setup: function (editor) {

@@ -100,7 +100,11 @@ namespace blog.Models
 
         static string RemoveReservedUrlCharacters(string text)
         {
-            var reservedCharacters = new List<string>() { "!", "#", "$", "&", "'", "(", ")", "*", ",", "/", ":", ";", "=", "?", "@", "[", "]", "\"", "%", ".", "<", ">", "\\", "^", "_", "'", "{", "}", "|", "~", "`", "+" };
+            var reservedCharacters = new List<string>() 
+            { 
+                "!", "#", "$", "&", "'", "(", ")", "*", ",", "/", ":", ";", "=", "?", "@", "[", 
+                "]", "\"", "%", ".", "<", ">", "\\", "^", "_", "'", "{", "}", "|", "~", "`", "+" 
+            };
 
             foreach (var chr in reservedCharacters)
             {
