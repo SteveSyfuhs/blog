@@ -54,7 +54,7 @@ namespace blog
 
         public FileBlogService(IWebHostEnvironment env, IHttpContextAccessor contextAccessor, bool delayInitialize, BlogSettings settings)
         {
-            _folder = Path.Combine(env.WebRootPath, "posts");
+            _folder = env != null ? Path.Combine(env.WebRootPath, "posts") : "";
             _contextAccessor = contextAccessor;
 
             Settings = settings;
@@ -434,25 +434,32 @@ namespace blog
 
             foreach (Match match in imgRegex.Matches(post.Content))
             {
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml("<root>" + match.Value + "</root>");
-
-                var img = doc.FirstChild.FirstChild;
-                var srcNode = img.Attributes["src"];
-                var fileNameNode = img.Attributes["data-filename"];
-
-                // The HTML editor creates base64 DataURIs which we'll have to convert to image files on disk
-                if (srcNode != null && fileNameNode != null)
+                try
                 {
-                    var base64Match = base64Regex.Match(srcNode.Value);
-                    if (base64Match.Success)
-                    {
-                        byte[] bytes = Convert.FromBase64String(base64Match.Groups["base64"].Value);
-                        srcNode.Value = await SaveFile(bytes, fileNameNode.Value).ConfigureAwait(false);
+                    XmlDocument doc = new XmlDocument();
+                    doc.LoadXml("<root>" + match.Value + "</root>");
 
-                        img.Attributes.Remove(fileNameNode);
-                        post.Content = post.Content.Replace(match.Value, img.OuterXml);
+                    var img = doc.FirstChild.FirstChild;
+                    var srcNode = img.Attributes["src"];
+                    var fileNameNode = img.Attributes["data-filename"];
+
+                    // The HTML editor creates base64 DataURIs which we'll have to convert to image files on disk
+                    if (srcNode != null && fileNameNode != null)
+                    {
+                        var base64Match = base64Regex.Match(srcNode.Value);
+                        if (base64Match.Success)
+                        {
+                            byte[] bytes = Convert.FromBase64String(base64Match.Groups["base64"].Value);
+                            srcNode.Value = await SaveFile(bytes, fileNameNode.Value).ConfigureAwait(false);
+
+                            img.Attributes.Remove(fileNameNode);
+                            post.Content = post.Content.Replace(match.Value, img.OuterXml);
+                        }
                     }
+                }
+                catch
+                {
+                    continue;
                 }
             }
         }
