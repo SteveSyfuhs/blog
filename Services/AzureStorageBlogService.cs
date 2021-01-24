@@ -113,7 +113,7 @@ namespace blog
                     images.Add(new ImageFile
                     {
                         Title = blob.Name,
-                        Url = blob.Uri.OriginalString,
+                        Url = blob.Uri.OriginalString.Replace("%2F", "/"),
                         Created = item.Properties.CreatedOn ?? DateTimeOffset.MinValue,
                         Size = item.Properties.ContentLength ?? 0
                     });
@@ -165,7 +165,6 @@ namespace blog
             var blob = container.GetBlobClient(path);
 
             await blob.DeleteIfExistsAsync();
-
         }
 
         private async Task IterateBlobItems(Func<BlobClient, BlobItem, Task> loader, string containerName)
