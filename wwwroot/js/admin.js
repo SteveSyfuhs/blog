@@ -78,7 +78,7 @@
             branding: false,
             extended_valid_elements: 'script[src|async|defer|type|charset]',
             images_upload_url: '/edit/upload',
-
+            toolbar_sticky: true,
             setup: function (editor) {
 
                 editor.ui.registry.addButton('imageupload', {
