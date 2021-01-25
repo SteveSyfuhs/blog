@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Azure.Storage.Blobs;
@@ -62,7 +63,7 @@ namespace blog
             string ext = Path.GetExtension(fileName).Substring(1).ToLowerInvariant();
             string name = Path.GetFileNameWithoutExtension(fileName);
 
-            string relative = $"{name}_{suffix}.{ext}";
+            string relative = WebUtility.UrlDecode($"{name}_{suffix}.{ext}");
 
             BlobContainerClient container;
 

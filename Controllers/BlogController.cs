@@ -172,7 +172,7 @@ namespace blog.Models
 
             if (formFileContent.Length > 0)
             {
-                name = await UploadImage(formFileContent, file.FileName);
+                name = await UploadImage(formFileContent, file.FileName, $"{DateTimeOffset.UtcNow.Year}");
             }
 
             return Json(new { location = name });
@@ -212,7 +212,7 @@ namespace blog.Models
 
                 if (formFileContent.Length > 0)
                 {
-                    name = await UploadImage(formFileContent, file.FileName);
+                    name = await UploadImage(formFileContent, file.FileName, model.UploadFolder);
 
                     name = Path.GetFileNameWithoutExtension(name);
                 }
@@ -221,9 +221,14 @@ namespace blog.Models
             return Redirect($"/edit/images#{name}");
         }
 
-        private async Task<string> UploadImage(byte[] formFileContent, string name)
+        private async Task<string> UploadImage(byte[] formFileContent, string name, string uploadFolder)
         {
             name = name.Replace(" ", "_");
+
+            if (!string.IsNullOrWhiteSpace(uploadFolder))
+            {
+                name = WebUtility.UrlEncode($"{uploadFolder}/{name}");
+            }
 
             return await _blog.SaveFile(formFileContent, name);
         }

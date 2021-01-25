@@ -10,5 +10,8 @@ namespace blog.Models
 
         [Display(Name = "Files")]
         public ICollection<IFormFile> FormFiles { get; set; }
+
+        [Display(Name = "Upload Folder")]
+        public string UploadFolder { get; set; }
     }
 }
