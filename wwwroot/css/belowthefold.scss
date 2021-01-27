@@ -493,7 +493,10 @@ ol.image-list, ul.image-list {
 }
 
 section#comments .container {
-    max-width: 75%;
+    @media(min-width: 700px) {
+        max-width: 75%;
+    }
+
     margin: 0 auto;
 }
 
@@ -504,6 +507,7 @@ section#comments .container {
 
     .commento-name, .commento-subtitle {
         margin-left: 0 !important;
+        left: 0 !important;
     }
 
     .commento-card {
