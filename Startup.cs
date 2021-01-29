@@ -87,9 +87,10 @@ namespace blog
 
             services.AddWebOptimizer(pipeline =>
             {
-                pipeline.MinifyJsFiles();
+                //HeaderNames.CacheControl] = $"max-age={time.TotalSeconds.ToString()}"
+                pipeline.MinifyJsFiles().AddResponseHeader(HeaderNames.CacheControl, $"max-age={TimeSpan.FromDays(365).TotalSeconds}");
                 pipeline.CompileScssFiles()
-                        .InlineImages(1);
+                        .InlineImages(1).AddResponseHeader(HeaderNames.CacheControl, $"max-age={TimeSpan.FromDays(365).TotalSeconds}");
             });
 
             services.AddSingleton<ITelemetryInitializer, ArinTelemetry>();
