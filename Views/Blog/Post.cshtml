@@ -2,6 +2,7 @@
 @inject IOptionsSnapshot<BlogSettings> settings
 @{
     ViewData["Title"] = Model.Title;
+    ViewData["Description"] = Model.Excerpt ?? settings.Value.Name + " | " + settings.Value.Description;
     bool showFullPost = ViewContext.RouteData.Values.ContainsKey("slug");
     string host = Context.Request.Scheme + "://" + Context.Request.Host;
 }

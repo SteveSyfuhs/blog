@@ -55,7 +55,7 @@ namespace blog.Models
             var posts = await _blog.GetPosts(_settings.Value.PostsPerPage, skip);
 
             ViewData["Title"] = _settings.Value.Name + " | " + _settings.Value.Description;
-            ViewData["Description"] = _settings.Value.Description;
+            ViewData["Description"] = _settings.Value.Name + " | " + _settings.Value.Description;
 
             var postCount = posts.Count();
             var allPostsCount = await _blog.GetPostCount(includePages: false);
@@ -315,11 +315,7 @@ namespace blog.Models
                     return LocalRedirectPermanent(post.Slug);
                 }
 
-                var meta = new MetaModel();
-
-                AddTwitter(post, meta);
-
-                this.ViewData["Meta"] = meta;
+                this.ViewData["Meta"] = AddPostMeta(post);
 
                 return View(post);
             }
@@ -327,14 +323,33 @@ namespace blog.Models
             return NotFound();
         }
 
+        private MetaModel AddPostMeta(Post post)
+        {
+            var meta = new MetaModel();
+
+            meta.MetaTags.Add(("og:type", new Meta { Attribute = "content", Value = "article" }));
+            meta.MetaTags.Add(("article:published_time", new Meta { Attribute = "content", Value = post.PubDate.ToString("o") }));
+            meta.MetaTags.Add(("article:modified_time", new Meta { Attribute = "content", Value = post.LastModified.ToString("o") }));
+            meta.MetaTags.Add(("article:author", new Meta { Attribute = "content", Value = _settings.Value.Owner }));
+
+            foreach (var cat in post.Categories)
+            {
+                meta.MetaTags.Add(("article:tag", new Meta { Attribute = "content", Value = cat }));
+            }
+
+            AddTwitter(post, meta);
+
+            return meta;
+        }
+
         private void AddTwitter(Post post, MetaModel meta)
         {
-            meta.MetaTags["twitter:card"] = new Meta { Attribute = "content", Value = "summary_large_image" };
-            meta.MetaTags["twitter:site"] = new Meta { Attribute = "content", Value = _settings.Value.Twitter };
-            meta.MetaTags["twitter:creator"] = new Meta { Attribute = "content", Value = _settings.Value.Twitter };
-            meta.MetaTags["twitter:title"] = new Meta { Attribute = "content", Value = post.Title };
-            meta.MetaTags["twitter:description"] = new Meta { Attribute = "content", Value = post.Excerpt };
-            meta.MetaTags["twitter:image"] = new Meta { Attribute = "content", Value = post.GetMedia(BlogMediaType.PostPrimary) };
+            meta.MetaTags.Add(("twitter:card", new Meta { Attribute = "content", Value = "summary_large_image" }));
+            meta.MetaTags.Add(("twitter:site", new Meta { Attribute = "content", Value = _settings.Value.Twitter }));
+            meta.MetaTags.Add(("twitter:creator", new Meta { Attribute = "content", Value = _settings.Value.Twitter }));
+            meta.MetaTags.Add(("twitter:title", new Meta { Attribute = "content", Value = post.Title }));
+            meta.MetaTags.Add(("twitter:description", new Meta { Attribute = "content", Value = post.Excerpt }));
+            meta.MetaTags.Add(("twitter:image", new Meta { Attribute = "content", Value = post.GetMedia(BlogMediaType.PostPrimary) }));
         }
 
         [Route("/edit/{id?}")]

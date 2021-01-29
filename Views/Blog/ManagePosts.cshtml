@@ -5,6 +5,19 @@
     bool includeTitle = ViewData.ContainsKey("IncludeTitle") && (bool)ViewData["IncludeTitle"];
 }
 
+@section Head {
+    <link rel="stylesheet" href="~/css/admin.scss" />
+
+    @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
+    {
+        <link rel="prev" href="@ViewData["prev"]" />
+    }
+    @if (currentPage > 0)
+    {
+        <link rel="next" href="@ViewData["next"]" />
+    }
+}
+
 <div class="post-manager">
 
     <div class="row">
@@ -94,11 +107,11 @@
                         <span class="badge bg-warning">Scheduled for Future</span>
                     </div>
                 }
-            <div>
-                <a href="@post.Post.GetLink()#commento" itemprop="discussionUrl" title="Go to the comments section">
-                    Comments
-                </a>
-            </div>
+                <div>
+                    <a href="@post.Post.GetLink()#commento" itemprop="discussionUrl" title="Go to the comments section">
+                        Comments
+                    </a>
+                </div>
             </div>
         </div>
     }
@@ -112,17 +125,6 @@
         @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
         {
             <a rel="prev" href="@ViewData["prev"]" title="Older posts">Older &raquo;</a>
-        }
-
-        @section Head {
-            @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
-            {
-                <link rel="prev" href="@ViewData["prev"]" />
-            }
-            @if (currentPage > 0)
-            {
-                <link rel="next" href="@ViewData["next"]" />
-            }
         }
     </nav>
 

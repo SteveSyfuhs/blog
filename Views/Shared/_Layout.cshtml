@@ -30,7 +30,7 @@
 }
 <!DOCTYPE html>
 <html lang="en">
-<head prefix="og: http://ogp.me/ns#">
+<head prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#">
     <meta charset="utf-8" />
     <title>@ViewData["Title"]</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1" />
@@ -67,7 +67,10 @@
     </script>
     @RenderSection("Head", required: false)
 
-    <meta property="og:type" content="website" />
+    @if (!(ViewData["Meta"] is MetaModel meta) || !meta.MetaTags.Any(t => t.Key == "og:type"))
+    {
+        <meta property="og:type" content="website" />
+    }
     <meta property="og:title" content="@ViewData["Title"]" />
     <meta property="og:description" content="@ViewData["Description"]" />
     <meta property="og:url" content="@(host + Context.Request.Path)" />

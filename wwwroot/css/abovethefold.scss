@@ -352,7 +352,8 @@ time {
                     border-top: 3px solid $accent_color;
                     margin: .2em auto;
                     line-height: 2.5;
-                    background-color: rgba(0,0,0,0.65);
+                    background-color: rgba(0,0,0,0.4);
+                    backdrop-filter: blur(20px);
                     padding: 15px 30px;
                     vertical-align: top;
                     width: 80%;
@@ -375,6 +376,8 @@ time {
             }
 
             h1 {
+                text-shadow: #333 1px 0 3px;
+
                 a {
                     color: #fff;
                 }
@@ -385,44 +388,4 @@ time {
             width: 80%;
         }
     }
-}
-
-.wp-block-image {
-    max-width: 100%;
-    margin: auto;
-    margin-bottom: 1em;
-    display: table;
-
-    .aligncenter {
-        margin: 5px auto;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    img {
-        max-width: 100%;
-        height: auto;
-        padding: 0 !important;
-    }
-
-    figcaption {
-        font-size: 12px;
-        border-top: 1px solid #ddd;
-        padding-top: 3px;
-        margin-top: 3px;
-    }
-}
-
-.chart-select {
-    margin: 5px 0 5px 5px;
-}
-
-#myChart {
-    max-height: 90vh;
-}
-
-.ddl-label {
-    font-size: small;
-    padding-left: 10px;
-    padding-right: 5px;
 }

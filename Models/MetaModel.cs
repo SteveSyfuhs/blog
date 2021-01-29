@@ -11,6 +11,6 @@ namespace blog.Models
 
     public class MetaModel
     {
-        public Dictionary<string, Meta> MetaTags { get; } = new Dictionary<string, Meta>();
+        public List<(string Key, Meta Value)> MetaTags { get; } = new List<(string Key, Meta Value)>();
     }
 }

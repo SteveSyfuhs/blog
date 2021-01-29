@@ -1,4 +1,6 @@
-﻿a.noline {
+﻿@import "variables";
+
+a.noline {
     text-decoration: none;
 }
 
@@ -260,5 +262,143 @@
     .typeahead-template .empty-message {
         padding: 8px 15px;
         text-align: center;
+    }
+}
+ol.image-list, ul.image-list {
+    padding: 0;
+    margin: 5px auto;
+    width: 100%;
+
+    button {
+        margin-left: 1em;
+    }
+
+    h3 {
+        margin: 1em;
+        cursor: pointer;
+    }
+
+    li {
+        list-style: none;
+    }
+
+    ul {
+        transition: max-height 0.2s ease-out;
+        overflow: hidden;
+        max-height: 100%;
+    }
+
+    ul.slide-hidden {
+        max-height: 0;
+    }
+
+
+    ol, ul {
+        li {
+            display: inline-block;
+            position: relative;
+            vertical-align: top;
+            width: 30%;
+            margin: 1%;
+            text-align: center;
+
+            div {
+                width: 100%;
+                overflow-wrap: break-word;
+            }
+
+            img {
+                max-width: 100%;
+            }
+        }
+
+        li:hover {
+            background-color: #eee;
+        }
+    }
+
+    .delete-image {
+        position: absolute;
+        display: inline-block;
+        width: 50px;
+        top: 15px;
+        right: 15px;
+        background-color: $comments_bg_color;
+        padding: 10px;
+        opacity: 0.9;
+        cursor: pointer;
+
+        a {
+            color: $comments_input_border-color;
+            text-decoration: none;
+        }
+    }
+}
+
+.upload-file {
+    padding: 15px;
+    background-color: $comments_bg_color;
+
+    input[type=file] {
+        width: 100%;
+        height: 50px;
+        border: 1px dashed $comments_input_border-color;
+        background-color: $comments_border-color;
+        padding: 6px;
+    }
+
+    .img-upload-preview {
+        max-width: 150px;
+    }
+
+    .preview {
+        &.image-list {
+            ol, ul {
+                li {
+                    width: unset;
+                }
+            }
+        }
+    }
+}
+
+
+.post-manager {
+    margin: 25px auto;
+    max-width: 80%;
+
+    .header {
+        font-weight: bold;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        padding: 5px 0;
+        margin-bottom: 0;
+    }
+
+    .stripe {
+        background-color: $comments_bg_color;
+    }
+
+    .post-row {
+        padding: 10px 0 20px 0;
+
+        .img-thumbnail {
+            max-width: 100px;
+            margin: 10px;
+        }
+
+        .post-title {
+            font-weight: 500;
+            text-decoration: none;
+
+            .edit {
+                font-weight: normal;
+                font-size: smaller;
+            }
+        }
+
+        .excerpt {
+            font-size: smaller;
+            margin: 15px 0;
+        }
     }
 }
