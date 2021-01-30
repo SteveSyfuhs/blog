@@ -62,14 +62,19 @@
                         <li itemprop="articleSection"><a href="/category/@cat.ToLowerInvariant()">@cat</a></li>
                     }
                 </ul>
-                <text>and has</text>
             }
 
             @if (Model.Type == PostType.Post)
             {
+                <text>and has</text>
                 <a href="@Model.GetLink()#commento" itemprop="discussionUrl" title="Go to the comments section">
                     <span itemprop="commentCount">@Model.Comments.Count</span> comments
                 </a>
+            }
+
+            @if (Model.LastModified > Model.PubDate)
+            {
+                <div class="last-updated">Last Updated @Model.LastModified.ToString("g")</div>
             }
 
             @if (Model.Author != null && Model.IncludeAuthor)

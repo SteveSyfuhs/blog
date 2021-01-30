@@ -3,20 +3,19 @@
 
 <section id="comments">
     <div class="container">
-        <h2>Comments</h2>
-
-        @if (Context.Request.Host.Host == "localhost") { 
-        <script type="text/javascript">
-            var path = window.parent.location.pathname;
-            window.parent = {
-              location: {
-                host: 'syfuhs.net',
-                pathname: path
-              }
-            };
-        </script>
+        @if (Context.Request.Host.Host == "localhost")
+        {
+            <script type="text/javascript">
+                var path = window.parent.location.pathname;
+                window.parent = {
+                    location: {
+                        host: 'syfuhs.net',
+                        pathname: path
+                    }
+                };
+            </script>
         }
-
+        <label class="lbl-header" for="commento-textarea-root">Comments</label>
         <div id="commento"></div>
         <script src="https://cdn.commento.io/js/commento.js"></script>
 

@@ -103,7 +103,6 @@ iframe {
     }
 
     .cat-count {
-        color: #aaa;
         background-color: #555;
         font-weight: bold;
         padding: 5px 5px 4px 5px;
@@ -153,6 +152,11 @@ iframe {
     }
 }
 
+.last-updated {
+    margin: 20px 0;
+    font-size: smaller;
+}
+
 .sitefooter {
     display: flex;
     bottom: 0;
@@ -179,11 +183,13 @@ iframe {
             min-width: 33%;
             margin-bottom: 10px;
 
-            h3 {
+            .cat-header {
                 width: 100%;
-                padding-bottom: 5px;
+                padding-bottom: 7px;
                 border-bottom: 3px solid $accent_color;
                 display: inline-block;
+                font-weight: 500;
+                font-size: 1.75rem;
             }
 
             li {
@@ -441,6 +447,12 @@ section#comments .container {
     }
 
     margin: 0 auto;
+
+    .lbl-header {
+        font-weight: 500;
+        font-size: 2rem;
+        margin-top: 0;
+    }
 }
 
 .commento-root {
@@ -467,6 +479,16 @@ section#comments .container {
 
         * {
             font-size: unset !important;
+        }
+    }
+
+    .commento-markdown-button {
+        color: $link_color;
+    }
+
+    .commento-login {
+        .commento-login-text {
+            color: inherit;
         }
     }
 
@@ -505,8 +527,11 @@ section#comments .container {
     }
 
     .author-right {
-        h3 {
+        .about-author {
             margin: 0 0 8px 0;
+            font-weight: 500;
+            font-size: 1.75rem;
+            line-height: 1.2;
         }
 
         @media (min-width: 1200px) {

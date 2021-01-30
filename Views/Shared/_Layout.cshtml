@@ -112,7 +112,7 @@
 
                 <ul>
                     <li class="categories">
-                        <h3>Categories</h3>
+                        <div class="cat-header">Categories</div>
                         <ul>
                             @foreach (var cat in await service.GetCategories())
                             {
@@ -124,7 +124,7 @@
                     </li>
 
                     <li class="categories">
-                        <h3>Build Details</h3>
+                        <div class="cat-header">Build Details</div>
 
                         <ul>
                             <li class="build-version">
@@ -146,7 +146,7 @@
                     </li>
 
                     <li class="categories">
-                        <h3>Actions</h3>
+                        <div class="cat-header">Actions</div>
 
                         <ul class="signin">
                             @{
