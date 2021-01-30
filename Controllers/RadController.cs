@@ -22,8 +22,6 @@ namespace blog.Controllers
             return View("chart", new RadModel { Device = device, Chart = chart });
         }
 
-        private const int Last24Hours = 24 * 3600;
-
         [HttpGet("/api/rad/{id}/{sensor?}/{start?}/{stop?}")]
         public async Task<IActionResult> CurrentStats([FromRoute]string id, [FromRoute] string sensor, [FromRoute] int? start, int? stop)
         {

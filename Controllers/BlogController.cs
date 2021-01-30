@@ -111,7 +111,7 @@ namespace blog.Models
 
                 if (index >= 0)
                 {
-                    var file = Path.GetFileNameWithoutExtension(path.Substring(index));
+                    var file = Path.GetFileNameWithoutExtension(path[index..]);
 
                     if (!string.IsNullOrWhiteSpace(file))
                     {
@@ -132,7 +132,7 @@ namespace blog.Models
                 }
             }
 
-            if (searchResults == null || searchResults.Count() <= 0)
+            if (searchResults == null || !searchResults.Any())
             {
                 searchResults = await _blog.GetPostsByCategory("Featured");
             }

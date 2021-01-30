@@ -1,9 +1,7 @@
-﻿using blog.Rewrite;
+﻿using System;
+using blog.Rewrite;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,8 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
-using System;
 using WebEssentials.AspNetCore.OutputCaching;
 using WebMarkupMin.AspNetCore2;
 using WebMarkupMin.Core;
@@ -61,14 +59,7 @@ namespace blog
                 };
             });
 
-            services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
-                    .AddAzureAD(options => Configuration.Bind("AzureAd", options));
-
-            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, options =>
-            {
-                options.Authority += "/v2.0/";
-                options.TokenValidationParameters.ValidateIssuer = false;
-            });
+            services.AddMicrosoftIdentityWebAppAuthentication(Configuration);
 
             services.AddControllersWithViews();
 
@@ -119,7 +110,7 @@ namespace blog
                 OnPrepareResponse = (context) =>
                 {
                     var time = TimeSpan.FromDays(365);
-                    context.Context.Response.Headers[HeaderNames.CacheControl] = $"max-age={time.TotalSeconds.ToString()}";
+                    context.Context.Response.Headers[HeaderNames.CacheControl] = $"max-age={time.TotalSeconds}";
                     context.Context.Response.Headers[HeaderNames.Expires] = DateTime.UtcNow.Add(time).ToString("R");
                 }
             });

@@ -17,7 +17,7 @@ namespace blog.Controllers
     {
         // If you require a check on specific characters in the IsValidFileExtensionAndSignature
         // method, supply the characters in the _allowedChars field.
-        private static readonly byte[] _allowedChars = { };
+        private static readonly byte[] _allowedChars = Array.Empty<byte>();
         // For more file signatures, see the File Signatures Database (https://www.filesignatures.net/)
         // and the official specifications for the file types you wish to add.
         private static readonly Dictionary<string, List<byte[]>> _fileSignature = new Dictionary<string, List<byte[]>>
@@ -93,7 +93,7 @@ namespace blog.Controllers
                 modelState.AddModelError(formFile.Name,
                     $"{fieldDisplayName}({trustedFileNameForDisplay}) is empty.");
 
-                return new byte[0];
+                return Array.Empty<byte>();
             }
 
             if (formFile.Length > sizeLimit)
@@ -103,7 +103,7 @@ namespace blog.Controllers
                     $"{fieldDisplayName}({trustedFileNameForDisplay}) exceeds " +
                     $"{megabyteSizeLimit:N1} MB.");
 
-                return new byte[0];
+                return Array.Empty<byte>();
             }
 
             try
@@ -143,7 +143,7 @@ namespace blog.Controllers
                 // Log the exception
             }
 
-            return new byte[0];
+            return Array.Empty<byte>();
         }
 
         public static async Task<byte[]> ProcessStreamedFile(
@@ -189,7 +189,7 @@ namespace blog.Controllers
                 // Log the exception
             }
 
-            return new byte[0];
+            return Array.Empty<byte>();
         }
 
         private static bool IsValidFileExtensionAndSignature(string fileName, Stream data, string[] permittedExtensions)

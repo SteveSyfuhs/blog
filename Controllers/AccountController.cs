@@ -27,9 +27,7 @@ namespace blog.Controllers
         [Route("/logout")]
         public async Task<IActionResult> LogOutAsync()
         {
-            await HttpContext.SignOutAsync("AzureAD");
-            await HttpContext.SignOutAsync("AzureADOpenID");
-            await HttpContext.SignOutAsync("AzureADCookie");
+            await HttpContext.SignOutAsync();
 
             return LocalRedirect("/");
         }
