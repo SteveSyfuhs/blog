@@ -8,10 +8,10 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
-    <title>Chart</title>
+    <title>Chart for @Model.Chart</title>
     <link rel="stylesheet" href="~/css/abovethefold.scss" inline />
 </head>
-<body> 
+<body>
     <div class="chart-select">
         <label class="ddl-label" for="ddlTimeWindow">Chart the last</label>
         <select id="ddlTimeWindow" onchange="renderChart()">
@@ -21,10 +21,9 @@
             <option value="24">24 hours</option>
         </select>
     </div>
-    <canvas id="myChart"></canvas>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
 
     <script>
         var unit = '@Model.Chart';
@@ -47,143 +46,154 @@
 
             lifetime *= 60 * 60;
 
-        fetch('/api/rad/@Model.Device/all/' + lifetime)
-            .then((response) => {
-                return response.json();
-            })
-            .then((myJson) => {
-                var factor = function (val) {
-                    return val;
-                };
+            fetch('/api/rad/@Model.Device/all/' + lifetime)
+                .then((response) => {
+                    return response.json();
+                })
+                .then((myJson) => {
+                    var factor = function (val) {
+                        return val;
+                    };
 
-                var unitLabel = unit;
+                    var unitLabel = unit;
 
-                if (unit == 'radiation') {
-                    factor = function (val) { return val * idFactor('@Model.Device'); }
-                    unit = 'cpm';
-                    unitLabel = 'μSv/h';
-                }
-                else if (unit == 'cpm') {
-                    unitLabel = 'CPM';
-                }
-                else if (unit == 'temperature') {
-                    factor = function (val) { return (val * 1.8) + 32; }
-                    unitLabel = '°F';
-                }
-                else if (unit == 'voltage') {
-                    unitLabel = 'V';
-                }
-                else if (unit == 'duty') {
-                    unitLabel = '%';
-                }
-
-                var ctx = document.getElementById('myChart').getContext('2d');
-
-                var labels = [];
-                var data = [];
-
-                var averages = [];
-                
-                var getAverage = function(myJson, i) {
-                    var record = myJson[i];
-
-                    if (typeof record === 'undefined') {
-                        return null;
+                    if (unit == 'radiation') {
+                        factor = function (val) { return val * idFactor('@Model.Device'); }
+                        unit = 'cpm';
+                        unitLabel = 'μSv/h';
+                    }
+                    else if (unit == 'cpm') {
+                        unitLabel = 'CPM';
+                    }
+                    else if (unit == 'temperature') {
+                        factor = function (val) { return (val * 1.8) + 32; }
+                        unitLabel = '°F';
+                    }
+                    else if (unit == 'voltage') {
+                        unitLabel = 'V';
+                    }
+                    else if (unit == 'duty') {
+                        unitLabel = '%';
                     }
 
-                    dataPoint = factor(record[unit]);
+                    var labels = [];
+                    var data = [];
 
-                    return {dataPoint: dataPoint, record: record};
-                }
+                    var averages = [];
 
-                for (var i in myJson) {
-                    var index = parseInt(i);
+                    var getAverage = function(myJson, i) {
+                        var record = myJson[i];
 
-                    var result = getAverage(myJson, index);
+                        if (typeof record === 'undefined') {
+                            return null;
+                        }
 
-                    if (result === null) {
-                        break;
+                        dataPoint = factor(record[unit]);
+
+                        return {dataPoint: dataPoint, record: record};
                     }
 
-                    var t = new Date(result.record.time * 1000);
+                    for (var i in myJson) {
+                        var index = parseInt(i);
 
-                    labels[index] = t;
-                    data[index] = { y: result.dataPoint, x: t };
+                        var result = getAverage(myJson, index);
 
-                    var avgS = 0;
-                    var s;
-
-                    var count = 0;
-
-                    for (s = -10; s < 10; s++) {
-                        if (myJson.length <= s) {
+                        if (result === null) {
                             break;
                         }
 
-                        var nextPosition = index + s;
+                        var t = new Date(result.record.time * 1000);
 
-                        if (nextPosition < 0) {
-                            nextPosition = 0;
+                        labels[index] = t;
+                        data[index] = { y: result.dataPoint, x: t };
+
+                        var avgS = 0;
+                        var s;
+
+                        var count = 0;
+
+                        for (s = -10; s < 10; s++) {
+                            if (myJson.length <= s) {
+                                break;
+                            }
+
+                            var nextPosition = index + s;
+
+                            if (nextPosition < 0) {
+                                nextPosition = 0;
+                            }
+
+                            var current = getAverage(myJson, nextPosition);
+
+                            if (current !== null) {
+                                avgS += current.dataPoint;
+                                count++;
+                            }
                         }
 
-                        var current = getAverage(myJson, nextPosition);
+                        var avg = avgS / count;
 
-                        if (current !== null) {
-                            avgS += current.dataPoint;
-                            count++;
-                        }
+                        averages[index] = { y: avg, x: t };
                     }
 
-                    var avg = avgS / count;
+                    if (this.chart) {
+                        this.chart = null;
+                    }
 
-                    averages[index] = { y: avg, x: t };
-                }
+                    var chartElement = document.getElementById("myChart");
 
-                if (this.chart) {
-                    this.chart = null;
-                }
+                    if (chartElement) {
+                        chartElement.parentNode.removeChild(chartElement);
+                    }
 
-                this.chart = new Chart(ctx, {
-                    type: 'line',
-                    labels: labels,
-                    data: {
-                        datasets: [{
-                            label: unitLabel,
-                            data: data,
-                            borderColor: 'rgba(0,112, 190, 0.3)',
-                            backgroundColor: 'rgba(0,112, 190, 0.1)'
-                        },
-                        {
-                            label: unitLabel + ' (average)',
-                            data: averages,
-                        }]
-                    },
+                    chartElement = document.createElement("canvas");
+                    chartElement.id = "myChart";
 
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        scales: {
-                            xAxes: [{
-                                type: 'time',
-                                distribution: 'series'
+                    var ctx = chartElement.getContext('2d');
+
+                    this.chart = new Chart(ctx, {
+                        type: 'line',
+                        labels: labels,
+                        data: {
+                            datasets: [{
+                                label: unitLabel,
+                                data: data,
+                                borderColor: 'rgba(0,112, 190, 0.3)',
+                                backgroundColor: 'rgba(0,112, 190, 0.1)'
+                            },
+                            {
+                                label: unitLabel + ' (average)',
+                                data: averages,
                             }]
                         },
-                        tooltips: {
-                            callbacks: {
-                                label: function(tooltipItem, data) {
-                                    var label = data.datasets[tooltipItem.datasetIndex].label || '';
 
-                                    var val = Math.round(tooltipItem.yLabel * 10000) / 10000;
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                xAxes: [{
+                                    type: 'time',
+                                    distribution: 'series'
+                                }]
+                            },
+                            tooltips: {
+                                callbacks: {
+                                    label: function(tooltipItem, data) {
+                                        var label = data.datasets[tooltipItem.datasetIndex].label || '';
 
-                                    label = val + ' ' + label;
+                                        var val = Math.round(tooltipItem.yLabel * 10000) / 10000;
 
-                                    return label;
+                                        label = val + ' ' + label;
+
+                                        return label;
+                                    }
                                 }
                             }
                         }
-                    }
+                    });
+
+                    document.body.appendChild(chartElement);
                 });
-            });
         }
 
         renderChart();
