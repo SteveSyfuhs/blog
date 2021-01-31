@@ -54,7 +54,20 @@ namespace blog.Models
 
             var posts = await _blog.GetPosts(_settings.Value.PostsPerPage, skip);
 
-            ViewData["Title"] = _settings.Value.Name + " | " + _settings.Value.Description;
+            if (!posts.Any() && page > 0)
+            {
+                return Redirect("~/");
+            }
+
+            if (page > 0)
+            {
+                ViewData["Title"] = $"Page {page} - " + _settings.Value.Name + " | " + _settings.Value.Description;
+            }
+            else
+            {
+                ViewData["Title"] = _settings.Value.Name + " | " + _settings.Value.Description;
+            }
+
             ViewData["Description"] = _settings.Value.Name + " | " + _settings.Value.Description;
 
             var postCount = posts.Count();
