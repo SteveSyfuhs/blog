@@ -31,6 +31,12 @@ body {
     .article-body {
         max-width: 80%;
         margin: 0 auto;
+        text-align: justify;
+    }
+
+    .article-supplement {
+        max-width: 20%;
+        float: right;
     }
 }
 
@@ -211,13 +217,12 @@ time {
         border: none;
         border-left: 3px solid darkorange;
         color: #6f6f6f;
-        width: 95%;
         margin: 0 0 0 -1em;
         font-weight: normal;
-        padding: 1em 1em 1em 1.5em;
+        padding: 1em 0 1em 1.5em;
 
         p {
-            margin: 5px 15px 20px -5px;
+            margin: 5px 0 20px -5px;
         }
 
         blockquote {
@@ -338,6 +343,10 @@ time {
     .post > div img {
         margin: 0 .5em .5em 0;
     }
+}
+
+.excerpt {
+    text-align: justify;
 }
 
 @media only screen and (min-width : 800px) {
