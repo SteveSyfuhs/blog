@@ -1,6 +1,7 @@
 ﻿using blog.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Atom;
 using Microsoft.SyndicationFeed.Rss;
@@ -203,6 +204,16 @@ namespace blog
         [Route("/feed/{type?}")]
         public async Task Rss(string type = "rss")
         {
+            if (this.Request.Query.TryGetValue("format", out StringValues format))
+            {
+                var types = format.Where(f => "rss".Equals(f, StringComparison.OrdinalIgnoreCase) || "atom".Equals(f, StringComparison.OrdinalIgnoreCase));
+
+                if (types.Any())
+                {
+                    type = types.First();
+                }
+            }
+
             var posts = await _blog.GetPosts(25);
 
             await SerializeFeed(
