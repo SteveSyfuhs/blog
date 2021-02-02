@@ -30,20 +30,16 @@ namespace blog
         {
             var remoteAddr = context.Connection.RemoteIpAddress;
 
-            Task lookupTask;
-
-            lookupTask = LookupAddress(remoteAddr);
-
-            await _next(context);
-
             try
             {
-                await lookupTask;
+                await LookupAddress(remoteAddr);
             }
             catch (Exception ex)
             {
                 client.TrackException(ex);
             }
+
+            await _next(context);
         }
 
         private async Task<AddressCacheItem> LookupAddress(IPAddress remoteAddr)
