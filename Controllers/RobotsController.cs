@@ -27,6 +27,13 @@ namespace blog
             _settings = settings;
         }
 
+        [Route("/admin/{path?}")]
+        [Route("/admins/{path?}")]
+        [Route("/moderator/{path?}")]
+        [Route("/webadmin/{path?}")]
+        [Route("/siteadmin/{path?}")]
+        [Route("/adminpanel/{path?}")]
+        [Route("/modules/{path?}")]
         [Route("/old/{path?}")]
         [Route("/new/{path?}")]
         [Route("/wordpress/{path?}")]
