@@ -32,12 +32,12 @@ namespace blog.Models
     public class BlogController : Controller
     {
         private readonly IBlogService _blog;
-        private readonly IOptionsSnapshot<BlogSettings> _settings;
+        private readonly BlogSettings _settings;
         private readonly IOutputCachingService _cache;
 
         public BlogController(
             IBlogService blog,
-            IOptionsSnapshot<BlogSettings> settings,
+            BlogSettings settings,
             IOutputCachingService cache
         )
         {
@@ -50,9 +50,9 @@ namespace blog.Models
         [OutputCache(Profile = "default")]
         public async Task<IActionResult> Index([FromRoute] int page = 0)
         {
-            var skip = _settings.Value.PostsPerPage * page;
+            var skip = _settings.PostsPerPage * page;
 
-            var posts = await _blog.GetPosts(_settings.Value.PostsPerPage, skip);
+            var posts = await _blog.GetPosts(_settings.PostsPerPage, skip);
 
             if (!posts.Any() && page > 0)
             {
@@ -61,14 +61,14 @@ namespace blog.Models
 
             if (page > 0)
             {
-                ViewData["Title"] = $"Page {page} - " + _settings.Value.Name + " | " + _settings.Value.Description;
+                ViewData["Title"] = $"Page {page} - " + _settings.Name + " | " + _settings.Description;
             }
             else
             {
-                ViewData["Title"] = _settings.Value.Name + " | " + _settings.Value.Description;
+                ViewData["Title"] = _settings.Name + " | " + _settings.Description;
             }
 
-            ViewData["Description"] = _settings.Value.Name + " | " + _settings.Value.Description;
+            ViewData["Description"] = _settings.Name + " | " + _settings.Description;
 
             var postCount = posts.Count();
             var allPostsCount = await _blog.GetPostCount(includePages: false);
@@ -252,11 +252,11 @@ namespace blog.Models
         public async Task<IActionResult> Category(string category, int page = 0)
         {
             var allPosts = await _blog.GetPostsByCategory(category);
-            var skip = _settings.Value.PostsPerPage * page;
+            var skip = _settings.PostsPerPage * page;
 
-            var posts = allPosts.Skip(skip).Take(_settings.Value.PostsPerPage);
+            var posts = allPosts.Skip(skip).Take(_settings.PostsPerPage);
 
-            ViewData["Title"] = $"{category} | {_settings.Value.Name}";
+            ViewData["Title"] = $"{category} | {_settings.Name}";
             ViewData["Description"] = $"Articles posted in the {category} category";
 
             var postCount = posts.Count();
@@ -321,7 +321,7 @@ namespace blog.Models
 
             if (post != null)
             {
-                post.SetDomain(_settings.Value.BaseDomain);
+                post.SetDomain(_settings.BaseDomain);
 
                 if (!post.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase))
                 {
@@ -343,7 +343,7 @@ namespace blog.Models
             meta.MetaTags.Add(("og:type", new Meta { Attribute = "content", Value = "article" }));
             meta.MetaTags.Add(("article:published_time", new Meta { Attribute = "content", Value = post.PubDate.ToString("o") }));
             meta.MetaTags.Add(("article:modified_time", new Meta { Attribute = "content", Value = post.LastModified.ToString("o") }));
-            meta.MetaTags.Add(("article:author", new Meta { Attribute = "content", Value = _settings.Value.Owner }));
+            meta.MetaTags.Add(("article:author", new Meta { Attribute = "content", Value = _settings.Owner }));
 
             foreach (var cat in post.Categories)
             {
@@ -358,11 +358,11 @@ namespace blog.Models
         private void AddTwitter(Post post, MetaModel meta)
         {
             meta.MetaTags.Add(("twitter:card", new Meta { Attribute = "content", Value = "summary_large_image" }));
-            meta.MetaTags.Add(("twitter:site", new Meta { Attribute = "content", Value = _settings.Value.Twitter }));
-            meta.MetaTags.Add(("twitter:creator", new Meta { Attribute = "content", Value = _settings.Value.Twitter }));
+            meta.MetaTags.Add(("twitter:site", new Meta { Attribute = "content", Value = _settings.Twitter }));
+            meta.MetaTags.Add(("twitter:creator", new Meta { Attribute = "content", Value = _settings.Twitter }));
             meta.MetaTags.Add(("twitter:title", new Meta { Attribute = "content", Value = post.Title }));
             meta.MetaTags.Add(("twitter:description", new Meta { Attribute = "content", Value = post.Excerpt }));
-            meta.MetaTags.Add(("twitter:image", new Meta { Attribute = "content", Value = post.GetMedia(BlogMediaType.PostPrimary) }));
+            meta.MetaTags.Add(("twitter:image", new Meta { Attribute = "content", Value = post.GetMedia(BlogMediaType.PostPrimary, this._settings) }));
         }
 
         [Route("/edit/{id?}")]
@@ -388,14 +388,14 @@ namespace blog.Models
         [HttpGet, Authorize]
         public async Task<IActionResult> EditPosts([FromRoute] int page)
         {
-            var pageSize = _settings.Value.PostsPerPage * 5;
+            var pageSize = _settings.PostsPerPage * 5;
 
             var skip = pageSize * page;
 
             var posts = await _blog.GetAllContent(pageSize, skip);
 
-            ViewData["Title"] = _settings.Value.Name + " | " + _settings.Value.Description;
-            ViewData["Description"] = _settings.Value.Description;
+            ViewData["Title"] = _settings.Name + " | " + _settings.Description;
+            ViewData["Description"] = _settings.Description;
 
             var postCount = posts.Count();
             var allPostsCount = await _blog.GetPostCount(includePages: false);
@@ -484,7 +484,7 @@ namespace blog.Models
                 return View("Post", post);
             }
 
-            if (post == null || !post.AreCommentsOpen(_settings.Value.CommentsCloseAfterDays))
+            if (post == null || !post.AreCommentsOpen(_settings.CommentsCloseAfterDays))
             {
                 return NotFound();
             }

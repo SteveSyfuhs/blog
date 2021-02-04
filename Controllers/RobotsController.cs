@@ -19,9 +19,9 @@ namespace blog
     public class RobotsController : Controller
     {
         private readonly IBlogService _blog;
-        private readonly IOptionsSnapshot<BlogSettings> _settings;
+        private readonly BlogSettings _settings;
 
-        public RobotsController(IBlogService blog, IOptionsSnapshot<BlogSettings> settings)
+        public RobotsController(IBlogService blog, BlogSettings settings)
         {
             _blog = blog;
             _settings = settings;
@@ -167,7 +167,7 @@ namespace blog
                 xml.WriteStartElement("service");
 
                 xml.WriteElementString("enginename", "blog");
-                xml.WriteElementString("enginelink", "https://syfuhs.net/");
+                xml.WriteElementString("enginelink", _settings.RootUrl);
                 xml.WriteElementString("homepagelink", host);
 
                 xml.WriteStartElement("apis");
@@ -226,7 +226,7 @@ namespace blog
             await SerializeFeed(
                 type,
                 posts,
-                lastUpdated: () => posts.Max(p => p.PubDate),
+                lastUpdated: () => posts.Max(p => p.LastModified),
                 serializer: SerializePost
             );
         }
@@ -277,7 +277,7 @@ namespace blog
             var item = new AtomEntry
             {
                 Title = post.Title,
-                Description = post.Content,
+                Description = post.RenderContent(this._settings, lazyLoad: false),
                 Id = host + post.GetLink(),
                 Published = post.PubDate,
                 LastUpdated = post.LastModified,
@@ -289,7 +289,7 @@ namespace blog
                 item.AddCategory(new SyndicationCategory(category));
             }
 
-            item.AddContributor(new SyndicationPerson(_settings.Value.Owner, email: "site@syfuhs.net"));
+            item.AddContributor(new SyndicationPerson(_settings.Owner, email: _settings.Email));
             item.AddLink(new SyndicationLink(new Uri(item.Id)));
             return item;
         }
@@ -301,18 +301,18 @@ namespace blog
             if (type.Equals("rss", StringComparison.OrdinalIgnoreCase))
             {
                 var rss = new RssFeedWriter(xmlWriter);
-                await rss.WriteTitle(_settings.Value.Name);
-                await rss.WriteDescription(_settings.Value.Description);
+                await rss.WriteTitle(_settings.Name);
+                await rss.WriteDescription(_settings.Description);
                 await rss.WriteGenerator("blog");
                 await rss.WriteValue("link", host);
                 return rss;
             }
 
             var atom = new AtomFeedWriter(xmlWriter);
-            await atom.WriteTitle(_settings.Value.Name);
+            await atom.WriteTitle(_settings.Name);
             await atom.WriteId(host);
-            await atom.WriteSubtitle(_settings.Value.Description);
-            await atom.WriteGenerator("blog", "https://github.com/stevesyfuhs/blog", "1.0");
+            await atom.WriteSubtitle(_settings.Description);
+            await atom.WriteGenerator("blog", _settings.BlogEngineName, "1.0");
             await atom.WriteValue("updated", updated.ToString("yyyy-MM-ddTHH:mm:ssZ"));
             return atom;
         }

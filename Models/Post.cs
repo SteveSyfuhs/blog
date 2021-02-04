@@ -131,7 +131,7 @@ namespace blog.Models
             return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
         }
 
-        public string GetMedia(BlogMediaType type)
+        public string GetMedia(BlogMediaType type, BlogSettings settings)
         {
             var mediaUrl = type switch
             {
@@ -144,22 +144,13 @@ namespace blog.Models
                 return null;
             }
 
-            foreach (var rep in HardReplace)
+            foreach (var rep in settings.UrlReplacements)
             {
-                mediaUrl = mediaUrl.Replace(rep.Key, rep.Value);
+                mediaUrl = mediaUrl.Replace(rep.Find, rep.Replace);
             }
 
             return mediaUrl;
         }
-
-        private static readonly List<KeyValuePair<string, string>> HardReplace = new List<KeyValuePair<string, string>>
-        {
-            KeyValuePair.Create("http://", "https://"),
-            KeyValuePair.Create("https://syfuhs.blob.core.windows.net", "https://syfuhsblog.blob.core.windows.net"),
-            KeyValuePair.Create("https://syfuhs.net/wp-content/", "https://syfuhsblog.blob.core.windows.net/"),
-            KeyValuePair.Create("https://www.syfuhs.net/", "https://syfuhs.net/"),
-            KeyValuePair.Create("https://syfuhs.net/IMAGES/", "https://syfuhsblog.blob.core.windows.net/images/")
-        };
 
         private static readonly List<KeyValuePair<string, string>> EmbeddedReplaces = new List<KeyValuePair<string, string>>
         {
@@ -171,7 +162,7 @@ namespace blog.Models
             ),
             KeyValuePair.Create(
                 "gist",
-                "<script src=\"https://gist.github.com/{0}.js\"></script>" //SteveSyfuhs/c3c3bd7d8d2da771d10b9d453d68b5eb
+                "<script src=\"https://gist.github.com/{0}.js\"></script>" //name/c3c3bd7d8d2da771d10b9d453d68b5eb
             ),
             KeyValuePair.Create(
                 "iframe",
@@ -179,11 +170,14 @@ namespace blog.Models
             ),
         };
 
-        public string RenderContent()
+        public string RenderContent(BlogSettings settings, bool lazyLoad = true)
         {
             var result = Content;
 
-            result = result.Replace(" src=\"", " src=\"data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==\" data-src=\"");
+            if (lazyLoad)
+            {
+                result = result.Replace(" src=\"", " src=\"data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==\" data-src=\"");
+            }
 
             foreach (var embed in EmbeddedReplaces)
             {
@@ -198,9 +192,9 @@ namespace blog.Models
                 });
             }
 
-            foreach (var rep in HardReplace)
+            foreach (var rep in settings.UrlReplacements)
             {
-                result = result.Replace(rep.Key, rep.Value);
+                result = result.Replace(rep.Find, rep.Replace);
             }
 
             return result.ToString();

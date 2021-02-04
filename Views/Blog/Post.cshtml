@@ -1,8 +1,8 @@
 ﻿@model Post
-@inject IOptionsSnapshot<BlogSettings> settings
+@inject BlogSettings settings
 @{
     ViewData["Title"] = Model.Title;
-    ViewData["Description"] = Model.Excerpt ?? settings.Value.Name + " | " + settings.Value.Description;
+    ViewData["Description"] = Model.Excerpt ?? settings.Name + " | " + settings.Description;
     bool showFullPost = ViewContext.RouteData.Values.ContainsKey("slug");
     string host = Context.Request.Scheme + "://" + Context.Request.Host;
 }
@@ -27,7 +27,7 @@
     }
     else
     {
-        <header class="media" style="background-image: url(@Model.GetMedia(BlogMediaType.PostPrimary))">
+        <header class="media" style="background-image: url(@Model.GetMedia(BlogMediaType.PostPrimary, settings))">
             <div class="container">
                 <div class="header-inner">
                     <h1 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h1>
@@ -48,7 +48,7 @@
     <div class="container">
 
         <div itemprop="articleBody mainEntityOfPage" class="article-body" cdnify>
-            @Html.Raw(Model.RenderContent())
+            @Html.Raw(Model.RenderContent(settings))
         </div>
 
         <footer>
@@ -82,7 +82,7 @@
                 await Html.RenderPartialAsync("_AuthorComponent.cshtml", Model.Author);
             }
 
-            <meta itemprop="author" content="@settings.Value.Owner" />
+            <meta itemprop="author" content="@settings.Owner" />
             <meta itemprop="dateModified" content="@Model.LastModified.ToString("s")" />
             <meta itemprop="mainEntityOfPage" content="@(host + Model.GetLink())" />
         </footer>

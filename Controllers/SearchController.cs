@@ -8,9 +8,9 @@ namespace blog
     public class SearchController : Controller
     {
         private readonly IBlogService _blog;
-        private readonly IOptionsSnapshot<BlogSettings> _settings;
+        private readonly BlogSettings _settings;
 
-        public SearchController(IBlogService blog, IOptionsSnapshot<BlogSettings> settings)
+        public SearchController(IBlogService blog, BlogSettings settings)
         {
             _blog = blog;
             _settings = settings;
@@ -19,7 +19,7 @@ namespace blog
         [Route("/search")]
         public async Task<IActionResult> Index([FromQuery]string q, [FromQuery]int page)
         {
-            ViewData["Title"] = _settings.Value.Name + " | " + _settings.Value.Description;
+            ViewData["Title"] = _settings.Name + " | " + _settings.Description;
 
             if (string.IsNullOrWhiteSpace(q))
             {
@@ -33,7 +33,7 @@ namespace blog
                 page = 0;
             }
 
-            var pageResults = _settings.Value.PostsPerPage * 3;
+            var pageResults = _settings.PostsPerPage * 3;
 
             var skip = page * pageResults;
 

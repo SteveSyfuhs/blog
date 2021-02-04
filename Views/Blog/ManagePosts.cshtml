@@ -1,5 +1,5 @@
 ﻿@model IEnumerable<Post>
-@inject IOptionsSnapshot<BlogSettings> settings
+@inject BlogSettings settings
 @{
     int currentPage = int.Parse(ViewContext.RouteData.Values["page"] as string ?? "0");
     bool includeTitle = ViewData.ContainsKey("IncludeTitle") && (bool)ViewData["IncludeTitle"];
@@ -41,12 +41,12 @@
             <div class="col-lg-1 text-center">
                 @if (!string.IsNullOrWhiteSpace(post.Post.MediaUrl))
                 {
-                    <img src="@post.Post.GetMedia(BlogMediaType.PostPrimary)" class="img-thumbnail" />
+                    <img src="@post.Post.GetMedia(BlogMediaType.PostPrimary, settings)" class="img-thumbnail" />
                 }
 
                 @if (!string.IsNullOrWhiteSpace(post.Post.HeroImageUrl))
                 {
-                    <img src="@post.Post.GetMedia(BlogMediaType.PostBackground)" class="img-thumbnail" />
+                    <img src="@post.Post.GetMedia(BlogMediaType.PostBackground, settings)" class="img-thumbnail" />
                 }
             </div>
             <div class="col-lg-5">

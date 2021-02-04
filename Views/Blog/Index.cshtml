@@ -1,5 +1,5 @@
 ﻿@model IEnumerable<Post>
-@inject IOptionsSnapshot<BlogSettings> settings
+@inject BlogSettings settings
 @{
     int currentPage = int.Parse(ViewContext.RouteData.Values["page"] as string ?? "0");
     bool includeTitle = ViewData.ContainsKey("IncludeTitle") && (bool)ViewData["IncludeTitle"];

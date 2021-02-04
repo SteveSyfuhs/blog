@@ -1,5 +1,5 @@
 ﻿@model Post
-@inject IOptionsSnapshot<BlogSettings> settings
+@inject BlogSettings settings
 
 <section id="comments">
     <div class="container">
@@ -9,17 +9,21 @@
                 var path = window.parent.location.pathname;
                 window.parent = {
                     location: {
-                        host: 'syfuhs.net',
+                        host: '@(new Uri(settings.RootUrl).DnsSafeHost)',
                         pathname: path
                     }
                 };
             </script>
         }
-        <label class="lbl-header" for="commento-textarea-root">Comments</label>
-        <div id="commento"></div>
-        <script src="https://cdn.commento.io/js/commento.js" async defer></script>
 
-        @if (settings.Value.BuiltinCommentsEnabled)
+        @if (settings.CommentoCommentsEnabled)
+        {
+            <label class="lbl-header" for="commento-textarea-root">Comments</label>
+            <div id="commento"></div>
+            <script src="https://cdn.commento.io/js/commento.js" async defer></script>
+        }
+
+        @if (settings.BuiltinCommentsEnabled)
         {
             @foreach (var comment in Model.Comments)
             {
@@ -45,7 +49,7 @@
                 </article>
             }
 
-            @if (Model.AreCommentsOpen(settings.Value.CommentsCloseAfterDays))
+            @if (Model.AreCommentsOpen(settings.CommentsCloseAfterDays))
             {
                 if (Model.Comments.Count == 0)
                 {
