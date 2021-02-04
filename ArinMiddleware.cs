@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Arin.NET.Client;
 using Arin.NET.Entities;
@@ -12,6 +13,8 @@ namespace blog
 {
     internal class ArinMiddleware
     {
+        private static readonly ArinClient arinClient = new ArinClient();
+
         private readonly RequestDelegate _next;
         private readonly TelemetryClient client;
 
@@ -28,11 +31,16 @@ namespace blog
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var remoteAddr = context.Connection.RemoteIpAddress;
+            Task lookupTask = Task.CompletedTask;
 
-            Task lookupTask;
-
-            lookupTask = LookupAddress(remoteAddr);
+            try
+            {
+                lookupTask = LookupAddress(context.Connection.RemoteIpAddress, context.RequestAborted);
+            }
+            catch (Exception ex)
+            {
+                client.TrackException(ex);
+            }
 
             await _next(context);
 
@@ -46,7 +54,7 @@ namespace blog
             }
         }
 
-        private async Task<AddressCacheItem> LookupAddress(IPAddress remoteAddr)
+        private async Task<AddressCacheItem> LookupAddress(IPAddress remoteAddr, CancellationToken cancellation)
         {
             var value = LookupCache(remoteAddr);
 
@@ -60,9 +68,7 @@ namespace blog
                 return default;
             }
 
-            var client = new ArinClient();
-
-            var ipResponse = await client.Query(remoteAddr);
+            var ipResponse = await arinClient.Query(remoteAddr, cancellation);
 
             if (ipResponse is IpResponse response)
             {
