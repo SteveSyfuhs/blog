@@ -277,7 +277,7 @@ namespace blog
             var item = new AtomEntry
             {
                 Title = post.Title,
-                Description = post.RenderContent(this._settings, lazyLoad: false),
+                Description = post.RenderContent(lazyLoad: false),
                 Id = host + post.GetLink(),
                 Published = post.PubDate,
                 LastUpdated = post.LastModified,

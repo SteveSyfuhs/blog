@@ -27,7 +27,7 @@
     }
     else
     {
-        <header class="media" style="background-image: url(@Model.GetMedia(BlogMediaType.PostPrimary, settings))">
+        <header class="media" style="background-image: url(@Model.GetMedia(BlogMediaType.PostPrimary))">
             <div class="container">
                 <div class="header-inner">
                     <h1 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h1>
@@ -48,7 +48,7 @@
     <div class="container">
 
         <div itemprop="articleBody mainEntityOfPage" class="article-body" cdnify>
-            @Html.Raw(Model.RenderContent(settings))
+            @Html.Raw(Model.RenderContent())
         </div>
 
         <footer>

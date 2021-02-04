@@ -362,7 +362,7 @@ namespace blog.Models
             meta.MetaTags.Add(("twitter:creator", new Meta { Attribute = "content", Value = _settings.Twitter }));
             meta.MetaTags.Add(("twitter:title", new Meta { Attribute = "content", Value = post.Title }));
             meta.MetaTags.Add(("twitter:description", new Meta { Attribute = "content", Value = post.Excerpt }));
-            meta.MetaTags.Add(("twitter:image", new Meta { Attribute = "content", Value = post.GetMedia(BlogMediaType.PostPrimary, this._settings) }));
+            meta.MetaTags.Add(("twitter:image", new Meta { Attribute = "content", Value = post.GetMedia(BlogMediaType.PostPrimary) }));
         }
 
         [Route("/edit/{id?}")]
@@ -371,7 +371,7 @@ namespace blog.Models
         {
             if (string.IsNullOrEmpty(id))
             {
-                return View(new Post() { IncludeAuthor = true, IsIndexed = true });
+                return View(new Post(null) { IncludeAuthor = true, IsIndexed = true });
             }
 
             var post = await _blog.GetPostById(id);

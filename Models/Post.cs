@@ -22,6 +22,17 @@ namespace blog.Models
     [DebuggerDisplay("{Title} | {Slug}")]
     public class Post
     {
+        private readonly BlogSettings settings;
+
+        public Post()
+        {
+        }
+
+        public Post(BlogSettings settings)
+        {
+            this.settings = settings;
+        }
+
         private string domain;
 
         [Required]
@@ -58,7 +69,7 @@ namespace blog.Models
         public Author Author { get; set; }
 
         public bool IncludeAuthor { get; set; }
-        
+
         public bool IsIndexed { get; set; }
 
         public string GetLink()
@@ -100,10 +111,10 @@ namespace blog.Models
 
         static string RemoveReservedUrlCharacters(string text)
         {
-            var reservedCharacters = new List<string>() 
-            { 
-                "!", "#", "$", "&", "'", "(", ")", "*", ",", "/", ":", ";", "=", "?", "@", "[", 
-                "]", "\"", "%", ".", "<", ">", "\\", "^", "_", "'", "{", "}", "|", "~", "`", "+" 
+            var reservedCharacters = new List<string>()
+            {
+                "!", "#", "$", "&", "'", "(", ")", "*", ",", "/", ":", ";", "=", "?", "@", "[",
+                "]", "\"", "%", ".", "<", ">", "\\", "^", "_", "'", "{", "}", "|", "~", "`", "+"
             };
 
             foreach (var chr in reservedCharacters)
@@ -131,7 +142,7 @@ namespace blog.Models
             return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
         }
 
-        public string GetMedia(BlogMediaType type, BlogSettings settings)
+        public string GetMedia(BlogMediaType type)
         {
             var mediaUrl = type switch
             {
@@ -170,7 +181,7 @@ namespace blog.Models
             ),
         };
 
-        public string RenderContent(BlogSettings settings, bool lazyLoad = true)
+        public string RenderContent(bool lazyLoad = true)
         {
             var result = Content;
 

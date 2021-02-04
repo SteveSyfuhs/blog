@@ -41,12 +41,12 @@
             <div class="col-lg-1 text-center">
                 @if (!string.IsNullOrWhiteSpace(post.Post.MediaUrl))
                 {
-                    <img src="@post.Post.GetMedia(BlogMediaType.PostPrimary, settings)" class="img-thumbnail" />
+                    <img src="@post.Post.GetMedia(BlogMediaType.PostPrimary)" class="img-thumbnail" />
                 }
 
                 @if (!string.IsNullOrWhiteSpace(post.Post.HeroImageUrl))
                 {
-                    <img src="@post.Post.GetMedia(BlogMediaType.PostBackground, settings)" class="img-thumbnail" />
+                    <img src="@post.Post.GetMedia(BlogMediaType.PostBackground)" class="img-thumbnail" />
                 }
             </div>
             <div class="col-lg-5">

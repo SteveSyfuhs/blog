@@ -338,7 +338,7 @@ namespace blog
 
             XElement doc = XElement.Load(stream);
 
-            Post post = new Post()
+            Post post = new Post(this.Settings)
             {
                 ID = Path.GetFileNameWithoutExtension(file),
                 Title = ReadValue(doc, "title"),
