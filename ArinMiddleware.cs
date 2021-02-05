@@ -33,9 +33,9 @@ namespace blog
         {
             Task lookupTask = Task.CompletedTask;
 
-            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
+            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted))
             {
-                context.RequestAborted.Register(() => cts.Cancel());
+                cts.CancelAfter(TimeSpan.FromSeconds(5));
 
                 try
                 {
