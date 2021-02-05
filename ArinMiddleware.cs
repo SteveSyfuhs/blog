@@ -33,24 +33,29 @@ namespace blog
         {
             Task lookupTask = Task.CompletedTask;
 
-            try
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
             {
-                lookupTask = LookupAddress(context.Connection.RemoteIpAddress, context.RequestAborted);
-            }
-            catch (Exception ex)
-            {
-                client.TrackException(ex);
-            }
+                context.RequestAborted.Register(() => cts.Cancel());
 
-            await _next(context);
+                try
+                {
+                    lookupTask = LookupAddress(context.Connection.RemoteIpAddress, cts.Token);
+                }
+                catch (Exception ex)
+                {
+                    client.TrackException(ex);
+                }
 
-            try
-            {
-                await lookupTask;
-            }
-            catch (Exception ex)
-            {
-                client.TrackException(ex);
+                await _next(context);
+
+                try
+                {
+                    await lookupTask;
+                }
+                catch (Exception ex)
+                {
+                    client.TrackException(ex);
+                }
             }
         }
 
