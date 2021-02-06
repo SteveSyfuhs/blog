@@ -12,7 +12,7 @@
 }
 
 <article class="post" itemscope itemtype="http://schema.org/BlogPosting" itemprop="blogPost">
-    @if (string.IsNullOrWhiteSpace(Model.MediaUrl))
+    @if (string.IsNullOrWhiteSpace(Model.PrimaryMediaUrl))
     {
         <div class="container">
             <header class="no-media">
@@ -27,7 +27,7 @@
     }
     else
     {
-        <header class="media" style="background-image: url(@Model.GetMedia(BlogMediaType.PostPrimary))">
+        <header class="media" style="background-image: url(@Model.GetMedia(BlogMediaType.PostBackground))">
             <div class="container">
                 <div class="header-inner">
                     <h1 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h1>
@@ -96,9 +96,14 @@
     await Html.RenderPartialAsync("Comments");
 }
 
-@if (User.Identity.IsAuthenticated)
-{
-    @section Scripts {
+@section Scripts {
+    @if (User.Identity.IsAuthenticated)
+    {
         <link rel="stylesheet" href="~/css/admin.scss" />
+    }
+
+    @if (settings.EmbedTwitter)
+    {
+        <script src="https://platform.twitter.com/widgets.js" async defer></script>
     }
 }

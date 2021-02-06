@@ -39,12 +39,12 @@
     {
         <div class="row post-row @(post.Index % 2 == 0 ? "stripe" : "")">
             <div class="col-lg-1 text-center">
-                @if (!string.IsNullOrWhiteSpace(post.Post.MediaUrl))
+                @if (!string.IsNullOrWhiteSpace(post.Post.PrimaryMediaUrl))
                 {
                     <img src="@post.Post.GetMedia(BlogMediaType.PostPrimary)" class="img-thumbnail" />
                 }
 
-                @if (!string.IsNullOrWhiteSpace(post.Post.HeroImageUrl))
+                @if (!string.IsNullOrWhiteSpace(post.Post.HeroBackgroundImageUrl))
                 {
                     <img src="@post.Post.GetMedia(BlogMediaType.PostBackground)" class="img-thumbnail" />
                 }

@@ -2,7 +2,7 @@
 @inject IBlogService BlogService
 @{
     bool isNew = string.IsNullOrEmpty(Model.Title);
-    ViewData["Title"] = "Edit " + (Model.Title ?? "new post");
+    ViewData["Title"] = "Edit: " + (Model.Title ?? "(new post)");
 }
 
 @section Head{
@@ -39,17 +39,31 @@
                     <input type="text" name="categories" id="categories" value="@string.Join(", ", Model.Categories)" aria-describedby="desc_categories" />
                 </div>
 
+                <div class="row">
+                    <a href="/edit/images" target="_blank">Image Library</a>
+                </div>
+
                 <div class="row media-url">
                     <div class="col-lg-10">
-                        <label asp-for="@Model.MediaUrl" class="label">Media Url</label>
-                        <span class="desc" id="desc_slug">The URL of the post media</span>
+                        <label asp-for="@Model.PrimaryMediaUrl" class="label">Media Url</label>
+                        <span class="desc" id="desc_media">The URL of the post media</span>
 
-                        <input asp-for="@Model.MediaUrl" placeholder="The Media Url" aria-describedby="desc_media" />
+                        <input asp-for="@Model.PrimaryMediaUrl" placeholder="The Media Url" aria-describedby="desc_media" />
                     </div>
                     <div class="col-lg-2 text-center">
                         <img id="media" src="#" class="img-thumbnail" />
+                    </div>
+                </div>
 
-                        <a href="/edit/images" target="_blank">Image Library</a>
+                <div class="row media-url">
+                    <div class="col-lg-10">
+                        <label asp-for="@Model.HeroBackgroundImageUrl" class="label">Background Image Url</label>
+                        <span class="desc" id="desc_hero">The URL of the post background media</span>
+
+                        <input asp-for="@Model.HeroBackgroundImageUrl" placeholder="Background Image Url" aria-describedby="desc_hero" />
+                    </div>
+                    <div class="col-lg-2 text-center">
+                        <img id="heroMedia" src="#" class="img-thumbnail" />
                     </div>
                 </div>
 

@@ -132,7 +132,7 @@ namespace blog
             return Task.FromResult<Post>(null);
         }
 
-        private Author GetAuthor()
+        public Author GetAuthor()
         {
             var authorPost = _cache.FirstOrDefault(c => SlugEquals("author-footer", c) && c.Type == PostType.Page && c.IsPublished);
 
@@ -145,7 +145,7 @@ namespace blog
             {
                 Name = authorPost.Title,
                 Description = authorPost.Content,
-                ImageUrl = authorPost.MediaUrl
+                ImageUrl = authorPost.PrimaryMediaUrl
             };
         }
 
@@ -209,8 +209,8 @@ namespace blog
                                 new XElement("slug", post.Slug),
                                 new XElement("pubDate", post.PubDate.ToString("yyyy-MM-dd HH:mm:ss")),
                                 new XElement("lastModified", post.LastModified.ToString("yyyy-MM-dd HH:mm:ss")),
-                                new XElement("mediaUrl", post.MediaUrl),
-                                new XElement("heroImageUrl", post.HeroImageUrl),
+                                new XElement("mediaUrl", post.PrimaryMediaUrl),
+                                new XElement("heroImageUrl", post.HeroBackgroundImageUrl),
                                 new XElement("postType", post.Type),
                                 new XElement("excerpt", post.Excerpt),
                                 new XElement("content", post.Content),
@@ -343,8 +343,8 @@ namespace blog
                 ID = Path.GetFileNameWithoutExtension(file),
                 Title = ReadValue(doc, "title"),
                 Excerpt = ReadValue(doc, "excerpt"),
-                MediaUrl = ReadValue(doc, "mediaUrl"),
-                HeroImageUrl = ReadValue(doc, "heroMediaUrl"),
+                PrimaryMediaUrl = ReadValue(doc, "mediaUrl"),
+                HeroBackgroundImageUrl = ReadValue(doc, "heroImageUrl"),
                 Type = Enum.Parse<PostType>(ReadValue(doc, "postType", "Post"), true),
                 Content = ReadValue(doc, "content"),
                 Slug = ReadValue(doc, "slug").ToLowerInvariant(),

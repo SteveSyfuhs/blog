@@ -3,45 +3,78 @@
 @{
     int currentPage = int.Parse(ViewContext.RouteData.Values["page"] as string ?? "0");
     bool includeTitle = ViewData.ContainsKey("IncludeTitle") && (bool)ViewData["IncludeTitle"];
+
+    var highlight = Model.FindHighlight();
+    var snapshots = Model.FindSnapshots(highlight);
 }
 
-@if (includeTitle)
-{
-    <div class="post">
-        <header class="no-media">
-            <div class="">
-                <h1>@ViewData["Title"]</h1>
+<div class="container">
+    @if (includeTitle)
+    {
+        <div class="post">
+            <header class="no-media">
+                <div>
+                    <h1>@(ViewData["Highlight"] ?? ViewData["Title"])</h1>
+                </div>
+            </header>
+        </div>
+    }
+    <div class="row featured">
+        @if (highlight != null)
+        {
+            <div class="col-lg-7">
+                @{
+                    await Html.RenderPartialAsync("_PostHighlight.cshtml", highlight);
+                }
             </div>
-        </header>
+        }
+        <div class="@(highlight != null ? "col-lg-5" : "col-lg-12")">
+            <div class="row">
+                @foreach (var post in snapshots.Take(4))
+                {
+                    <div class="col-lg-6">
+                        @{
+                            await Html.RenderPartialAsync("_PostSnapshot.cshtml", post);
+                        }
+                    </div>
+                }
+            </div>
+        </div>
     </div>
-}
 
-@foreach (var post in Model)
-{
-    await Html.RenderPartialAsync("Post.cshtml", post);
-}
+    <div class="row history">
+        @foreach (var post in snapshots.Skip(4))
+        {
+            <div class="col-lg-4">
+                @{
+                    await Html.RenderPartialAsync("_PostSnapshot.cshtml", post);
+                }
+            </div>
+        }
+    </div>
 
-<nav class="pagination container" aria-label="Pagination">
-    @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
-    {
-        <a rel="prev" href="@ViewData["prev"]" title="Older posts">&laquo; Older</a>
-    }
-
-    @if (currentPage > 0)
-    {
-        <a rel="next" href="@ViewData["next"]" title="Newer posts">Newer &raquo;</a>
-    }
-
-    @section Head {
+    <nav class="pagination container" aria-label="Pagination">
         @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
         {
-            <link rel="prev" href="@ViewData["prev"]" />
+            <a rel="prev" href="@ViewData["prev"]" title="Older posts">&laquo; Older</a>
         }
+
         @if (currentPage > 0)
         {
-            <link rel="next" href="@ViewData["next"]" />
+            <a rel="next" href="@ViewData["next"]" title="Newer posts">Newer &raquo;</a>
         }
-    }
-</nav>
+
+        @section Head {
+            @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
+            {
+                <link rel="prev" href="@ViewData["prev"]" />
+            }
+            @if (currentPage > 0)
+            {
+                <link rel="next" href="@ViewData["next"]" />
+            }
+        }
+    </nav>
+</div>
 
 @{await Html.RenderPartialAsync("_SocialSharing", ViewData["Title"]);}

@@ -1,0 +1,38 @@
+﻿@model Post
+
+<div class="snapshot">
+    <article class="post" itemscope itemtype="http://schema.org/BlogPosting" itemprop="blogPost">
+        <div class="container">
+            <header class="no-media">
+                @if (!string.IsNullOrWhiteSpace(Model.GetMedia(BlogMediaType.PostPrimary)))
+                {
+                    <a class="img-link" href="@Model.GetLink()" alt="@Model.Title" title="@Model.Title">
+                        <img class="highlight-img" width="340" height="260" src="@Model.GetMedia(BlogMediaType.PostPrimary)" title="@Model.Title" alt="@Model.Title" />
+                    </a>
+                }
+
+                <div class="header-inner">
+                    <h3 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h3>
+                    <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
+                    @if (Model.Excerpt?.Length <= 300)
+                    {
+                        <div class="excerpt">
+                            @Model.Excerpt
+                            <div>
+                                <a href="@Model.GetLink()" alt="@Model.Title" rel="canonical">Read Article</a> |
+                                <a itemprop="articleSection" href="/category/@Model.Categories.First()" title="Posted in @Model.Categories.First()">@Model.Categories.First()</a>
+
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <text>|</text>
+                                    <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </header>
+        </div>
+    </article>
+
+</div>

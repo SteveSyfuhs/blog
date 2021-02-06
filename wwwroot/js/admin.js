@@ -1,8 +1,5 @@
 ﻿(function () {
 
-    var mediaImg = document.getElementById('media');
-    var mediaUrl = document.getElementById('MediaUrl');
-
     var setImage = function (img, url) {
         if (!img) {
             return;
@@ -13,18 +10,26 @@
         }
         else {
             img.style.display = 'block';
-            mediaImg.src = url;
+            img.src = url;
         }
 
     };
 
-    if (mediaImg && mediaUrl) {
-        setImage(mediaImg, mediaUrl.value);
+    var handleImage = function (imgId, urlId) {
+        var mediaImg = document.getElementById(imgId);
+        var mediaUrl = document.getElementById(urlId);
 
-        mediaUrl.addEventListener('change', function (e) {
-            setImage(mediaImg, e.target.value);
-        });
-    }
+        if (mediaImg && mediaUrl) {
+            setImage(mediaImg, mediaUrl.value);
+
+            mediaUrl.addEventListener('change', function (e) {
+                setImage(mediaImg, e.target.value);
+            });
+        }
+    };
+
+    handleImage('media', 'PrimaryMediaUrl');
+    handleImage('heroMedia', 'HeroBackgroundImageUrl');
 
     var substringMatcher = function (strs) {
         return function findMatches(q, cb) {

@@ -81,15 +81,15 @@ a.noline {
         padding-bottom: 15px;
     }
 
-    #media {
+    #media, #heroMedia {
         max-width: 100px;
-        margin: 10px auto;
+        margin: 40px auto 0 auto;
     }
 
     .media-url {
         .col-lg-10, .col-lg-2 {
             padding: 0;
-            margin-top: 10px;
+            margin-top: 0;
 
             label, .desc {
                 padding-left: calc(var(--bs-gutter-x)/ 2);

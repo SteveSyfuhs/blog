@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using WebEssentials.AspNetCore.OutputCaching;
 
 namespace blog.Models
@@ -50,9 +49,11 @@ namespace blog.Models
         [OutputCache(Profile = "default")]
         public async Task<IActionResult> Index([FromRoute] int page = 0)
         {
-            var skip = _settings.PostsPerPage * page;
+            var postsPerPage = _settings.PostsPerPage;
 
-            var posts = await _blog.GetPosts(_settings.PostsPerPage, skip);
+            var skip = postsPerPage * page;
+
+            var posts = await _blog.GetPosts(postsPerPage, skip);
 
             if (!posts.Any() && page > 0)
             {
@@ -69,6 +70,8 @@ namespace blog.Models
             }
 
             ViewData["Description"] = _settings.Name + " | " + _settings.Description;
+            ViewData["Highlight"] = "Featured Posts";
+            //ViewData["IncludeTitle"] = true;
 
             var postCount = posts.Count();
             var allPostsCount = await _blog.GetPostCount(includePages: false);
@@ -388,7 +391,7 @@ namespace blog.Models
         [HttpGet, Authorize]
         public async Task<IActionResult> EditPosts([FromRoute] int page)
         {
-            var pageSize = _settings.PostsPerPage * 5;
+            var pageSize = _settings.PostsPerPage;
 
             var skip = pageSize * page;
 
@@ -433,22 +436,22 @@ namespace blog.Models
             existing.IncludeAuthor = post.IncludeAuthor;
             existing.IsIndexed = post.IsIndexed;
 
-            if (!string.IsNullOrWhiteSpace(post.MediaUrl) && Uri.TryCreate(post.MediaUrl.Trim(), UriKind.Absolute, out Uri mediaUrl))
+            if (!string.IsNullOrWhiteSpace(post.PrimaryMediaUrl) && Uri.TryCreate(post.PrimaryMediaUrl.Trim(), UriKind.Absolute, out Uri mediaUrl))
             {
-                existing.MediaUrl = mediaUrl.AbsoluteUri;
+                existing.PrimaryMediaUrl = mediaUrl.AbsoluteUri;
             }
             else
             {
-                existing.MediaUrl = null;
+                existing.PrimaryMediaUrl = null;
             }
 
-            if (!string.IsNullOrWhiteSpace(post.HeroImageUrl))
+            if (!string.IsNullOrWhiteSpace(post.HeroBackgroundImageUrl) && Uri.TryCreate(post.HeroBackgroundImageUrl.Trim(), UriKind.Absolute, out Uri heroImageUrl))
             {
-                existing.HeroImageUrl = new Uri(post.HeroImageUrl.Trim()).OriginalString;
+                existing.HeroBackgroundImageUrl = heroImageUrl.AbsoluteUri;
             }
             else
             {
-                existing.HeroImageUrl = null;
+                existing.HeroBackgroundImageUrl = null;
             }
 
             await _blog.SavePost(existing);

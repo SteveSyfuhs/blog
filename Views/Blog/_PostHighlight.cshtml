@@ -1,0 +1,40 @@
+﻿@model Post
+@inject IBlogService blog
+
+<div class="highlight">
+    <article class="post" itemscope itemtype="http://schema.org/BlogPosting" itemprop="blogPost">
+        <div class="container">
+            <header class="no-media">
+                <a class="img-link" href="@Model.GetLink()" alt="@Model.Title" title="@Model.Title">
+                    <img class="highlight-img" width="530" height="400" src="@Model.GetMedia(BlogMediaType.PostPrimary)" title="@Model.Title" alt="@Model.Title" />
+                </a>
+
+                <div class="header-inner">
+                    <h2 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h2>
+                    <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
+
+                    <div class="posted-in"> Posted in
+                        <a itemprop="articleSection" href="/category/@Model.Categories.First()" title="Posted in @Model.Categories.First()">@Model.Categories.First()</a>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <text>|</text>
+                            <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
+                        }
+                    </div>
+                    @if (Model.Excerpt?.Length <= 300)
+                    {
+                        <div class="excerpt">
+                            @Model.Excerpt
+
+                            <a href="@Model.GetLink()" alt="@Model.Title" rel="canonical">Read Article</a>
+                        </div>
+                    }
+                </div>
+            </header>
+        </div>
+
+        @{
+            await Html.RenderPartialAsync("_AuthorComponent.cshtml", blog.GetAuthor());
+        }
+    </article>
+</div>

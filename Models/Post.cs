@@ -56,9 +56,9 @@ namespace blog.Models
 
         public DateTime LastModified { get; set; } = DateTime.UtcNow;
 
-        public string MediaUrl { get; set; }
+        public string PrimaryMediaUrl { get; set; }
 
-        public string HeroImageUrl { get; set; }
+        public string HeroBackgroundImageUrl { get; set; }
 
         public bool IsPublished { get; set; } = true;
 
@@ -146,8 +146,8 @@ namespace blog.Models
         {
             var mediaUrl = type switch
             {
-                BlogMediaType.PostBackground => HeroImageUrl,
-                _ => MediaUrl,
+                BlogMediaType.PostBackground => HeroBackgroundImageUrl,
+                _ => PrimaryMediaUrl,
             };
 
             if (string.IsNullOrWhiteSpace(mediaUrl))
