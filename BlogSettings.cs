@@ -43,6 +43,8 @@ namespace blog
         public string URadUserKey { get; set; }
 
         public IEnumerable<UrlReplacement> UrlReplacements { get; set; }
+
+        public IEnumerable<UrlReplacement> Redirects { get; set; }
     }
 
     public class UrlReplacement

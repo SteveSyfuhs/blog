@@ -103,6 +103,13 @@ namespace blog.Controllers
             {
                 var path = feature.OriginalPath;
 
+                var knownRedirect = _settings.Redirects.FirstOrDefault(r => path.Equals(r.Find, StringComparison.OrdinalIgnoreCase));
+
+                if (knownRedirect != null)
+                {
+                    return Redirect(knownRedirect.Replace);
+                }
+
                 if (path.EndsWith('/'))
                 {
                     path = path[0..^1];

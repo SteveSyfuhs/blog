@@ -133,6 +133,7 @@ h1, h2, h3, h4 {
     font-weight: 500;
 }
 
+
 h3 {
     font-weight: 400;
     font-size: 1.3rem;
@@ -149,7 +150,12 @@ time {
 
 .highlight, .snapshot {
     .post {
-        h2, h3 {
+        h1 {
+            font-weight: 500;
+            font-size: 2rem;
+        }
+
+        h1, h2, h3 {
             margin-top: 0.5em;
             margin-bottom: 0.1em;
 
@@ -187,7 +193,7 @@ time {
             margin: auto;
             text-align: left;
 
-            h2 {
+            h1, h2 {
                 text-align: center;
             }
         }
@@ -282,7 +288,7 @@ time {
         clear: both; // In case there are any floating elements in the post content
     }
 
-    h2, h3, h4, h5, h6 {
+    h1, h2, h3, h4, h5, h6 {
         margin: 1em 0 -.5em 0;
     }
 
@@ -426,7 +432,7 @@ time {
             .header-inner {
                 max-width: 100%;
 
-                h2 {
+                h1, h2 {
                     text-align: left;
                 }
 
