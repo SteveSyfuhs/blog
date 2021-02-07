@@ -57,6 +57,42 @@
         })
     });
 
+    var excerpt = document.getElementById("Excerpt");
+    var desc = document.getElementById("descCharCount");
+
+    var calculateLength = function (textElement, labelElement) {
+        var val = textElement.value;
+
+        var length = val.length;
+        var words = val.split(' ').length;
+
+        var indicator = "";
+
+        if (length === 1) {
+            indicator = "1 character";
+        }
+        else {
+            indicator = length + " characters / ";
+        }
+
+        if (val === '') {
+            indicator += "0 words";
+        }
+        else if (words == 1) {
+            indicator += "1 word";
+        } else {
+            indicator += words + " words";
+        }
+
+        labelElement.innerText = indicator;
+    };
+
+    calculateLength(excerpt, desc);
+
+    excerpt.addEventListener("input", function (e) {
+        calculateLength(e.target, desc);
+    });
+
     var edit = document.getElementById("edit");
 
     if (edit) {

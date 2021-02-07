@@ -72,6 +72,8 @@ namespace blog.Models
 
         public bool IsIndexed { get; set; }
 
+        public int CurrentPage { get; set; }
+
         public string GetLink()
         {
             if (Slug.StartsWith('/'))
@@ -180,6 +182,49 @@ namespace blog.Models
                 "<iframe src={0}></iframe>"
             ),
         };
+
+        public string RenderAsPage()
+        {
+            var rendered = this.RenderContent();
+
+            var pages = rendered.Split("[page-break]", StringSplitOptions.RemoveEmptyEntries);
+
+            var pageLink = this.GetLink();
+
+            if (pageLink.EndsWith('/'))
+            {
+                pageLink = pageLink[0..^1];
+            }
+
+            for (var i = 0; i < pages.Length; i++)
+            {
+                if(pages.Length > 1)
+                {
+                    pages[i] = $"<div class=\"pages\">Page {i + 1} / {pages.Length}</div>" + pages[i];
+                }
+
+                pages[i] += "<nav class=\"pagination\" aria-label=\"Pagination\">";
+
+                if (i > 0)
+                {
+                    pages[i] += $"<a href=\"{pageLink}/{i - 2}\">&laquo; Previous Page</a>";
+                }
+
+                if (i < pages.Length - 1)
+                {
+                    pages[i] += $"<a href=\"{pageLink}/{i + 2}\">Continue Reading on Next Page &raquo;</a>";
+                }
+
+                pages[i] += "</nav>";
+            }
+
+            if (this.CurrentPage > 1 && this.CurrentPage <= pages.Length)
+            {
+                return pages[this.CurrentPage - 1];
+            }
+
+            return pages[0];
+        }
 
         public string RenderContent(bool lazyLoad = true)
         {

@@ -130,8 +130,10 @@ iframe {
 }
 
 .pagination {
-    padding-bottom: 2em;
     margin-top: 1em;
+    text-align: center;
+    display: block;
+    margin: 35px auto;
 
     a {
         border: 1px solid $comments_input_border-color;
@@ -140,6 +142,7 @@ iframe {
         display: inline-block;
         padding: 4px 15px;
         text-decoration: none;
+        margin-right: 15px;
 
         &[rel=next] {
             float: right;

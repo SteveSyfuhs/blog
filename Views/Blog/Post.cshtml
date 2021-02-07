@@ -1,7 +1,15 @@
 ﻿@model Post
 @inject BlogSettings settings
 @{
-    ViewData["Title"] = Model.Title;
+    if (Model.CurrentPage > 0)
+    {
+        this.ViewData["Title"] = $"Page {Model.CurrentPage} of {Model.Title}";
+    }
+    else
+    {
+        this.ViewData["Title"] = Model.Title;
+    }
+
     ViewData["Description"] = Model.Excerpt ?? settings.Name + " | " + settings.Description;
     bool showFullPost = ViewContext.RouteData.Values.ContainsKey("slug");
     string host = Context.Request.Scheme + "://" + Context.Request.Host;
@@ -48,7 +56,7 @@
     <div class="container">
 
         <div itemprop="articleBody mainEntityOfPage" class="article-body" cdnify>
-            @Html.Raw(Model.RenderContent())
+            @Html.Raw(Model.RenderAsPage())
         </div>
 
         <footer>

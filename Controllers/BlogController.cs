@@ -182,11 +182,13 @@ namespace blog.Controllers
             return LocalRedirectPermanent($"/{slug}");
         }
 
-        [Route("/{year:int}/{month:int}/{day:int}/{slug}")]
+        [Route("/{year:int}/{month:int}/{day:int}/{slug}/{page:int?}")]
         [OutputCache(Profile = "default")]
-        public Task<IActionResult> Post()
+        public Task<IActionResult> Post(int year, int month, int day, string slug, int? page)
         {
-            return Post(Request.Path.Value);
+            var url = Request.Path.Value;
+
+            return Post(url.Substring(0, page.HasValue ? url.LastIndexOf('/') + 1 : url.Length), page);
         }
 
         [Route("/{year:int}/{month:int}/{day:int?}")]
@@ -215,15 +217,16 @@ namespace blog.Controllers
             return View("Views/Blog/Index.cshtml", allPosts);
         }
 
-        [Route("/{slug?}")]
+        [Route("/{slug?}/{page:int?}")]
         [OutputCache(Profile = "default")]
-        public async Task<IActionResult> Post(string slug)
+        public async Task<IActionResult> Post(string slug, int? page)
         {
             var post = await _blog.GetPostBySlug(slug);
 
             if (post != null)
             {
                 post.SetDomain(_settings.BaseDomain);
+                post.CurrentPage = page ?? 0;
 
                 if (!post.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase))
                 {
