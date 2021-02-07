@@ -1,0 +1,36 @@
+﻿@model ImagesFolder
+
+@functions {
+    private static void FriendlyFolderName(string name, out string id, out string friendly)
+    {
+        id = name.Replace("/", "-");
+
+        if (id.StartsWith('-'))
+        {
+            id = id.Substring(1);
+        }
+
+        friendly = id.Split('-').Last();
+    }
+}
+
+@{
+    FriendlyFolderName(Model.Path, out string folderName, out string friendlyName);
+}
+
+<li class="nav-item" role="presentation">
+    <a class="nav-link @(Model.Active ? "active" : "") @(!Model.Images.Any() ? "disabled" : "")"
+       id="i-@folderName-tab"
+       data-bs-toggle="tab" href="#i-@folderName" role="tab" aria-controls="i-@folderName" aria-selected="true" data-path="@Model.Path">
+        @friendlyName @(Model.Images.Any() ? $"({Model.Images.Count()})" : "")
+    </a>
+
+    @foreach (var folder in Model.Folders.OrderByDescending(f => f.Key))
+    {
+        <ul class="nav nav-tabs flex-column">
+            @{
+                await Html.RenderPartialAsync("~/views/images/_ImageFolderNav.cshtml", folder.Value);
+            }
+        </ul>
+    }
+</li>

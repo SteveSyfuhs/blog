@@ -1,33 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using blog.Controllers;
+using blog.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebEssentials.AspNetCore.OutputCaching;
 
-namespace blog.Models
+namespace blog.Controllers
 {
-    [DebuggerDisplay("{Title}")]
-    public class ImageFile
-    {
-        public string Url { get; set; }
-
-        public string Title { get; set; }
-
-        public long Size { get; set; }
-
-        public DateTimeOffset Created { get; set; }
-
-        public string Id => Path.GetFileNameWithoutExtension(this.Url);
-    }
-
     public class BlogController : Controller
     {
         private readonly IBlogService _blog;
@@ -154,99 +139,6 @@ namespace blog.Models
             }
 
             return View("NotFound", searchResults);
-        }
-
-        [Route("/edit/images")]
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> ListImages()
-        {
-            var images = await _blog.ListImages();
-
-            return View("images", images);
-        }
-
-        [Route("/edit/upload")]
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> UploadEditorImage(IFormFile file)
-        {
-            const long maxUploadSize = 10L * 1024L * 1024L * 1024L;
-
-            if (!ModelState.IsValid)
-            {
-                return View("images");
-            }
-
-            string name = null;
-
-            var formFileContent = await FileHelpers.ProcessFormFile<ImagesModel>(
-                    file,
-                    ModelState, new[] { ".jpg", ".jpeg", ".png", ".gif", ".jfif" },
-                    maxUploadSize
-                );
-
-            if (formFileContent.Length > 0)
-            {
-                name = await UploadImage(formFileContent, file.FileName, $"{DateTimeOffset.UtcNow.Year}");
-            }
-
-            return Json(new { location = name });
-        }
-
-        [Route("/edit/images")]
-        [HttpDelete]
-        [Authorize]
-        public async Task<IActionResult> DeleteImage([FromQuery] string url)
-        {
-            await this._blog.DeleteFile(url);
-
-            return StatusCode((int)HttpStatusCode.NoContent);
-        }
-
-        [Route("/edit/images")]
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> UploadImage(ImagesModel model)
-        {
-            const long maxUploadSize = 10L * 1024L * 1024L * 1024L;
-
-            if (!ModelState.IsValid)
-            {
-                return View("images");
-            }
-
-            string name = null;
-
-            foreach (var file in model.FormFiles)
-            {
-                var formFileContent = await FileHelpers.ProcessFormFile<ImagesModel>(
-                    file,
-                    ModelState, new[] { ".jpg", ".jpeg", ".png", ".gif", ".jfif" },
-                    maxUploadSize
-                );
-
-                if (formFileContent.Length > 0)
-                {
-                    name = await UploadImage(formFileContent, file.FileName, model.UploadFolder);
-
-                    name = Path.GetFileNameWithoutExtension(name);
-                }
-            }
-
-            return Redirect($"/edit/images#{name}");
-        }
-
-        private async Task<string> UploadImage(byte[] formFileContent, string name, string uploadFolder)
-        {
-            name = name.Replace(" ", "_");
-
-            if (!string.IsNullOrWhiteSpace(uploadFolder))
-            {
-                name = WebUtility.UrlEncode($"{uploadFolder}/{name}");
-            }
-
-            return await _blog.SaveFile(formFileContent, name);
         }
 
         [Route("/tag/{category}/{page:int?}")]

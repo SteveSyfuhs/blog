@@ -264,6 +264,26 @@ a.noline {
         text-align: center;
     }
 }
+
+.container-xxl {
+    padding: 0 !important;
+    max-width: 80% !important;
+}
+
+.image-tabs {
+    width: 200px;
+    margin-left: 25px;
+    margin-right: 10px;
+
+    .nav-link.active {
+        border-color: #dee2e6 #dee2e6 !important;
+    }
+
+    ul.nav {
+        margin-left: 25px;
+    }
+}
+
 ol.image-list, ul.image-list {
     padding: 0;
     margin: 5px auto;

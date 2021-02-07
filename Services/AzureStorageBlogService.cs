@@ -61,10 +61,23 @@ namespace blog
         protected override async Task<string> PersistDataFile(byte[] bytes, string fileName, string suffix)
         {
             string ext = Path.GetExtension(fileName).Substring(1).ToLowerInvariant();
-            string name = Path.GetFileNameWithoutExtension(fileName);
 
-            string relative = WebUtility.UrlDecode($"{name}_{suffix}.{ext}");
+            try
+            {
+                return await Upload(bytes, ext, WebUtility.UrlDecode(fileName));
+            }
+            catch (FileOverwriteException)
+            {
+                string name = Path.GetFileNameWithoutExtension(fileName);
 
+                string relative = WebUtility.UrlDecode($"{name}_{suffix}.{ext}");
+
+                return await Upload(bytes, ext, relative);
+            }
+        }
+
+        private async Task<string> Upload(byte[] bytes, string ext, string relative)
+        {
             BlobContainerClient container;
 
             if (TrustedImageExtensions.TryGetValue(ext, out string contentType))
@@ -76,7 +89,17 @@ namespace blog
                 container = LoadBlobContainer(FilesContainerName);
             }
 
+            if (relative.StartsWith(container.Name + "/"))
+            {
+                relative = relative.Substring(container.Name.Length + 1);
+            }
+
             var blob = container.GetBlobClient(relative);
+
+            if (await blob.ExistsAsync())
+            {
+                throw new FileOverwriteException();
+            }
 
             var options = new BlobUploadOptions
             {

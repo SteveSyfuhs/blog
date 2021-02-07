@@ -106,4 +106,10 @@
     {
         <script src="https://platform.twitter.com/widgets.js" async defer></script>
     }
+
+    @if (settings.CommentoCommentsEnabled)
+    {
+        <link rel="stylesheet" href="~/css/commento.scss" />
+        <script src="https://cdn.commento.io/js/count.js" async defer></script>
+    }
 }
