@@ -13,8 +13,12 @@
                     <h2 itemprop="name headline"><a href="@Model.GetLink()" rel="canonical" itemprop="url">@Model.Title</a></h2>
                     <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
 
-                    <div class="posted-in"> Posted in
-                        <a itemprop="articleSection" href="/category/@Model.Categories.First()" title="Posted in @Model.Categories.First()">@Model.Categories.First()</a>
+                    <div class="posted-in">
+                        @if (Model.Categories.Any())
+                        {
+                            <text>Posted in</text>
+                            <a itemprop="articleSection" href="/category/@Model.Categories.First()" title="Posted in @Model.Categories.First()">@Model.Categories.First()</a>
+                        }
                         @if (User.Identity.IsAuthenticated)
                         {
                             <text>|</text>

@@ -35,7 +35,8 @@
     <title>@ViewData["Title"]</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1" />
     <meta name="description" content="@ViewData["Description"]" />
-    <link href="/css/Bootstrap.scss" rel="stylesheet" />
+    @RenderSection("Head", required: false)
+    <link href="/css/Bootstrap.scss" rel="stylesheet" inline />
     <link rel="stylesheet" href="~/css/abovethefold.scss" inline />
     @if (!string.IsNullOrWhiteSpace(settings.ApplicationInsightsKey))
     {
@@ -59,8 +60,6 @@
             gtag('config', '@settings.GoogleTagId');
         </script>
     }
-    @RenderSection("Head", required: false)
-
     @if (!(ViewData["Meta"] is MetaModel meta) || !meta.MetaTags.Any(t => t.Key == "og:type"))
     {
         <meta property="og:type" content="website" />
@@ -181,7 +180,7 @@
     </footer>
     @RenderSection("Scripts", required: false)
     <link rel="stylesheet" href="~/css/belowthefold.scss" />
-    <script src="~/js/site.js" async defer></script>
+    <script src="~/js/site.js" inline></script>
 
     <iframe src="/kmsi" hidden></iframe>
 </body>

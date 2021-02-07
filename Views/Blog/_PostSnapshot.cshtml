@@ -19,8 +19,13 @@
                         <div class="excerpt">
                             @Model.Excerpt
                             <div>
-                                <a href="@Model.GetLink()" alt="@Model.Title" rel="canonical">Read Article</a> |
-                                <a itemprop="articleSection" href="/category/@Model.Categories.First()" title="Posted in @Model.Categories.First()">@Model.Categories.First()</a>
+                                <a href="@Model.GetLink()" alt="@Model.Title" rel="canonical">Read Article</a>
+
+                                @if (Model.Categories.Any())
+                                {
+                                    <text>|</text>
+                                    <a itemprop="articleSection" href="/category/@Model.Categories.First()" title="Posted in @Model.Categories.First()">@Model.Categories.First()</a>
+                                }
 
                                 @if (User.Identity.IsAuthenticated)
                                 {
