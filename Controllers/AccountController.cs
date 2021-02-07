@@ -27,9 +27,21 @@ namespace blog.Controllers
         [Route("/logout")]
         public async Task<IActionResult> LogOutAsync()
         {
+            foreach (var cookie in Request.Cookies)
+            {
+                Response.Cookies.Delete(cookie.Key);
+            }
+
             await HttpContext.SignOutAsync();
 
             return LocalRedirect("/");
+        }
+
+        [Authorize]
+        [Route("/kmsi")]
+        public IActionResult Kmsi()
+        {
+            return Ok();
         }
     }
 }

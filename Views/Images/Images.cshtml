@@ -50,7 +50,7 @@
 
 <div class="container-xxl">
 
-    <form enctype="multipart/form-data" method="post" autocomplete="off">
+    <form method="post" id="upload" class="upload-file" asp-controller="Images" asp-action="UploadImage" enctype="multipart/form-data" autocomplete="off">
         <dl class="upload-file">
             <dt>
                 Upload<label asp-for="FormFiles"></label>
@@ -125,6 +125,7 @@
                                     <div>
                                         <code>@image.Url.Substring(folder.Key.Length + 1)</code> | @image.Created.ToString("g")
                                         <button class="btn btn-link" onclick="navigator.clipboard.writeText('@image.Url')">Copy</button>
+                                        <div>@image.Size</div>                                        
                                     </div>
                                 </li>
                             }

@@ -33,6 +33,7 @@ namespace blog.Controllers
 
         [Route("/edit/upload")]
         [HttpPost]
+        [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> UploadEditorImage(IFormFile file)
         {
             const long maxUploadSize = 10L * 1024L * 1024L * 1024L;
@@ -52,7 +53,7 @@ namespace blog.Controllers
 
             if (formFileContent.Length > 0)
             {
-                name = await UploadImage(formFileContent, file.FileName, $"{DateTimeOffset.UtcNow.Year}");
+                name = await UploadImage(formFileContent, file.FileName, $"{DateTimeOffset.UtcNow.Year}/{DateTimeOffset.UtcNow.Month}");
             }
 
             return Json(new { location = name });
@@ -69,6 +70,7 @@ namespace blog.Controllers
 
         [Route("/edit/images")]
         [HttpPost]
+        [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> UploadImage(ImagesModel model)
         {
             const long maxUploadSize = 10L * 1024L * 1024L * 1024L;
@@ -96,7 +98,7 @@ namespace blog.Controllers
                 }
             }
 
-            return Redirect($"/edit/images#{name}");
+            return Redirect($"/edit/images");
         }
 
         private async Task<string> UploadImage(byte[] formFileContent, string name, string uploadFolder)

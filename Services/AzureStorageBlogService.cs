@@ -70,7 +70,7 @@ namespace blog
             {
                 string name = Path.GetFileNameWithoutExtension(fileName);
 
-                string relative = WebUtility.UrlDecode($"{name}_{suffix}.{ext}");
+                string relative = WebUtility.UrlDecode($"{name}-{suffix}.{ext}");
 
                 return await Upload(bytes, ext, relative);
             }
@@ -139,7 +139,7 @@ namespace blog
                         Title = blob.Name,
                         Url = blob.Uri.OriginalString.Replace("%2F", "/"),
                         Created = item.Properties.CreatedOn ?? DateTimeOffset.MinValue,
-                        Size = item.Properties.ContentLength ?? 0
+                        Length = item.Properties.ContentLength ?? 0
                     });
 
                     return Task.CompletedTask;

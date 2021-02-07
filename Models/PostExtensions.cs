@@ -25,5 +25,22 @@ namespace blog.Models
         {
             return posts.Where(p => p != highlight);
         }
+
+        public static string ToFileSize(this long size)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+
+            int order = 0;
+
+            var sizeDec = (decimal)size;
+
+            while (sizeDec >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                sizeDec /= 1024;
+            }
+
+            return string.Format("{0:0.##} {1}", sizeDec, sizes[order]);
+        }
     }
 }

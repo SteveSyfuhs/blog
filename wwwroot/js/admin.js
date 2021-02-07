@@ -84,8 +84,38 @@
             extended_valid_elements: 'script[src|async|defer|type|charset]',
             images_upload_url: '/edit/upload',
             toolbar_sticky: true,
-            setup: function (editor) {
+            images_upload_handler: function (blobInfo, success, failure) {
+                var xhr, formData;
 
+                xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+                xhr.open('POST', '/edit/upload');
+
+                xhr.onload = function () {
+                    var json;
+
+                    if (xhr.status != 200) {
+                        failure('HTTP Error: ' + xhr.status);
+                        return;
+                    }
+
+                    json = JSON.parse(xhr.responseText);
+
+                    if (!json || typeof json.location != 'string') {
+                        failure('Invalid JSON: ' + xhr.responseText);
+                        return;
+                    }
+
+                    success(json.location);
+                };
+
+                formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                formData.append('__RequestVerificationToken', document.querySelector("input[name=__RequestVerificationToken]").value);
+
+                xhr.send(formData);
+            },
+            setup: function (editor) {
                 editor.ui.registry.addButton('imageupload', {
                     text: 'image',
                     onAction: function (_) {
