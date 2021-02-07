@@ -19,10 +19,15 @@
 
     <form action="/search" method="get">
 
-        <input id="q" class="searchbox" name="q" type="search" maxlength="1000" 
-               autocapitalize="off" autocomplete="off" spellcheck="false" 
+        @if (Model == null)
+        {
+            <h1>Search this site</h1>
+        }
+
+        <input id="q" class="searchbox" name="q" type="search" maxlength="1000"
+               autocapitalize="off" autocomplete="off" spellcheck="false"
                title="Enter your search term" autofocus="autofocus"
-               aria-autocomplete="both" 
+               aria-autocomplete="both"
                value="@Model?.Query" placeholder="Search..." />
     </form>
 
