@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.AspNetCore.Mvc;
 
 namespace blog
 {
@@ -59,7 +58,7 @@ namespace blog
         public async Task<IActionResult> Index([FromQuery] string q, [FromQuery] int page)
         {
             ViewData["Title"] = _settings.Name + " | " + _settings.Description;
-            ViewData["Description"] = "Search this site";
+            ViewData["Description"] = "Search the site: " + _settings.Name;
 
             if (string.IsNullOrWhiteSpace(q))
             {
@@ -75,7 +74,7 @@ namespace blog
                 page = 0;
             }
 
-            var pageResults = _settings.PostsPerPage * 3;
+            var pageResults = _settings.PostsPerPage;
 
             var skip = page * pageResults;
 
