@@ -158,8 +158,14 @@ namespace blog.Controllers
 
             var posts = allPosts.Skip(skip).Take(_settings.PostsPerPage);
 
+            if (!posts.Any())
+            {
+                return Redirect("/");
+            }
+
             ViewData["Title"] = $"{category} | {_settings.Name}";
             ViewData["Description"] = $"Articles posted in the {category} category";
+            ViewData["Category"] = category;
 
             var postCount = posts.Count();
             var allPostsCount = allPosts.Count();

@@ -19,6 +19,25 @@
             </header>
         </div>
     }
+
+    @if (ViewData["Category"] != null)
+    {
+        <div class="post">
+            <header class="no-media">
+                <div>
+                    @if (highlight == null)
+                    {
+                        <h1>Posted in @ViewData["Category"]</h1>
+                    }
+                    else
+                    {
+                        <h2>Posted in @ViewData["Category"]</h2>
+                    }
+                </div>
+            </header>
+        </div>
+    }
+
     <div class="row featured">
         @if (highlight != null)
         {
