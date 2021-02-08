@@ -144,10 +144,6 @@ iframe {
         text-decoration: none;
         margin-right: 15px;
 
-        &[rel=next] {
-            float: right;
-        }
-
         &:hover,
         &:focus {
             background: $comments_border-color;

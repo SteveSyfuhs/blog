@@ -72,28 +72,32 @@
         }
     </div>
 
-    <nav class="pagination container" aria-label="Pagination">
-        @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
-        {
-            <a rel="prev" href="@ViewData["prev"]" title="Older posts">&laquo; Older</a>
-        }
+    <div class="post">
+        <div>
+            <nav class="pagination container" aria-label="Pagination">
+                @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
+                {
+                    <a rel="prev" href="@ViewData["prev"]" title="Older posts">&laquo; Older Posts</a>
+                }
 
-        @if (currentPage > 0)
-        {
-            <a rel="next" href="@ViewData["next"]" title="Newer posts">Newer &raquo;</a>
-        }
+                @if (currentPage > 0)
+                {
+                    <a rel="next" href="@ViewData["next"]" title="Newer posts">Newer Posts &raquo;</a>
+                }
 
-        @section Head {
-            @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
-            {
-                <link rel="prev" href="@ViewData["prev"]" />
-            }
-            @if (currentPage > 0)
-            {
-                <link rel="next" href="@ViewData["next"]" />
-            }
-        }
-    </nav>
+                @section Head {
+                    @if (!string.IsNullOrWhiteSpace(ViewData["prev"] as string))
+                    {
+                        <link rel="prev" href="@ViewData["prev"]" />
+                    }
+                    @if (currentPage > 0)
+                    {
+                        <link rel="next" href="@ViewData["next"]" />
+                    }
+                }
+            </nav>
+        </div>
+    </div>
 </div>
 
 @{await Html.RenderPartialAsync("_SocialSharing", ViewData["Title"]);}
