@@ -99,6 +99,8 @@ namespace blog
 
             app.UseStatusCodePagesWithReExecute("/error/{0}");
 
+            app.UseMiddleware<WebMarkupMinFileNotFoundHandlerMiddleware>();
+
             app.UseResponseCompression();
 
             app.UseWebOptimizer();
