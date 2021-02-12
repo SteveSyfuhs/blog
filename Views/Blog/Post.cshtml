@@ -20,6 +20,11 @@
 }
 
 <article class="post" itemscope itemtype="http://schema.org/BlogPosting" itemprop="blogPost">
+    @if (!string.IsNullOrWhiteSpace(Model.GetMedia(BlogMediaType.PostPrimary)))
+    {
+        <meta itemprop="image" content="@Model.GetMedia(BlogMediaType.PostPrimary)" />
+    }
+
     @if (string.IsNullOrWhiteSpace(Model.PrimaryMediaUrl))
     {
         <div class="container">
