@@ -1,17 +1,16 @@
-﻿using blog.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
-using Microsoft.SyndicationFeed;
-using Microsoft.SyndicationFeed.Atom;
-using Microsoft.SyndicationFeed.Rss;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using blog.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using Microsoft.SyndicationFeed;
+using Microsoft.SyndicationFeed.Atom;
+using Microsoft.SyndicationFeed.Rss;
 using static blog.ArinMiddleware;
 
 namespace blog
@@ -27,6 +26,8 @@ namespace blog
             _settings = settings;
         }
 
+        [Route("/wallet.dat")]
+        [Route("/bitcoin/{path?}")]
         [Route("/admin/{path?}")]
         [Route("/admins/{path?}")]
         [Route("/moderator/{path?}")]
@@ -36,16 +37,21 @@ namespace blog
         [Route("/modules/{path?}")]
         [Route("/old/{path?}")]
         [Route("/new/{path?}")]
-        [Route("/wordpress/{path?}")]
         [Route("/demo/{path?}")]
         [Route("/site/{path?}")]
-        [Route("/wallet.dat")]
-        [Route("/bitcoin/{path?}")]
+        [Route("/wordpress/{path?}")]
         [Route("/wp-admin/{path?}")]
+        [Route("/wp-content/{path?}")]
+        [Route("/wp-includes/{path?}")]
         [Route("{file}.php")]
         [Route("/wp-json/wp/v2/{resource?}")]
         [Route("/inc/{file?}")]
         [Route("/administrator/")]
+        [Route("/content/binary/WindowsLiveWriter/{path?}/{file?}")]
+        [Route("/Windows-Live-Writer/{path?}/{file?}")]
+        [Route("/media/blog/{file?}")]
+        [Route("/image_thumb_{file}")]
+        [Route("/{path?}/xmlrpc.php")]
         public IActionResult Sinkhole()
         {
             return new EmptyResult();
@@ -200,6 +206,7 @@ namespace blog
         }
 
         [Route("/atom.aspx")]
+        [Route("/atom/")]
         public async Task Atom()
         {
             await Rss("atom");
@@ -207,13 +214,15 @@ namespace blog
 
         [Route("/SyndicationService.asmx/GetRss")]
         [Route("/rss.aspx")]
+        [Route("/rss/")]
         [Route("/syndication.axd")]
         [Route("/feed/{type?}")]
         public async Task Rss(string type = "rss")
         {
             if (this.Request.Query.TryGetValue("format", out StringValues format))
             {
-                var types = format.Where(f => "rss".Equals(f, StringComparison.OrdinalIgnoreCase) || "atom".Equals(f, StringComparison.OrdinalIgnoreCase));
+                var types = format.Where(f => "rss".Equals(f, StringComparison.OrdinalIgnoreCase) || 
+                                              "atom".Equals(f, StringComparison.OrdinalIgnoreCase));
 
                 if (types.Any())
                 {
@@ -222,6 +231,31 @@ namespace blog
             }
 
             var posts = await _blog.GetPosts(25);
+
+            await SerializeFeed(
+                type,
+                posts,
+                lastUpdated: () => posts.Max(p => p.LastModified),
+                serializer: SerializePost
+            );
+        }
+
+        [Route("/category/{category}/feed/{type?}")]
+        [Route("/tag/{category}/feed/{type?}")]
+        public async Task CategoryRss(string category, string type = "rss")
+        {
+            if (this.Request.Query.TryGetValue("format", out StringValues format))
+            {
+                var types = format.Where(f => "rss".Equals(f, StringComparison.OrdinalIgnoreCase) ||
+                                              "atom".Equals(f, StringComparison.OrdinalIgnoreCase));
+
+                if (types.Any())
+                {
+                    type = types.First();
+                }
+            }
+
+            var posts = await _blog.GetPostsByCategory(category);
 
             await SerializeFeed(
                 type,
