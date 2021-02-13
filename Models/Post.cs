@@ -22,6 +22,8 @@ namespace blog.Models
     [DebuggerDisplay("{Title} | {Slug}")]
     public class Post
     {
+        public static readonly string PlaceholderImage = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
+
         private readonly BlogSettings settings;
 
         public Post()
@@ -198,14 +200,20 @@ namespace blog.Models
 
             for (var i = 0; i < pages.Length; i++)
             {
-                if(pages.Length > 1)
+                if (pages.Length > 1)
                 {
-                    pages[i] = $"<div class=\"pages\">Page {i + 1} / {pages.Length}</div>" + pages[i];
+                    var pageList = $"<div class=\"pages\">Page {i + 1} / {pages.Length}</div>";
+
+                    pages[i] = pageList + pages[i] + pageList;
                 }
 
                 pages[i] += "<nav class=\"pagination\" aria-label=\"Pagination\">";
 
-                if (i > 0)
+                if (i == 1)
+                {
+                    pages[i] += $"<a href=\"{pageLink}\">&laquo; Previous Page</a>";
+                }
+                else if (i > 0)
                 {
                     pages[i] += $"<a href=\"{pageLink}/{i - 2}\">&laquo; Previous Page</a>";
                 }
@@ -232,7 +240,7 @@ namespace blog.Models
 
             if (lazyLoad)
             {
-                result = result.Replace(" src=\"", " src=\"data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==\" data-src=\"");
+                result = result.Replace(" src=\"", $" src=\"{PlaceholderImage}\" data-src=\"");
             }
 
             foreach (var embed in EmbeddedReplaces)

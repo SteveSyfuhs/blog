@@ -6,7 +6,7 @@
         <div class="container">
             <header class="no-media">
                 <a class="img-link" href="@Model.GetLink()" alt="@Model.Title" title="@Model.Title">
-                    <img class="highlight-img" width="530" height="400" itemprop="image" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="@Model.GetMedia(BlogMediaType.PostPrimary)" title="@Model.Title" alt="@Model.Title" />
+                    <img class="highlight-img" width="530" height="400" itemprop="image" src="@Post.PlaceholderImage" data-src="@Model.GetMedia(BlogMediaType.PostPrimary)" title="@Model.Title" alt="@Model.Title" />
                 </a>
 
                 <div class="header-inner">
