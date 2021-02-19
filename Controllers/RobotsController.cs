@@ -219,30 +219,19 @@ namespace blog
         [Route("/feed/{type?}")]
         public async Task Rss(string type = "rss")
         {
-            if (this.Request.Query.TryGetValue("format", out StringValues format))
-            {
-                var types = format.Where(f => "rss".Equals(f, StringComparison.OrdinalIgnoreCase) || 
-                                              "atom".Equals(f, StringComparison.OrdinalIgnoreCase));
-
-                if (types.Any())
-                {
-                    type = types.First();
-                }
-            }
+            TryParseType(ref type);
 
             var posts = await _blog.GetPosts(25);
 
             await SerializeFeed(
                 type,
                 posts,
-                lastUpdated: () => posts.Max(p => p.LastModified),
+                lastUpdated: () => posts.Any() ? posts.Max(p => p.LastModified) : DateTime.MinValue,
                 serializer: SerializePost
             );
         }
 
-        [Route("/category/{category}/feed/{type?}")]
-        [Route("/tag/{category}/feed/{type?}")]
-        public async Task CategoryRss(string category, string type = "rss")
+        private void TryParseType(ref string type)
         {
             if (this.Request.Query.TryGetValue("format", out StringValues format))
             {
@@ -254,13 +243,20 @@ namespace blog
                     type = types.First();
                 }
             }
+        }
+
+        [Route("/category/{category}/feed/{type?}")]
+        [Route("/tag/{category}/feed/{type?}")]
+        public async Task CategoryRss(string category, string type = "rss")
+        {
+            TryParseType(ref type);
 
             var posts = await _blog.GetPostsByCategory(category);
 
             await SerializeFeed(
                 type,
                 posts,
-                lastUpdated: () => posts.Max(p => p.LastModified),
+                lastUpdated: () => posts.Any() ? posts.Max(p => p.LastModified) : DateTime.MinValue,
                 serializer: SerializePost
             );
         }
