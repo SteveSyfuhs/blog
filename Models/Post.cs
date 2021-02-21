@@ -35,8 +35,6 @@ namespace blog.Models
             this.settings = settings;
         }
 
-        private string domain;
-
         [Required]
         public string ID { get; set; } = DateTime.UtcNow.Ticks.ToString();
 
@@ -91,7 +89,7 @@ namespace blog.Models
             var uriBuilder = new UriBuilder
             {
                 Scheme = "https",
-                Host = domain ?? request.Host.Host,
+                Host = request.Host.Host,
                 Path = GetLink(),
                 Query = request.QueryString.ToString()
             };
@@ -262,11 +260,6 @@ namespace blog.Models
             }
 
             return result.ToString();
-        }
-
-        internal void SetDomain(string baseDomain)
-        {
-            domain = baseDomain;
         }
     }
 }

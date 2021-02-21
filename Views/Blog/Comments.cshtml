@@ -1,5 +1,5 @@
 ﻿@model Post
-@inject BlogSettings settings
+@inject IBlogService blog
 
 <section id="comments">
     <div class="container">
@@ -9,21 +9,21 @@
                 var path = window.parent.location.pathname;
                 window.parent = {
                     location: {
-                        host: '@(new Uri(settings.RootUrl).DnsSafeHost)',
+                        host: '@(new Uri(blog.Settings.RootUrl).DnsSafeHost)',
                         pathname: path
                     }
                 };
             </script>
         }
 
-        @if (settings.CommentoCommentsEnabled)
+        @if (blog.Settings.CommentoCommentsEnabled)
         {
             <label class="lbl-header" for="commento-textarea-root">Comments</label>
             <div id="commento"></div>
             <script src="https://cdn.commento.io/js/commento.js" defer data-page-id="/@Model.Slug" data-no-fonts="true"></script>
         }
 
-        @if (settings.BuiltinCommentsEnabled)
+        @if (blog.Settings.BuiltinCommentsEnabled)
         {
             @foreach (var comment in Model.Comments)
             {
@@ -49,7 +49,7 @@
                 </article>
             }
 
-            @if (Model.AreCommentsOpen(settings.CommentsCloseAfterDays))
+            @if (Model.AreCommentsOpen(blog.Settings.CommentsCloseAfterDays))
             {
                 if (Model.Comments.Count == 0)
                 {

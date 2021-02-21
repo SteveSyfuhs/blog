@@ -1,0 +1,218 @@
+﻿@model blog.BlogSettings
+
+@{
+    ViewData["Title"] = "Settings";
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/admin.scss" />
+}
+
+<div class="post-manager">
+    <form method="post" id="edit" class="container edit-post" asp-controller="Blog" asp-action="UpdateSettings" autocomplete="off">
+
+        <div class="row post-meta">
+            <div class="col-lg-6">
+                <div class="container border meta-publishing">
+
+                    <h3>Blog Settings</h3>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="Name" class="label"></label>
+                        <input asp-for="Name" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Description" class="label"></label>
+                        <input asp-for="Description" />
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Owner" class="label"></label>
+                        <input asp-for="Owner" />
+                        <span asp-validation-for="Owner" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="AuthorPage" class="label"></label>
+                        <input asp-for="AuthorPage" />
+                        <span asp-validation-for="AuthorPage" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Twitter" class="label"></label>
+                        <input asp-for="Twitter" />
+                        <span asp-validation-for="Twitter" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Email" class="label"></label>
+                        <input asp-for="Email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="BlogEngineName" class="label"></label>
+                        <input asp-for="BlogEngineName" />
+                        <span asp-validation-for="BlogEngineName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="RootUrl" class="label"></label>
+                        <input asp-for="RootUrl" />
+                        <span asp-validation-for="RootUrl" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="container border meta-publishing">
+
+                    <div class="form-group">
+                        <label asp-for="PostsPerPage" class="label"></label>
+                        <input asp-for="PostsPerPage" />
+                        <span asp-validation-for="PostsPerPage" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="CommentsCloseAfterDays" class="label"></label>
+                        <input asp-for="CommentsCloseAfterDays" />
+                        <span asp-validation-for="CommentsCloseAfterDays" class="text-danger"></span>
+                    </div>
+                    <div class="publish-settings">
+                        <div class="form-group form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" asp-for="BuiltinCommentsEnabled" /> @Html.DisplayNameFor(model => model.BuiltinCommentsEnabled)
+                            </label>
+                        </div>
+                        <div class="form-group form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" asp-for="CommentoCommentsEnabled" /> @Html.DisplayNameFor(model => model.CommentoCommentsEnabled)
+                            </label>
+                        </div>
+                        <div class="form-group form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" asp-for="EmbedTwitter" /> @Html.DisplayNameFor(model => model.EmbedTwitter)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ApplicationInsightsKey" class="label"></label>
+                        <input asp-for="ApplicationInsightsKey" />
+                        <span asp-validation-for="ApplicationInsightsKey" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="GoogleTagId" class="label"></label>
+                        <input asp-for="GoogleTagId" />
+                        <span asp-validation-for="GoogleTagId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="URadUserId" class="label"></label>
+                        <input asp-for="URadUserId" />
+                        <span asp-validation-for="URadUserId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="URadUserKey" class="label"></label>
+                        <input asp-for="URadUserKey" />
+                        <span asp-validation-for="URadUserKey" class="text-danger"></span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row border section">
+            <div class="container meta-publishing">
+                <h3>Url Replacements</h3>
+
+                @for (var r = 0; r < Model.UrlReplacements.Count; r++)
+                {
+                    <div class="row form-group">
+                        <div class="col-lg-6">
+                            <label class="label" for="@Model.UrlReplacements[r].Find">
+                                Find
+                            </label>
+
+                            <input asp-for="UrlReplacements[r].Find" />
+                        </div>
+                        <div class="col-lg-6">
+
+                            <label class="label" for="@Model.UrlReplacements[r].Replace">
+                                Replace
+                            </label>
+
+                            <input asp-for="UrlReplacements[r].Replace" />
+                        </div>
+                    </div>
+                }
+
+                <div id="addUrlReplacement">
+                    <div class="row form-group">
+                        <div class="col-lg-6">
+                            <label class="label">
+                                Add Find
+                            </label>
+
+                            <input name="AddUrlFind" type="text" />
+                        </div>
+                        <div class="col-lg-6">
+
+                            <label class="label">
+                                Add Replace
+                            </label>
+
+                            <input name="AddUrlReplace" type="text" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row border section">
+            <div class="container meta-publishing">
+
+                <h4>Redirects</h4>
+
+                @for (var r = 0; r < Model.Redirects.Count; r++)
+                {
+                    <div class="row form-group">
+                        <div class="col-lg-6">
+                            <label class="label" for="@Model.Redirects[r].Find">
+                                From
+                            </label>
+
+                            <input asp-for="Redirects[r].Find" />
+                        </div>
+                        <div class="col-lg-6">
+
+                            <label class="label" for="@Model.Redirects[r].Replace">
+                                To
+                            </label>
+
+                            <input asp-for="Redirects[r].Replace" />
+                        </div>
+                    </div>
+                }
+
+                <div id="addRedirects">
+                    <div class="row form-group">
+                        <div class="col-lg-6">
+                            <label class="label">
+                                Add From
+                            </label>
+
+                            <input name="AddRedirectFind" type="text" />
+                        </div>
+                        <div class="col-lg-6">
+
+                            <label class="label">
+                                Add To
+                            </label>
+
+                            <input name="AddRedirectReplace" type="text" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <input type="submit" value="Save" class="btn btn-primary" />
+        </div>
+    </form>
+</div>

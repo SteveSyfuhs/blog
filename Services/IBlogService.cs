@@ -32,12 +32,12 @@ namespace blog
 
         Task<string> SaveFile(byte[] bytes, string fileName, string suffix = null);
 
-        void ResetCache();
-
         Task<SearchResults> Search(string q, int skip, int take);
 
         Task<ImagesModel> ListImages();
         
         Task DeleteFile(string file);
+
+        Task UpdateSettings(BlogSettings localSettings);
     }
 }

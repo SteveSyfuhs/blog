@@ -1,5 +1,5 @@
 ﻿@model IEnumerable<Post>
-@inject BlogSettings settings
+
 @{
     int currentPage = int.Parse(ViewContext.RouteData.Values["page"] as string ?? "0");
     bool includeTitle = ViewData.ContainsKey("IncludeTitle") && (bool)ViewData["IncludeTitle"];
@@ -24,6 +24,7 @@
         <div class="col-lg-12">
             <a href="/edit/" class="btn btn-primary">Add New Post</a>
             <a href="/edit/images" target="_blank" class="btn btn-primary">Image Library</a>
+            <a href="/manage/settings" class="btn btn-primary">Settings</a>
         </div>
     </div>
 
@@ -91,7 +92,6 @@
             </div>
             <div class="col-lg-3">
                 <ul class="categories">
-                    <li></li>
                     @foreach (var cat in post.Post.Categories)
                     {
                         <li>@cat</li>

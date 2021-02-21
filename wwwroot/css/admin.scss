@@ -22,7 +22,7 @@ a.noline {
     }
 
     input {
-        &[type=text] {
+        &[type=text], &[type=number] {
             border: 1px solid #bbb;
             padding: 4px 10px;
             width: 100%;
@@ -79,6 +79,10 @@ a.noline {
     .meta-publishing {
         padding-top: 15px;
         padding-bottom: 15px;
+    }
+
+    .section {
+        margin-bottom: 15px;
     }
 
     #media, #heroMedia {

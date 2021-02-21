@@ -1,8 +1,4 @@
-﻿using blog.Models;
-using FuzzySharp;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -13,6 +9,11 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using blog.Models;
+using FuzzySharp;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace blog
 {
@@ -20,24 +21,32 @@ namespace blog
     {
         private readonly List<Post> _cache = new List<Post>();
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IConfiguration _config;
         private readonly string _folder;
 
         private readonly object _sync = new object();
 
-        public BlogSettings Settings { get; }
+        public FileBlogService(
+            IWebHostEnvironment env,
+            IHttpContextAccessor contextAccessor,
+            IConfiguration config)
+        {
+            _folder = env != null ? Path.Combine(env.WebRootPath, "posts") : "";
+            _contextAccessor = contextAccessor;
+            _config = config;
+
+            Site = config.GetSection("blog").Get<SiteSettings>();
+
+            InitializeSync();
+        }
+
+        public BlogSettings Settings { get; private set; }
+
+        protected SiteSettings Site { get; }
 
         public Task<int> GetPostCount(bool includePages)
         {
             return Task.FromResult(PostsWhere(includePages).Count());
-        }
-
-        public void ResetCache()
-        {
-            lock (_sync)
-            {
-                _cache.Clear();
-                InitializeSync();
-            }
         }
 
         protected void InitializeSync()
@@ -50,19 +59,6 @@ namespace blog
             });
 
             mre.WaitOne(TimeSpan.FromSeconds(90));
-        }
-
-        public FileBlogService(IWebHostEnvironment env, IHttpContextAccessor contextAccessor, bool delayInitialize, BlogSettings settings)
-        {
-            _folder = env != null ? Path.Combine(env.WebRootPath, "posts") : "";
-            _contextAccessor = contextAccessor;
-
-            Settings = settings;
-
-            if (!delayInitialize)
-            {
-                InitializeSync();
-            }
         }
 
         public virtual Task<ImagesModel> ListImages()
@@ -79,6 +75,11 @@ namespace blog
                    .Take(count);
 
             return Task.FromResult(posts);
+        }
+
+        public virtual Task UpdateSettings(BlogSettings localSettings)
+        {
+            return Task.CompletedTask;
         }
 
         public virtual Task<IEnumerable<Post>> GetPosts(int count, int skip = 0)
@@ -243,8 +244,6 @@ namespace blog
 
             await PersistPost(post, doc);
 
-            _cache.Clear();
-
             await Initialize();
         }
 
@@ -308,19 +307,43 @@ namespace blog
 
         protected async Task Initialize()
         {
-            await LoadPosts();
+            Settings = await LoadSettings();
 
-            SortCache();
+            if (Settings == null)
+            {
+                throw new InvalidOperationException("Settings are null");
+            }
+
+            var posts = await LoadPosts();
+
+            lock (_sync)
+            {
+                _cache.Clear();
+
+                foreach (var post in posts)
+                {
+                    _cache.Add(post);
+                }
+
+                SortCache();
+            }
         }
 
-        protected virtual Task LoadPosts()
+        protected virtual Task<BlogSettings> LoadSettings()
+        {
+            var settings = _config.GetSection("blog").Get<BlogSettings>();
+
+            return Task.FromResult(settings);
+        }
+
+        protected virtual Task<IEnumerable<Post>> LoadPosts()
         {
             if (!Directory.Exists(_folder))
             {
                 Directory.CreateDirectory(_folder);
             }
 
-            // Can this be done in parallel to speed it up?
+            var posts = new List<Post>();
 
             foreach (string file in Directory.EnumerateFiles(_folder, "*.xml", SearchOption.TopDirectoryOnly))
             {
@@ -329,10 +352,10 @@ namespace blog
                 LoadPost(file, stream);
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(posts.AsEnumerable());
         }
 
-        protected void LoadPost(string file, Stream stream)
+        protected Post LoadPost(string file, Stream stream)
         {
             // stream.Seek(0, SeekOrigin.Begin);
 
@@ -358,7 +381,7 @@ namespace blog
             LoadCategories(post, doc);
             LoadComments(post, doc);
 
-            _cache.Add(post);
+            return post;
         }
 
         private static void LoadCategories(Post post, XElement doc)
@@ -417,6 +440,7 @@ namespace blog
 
             return defaultValue;
         }
+
         protected void SortCache()
         {
             _cache.Sort((p1, p2) => p2.PubDate.CompareTo(p1.PubDate));

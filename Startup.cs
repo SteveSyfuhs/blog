@@ -45,7 +45,7 @@ namespace blog
             services.AddMvc();
             services.AddApplicationInsightsTelemetry();
 
-            services.AddSingleton(Configuration.GetSection("blog").Get<BlogSettings>());
+            services.AddSingleton(Configuration.GetSection("blog").Get<SiteSettings>());
             services.AddSingleton<IBlogService, AzureStorageBlogService>();
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();

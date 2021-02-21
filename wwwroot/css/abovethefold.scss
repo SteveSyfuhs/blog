@@ -31,7 +31,6 @@ body {
     .article-body {
         max-width: 80%;
         margin: 0 auto;
-        text-align: justify;
     }
 }
 
@@ -167,6 +166,11 @@ time {
         .excerpt {
             margin-top: 0.5em;
             text-align: initial;
+            font-size: 17px;
+
+            div {
+                margin-top: 5px;
+            }
         }
     }
 }
@@ -189,17 +193,17 @@ time {
         margin-bottom: 3rem;
 
         .header-inner {
-            max-width: 80%;
+            max-width: 530px;
             margin: auto;
             text-align: left;
 
             h1, h2 {
-                text-align: center;
+                /*text-align: center;*/
             }
         }
 
         .excerpt {
-            text-align: justify;
+            /*text-align: justify;*/
         }
     }
 }
@@ -233,6 +237,12 @@ time {
                 color: $text_color;
                 text-decoration: none;
                 border: none;
+            }
+        }
+
+        h3 {
+            a, .no-media a {
+                color: $text_color;
             }
         }
 
@@ -271,7 +281,7 @@ time {
         }
 
         img {
-            padding: .5em;
+            /*padding: .5em;*/
             box-shadow: 0 1px 1px 0 rgba(66, 66, 66, 0.08), 0 1px 3px 1px rgba(66, 66, 66, 0.16);
             margin: 0 1.5em 1.5em 1.5em;
         }

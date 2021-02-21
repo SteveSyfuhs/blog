@@ -10,10 +10,10 @@ namespace blog
         private readonly IBlogService _blog;
         private readonly BlogSettings _settings;
 
-        public SearchController(IBlogService blog, BlogSettings settings)
+        public SearchController(IBlogService blog)
         {
             _blog = blog;
-            _settings = settings;
+            _settings = _blog.Settings;
         }
 
         [Route("/opensearch.xml")]

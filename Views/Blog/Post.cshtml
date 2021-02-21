@@ -1,5 +1,5 @@
 ﻿@model Post
-@inject BlogSettings settings
+@inject IBlogService blog
 @{
     if (Model.CurrentPage > 0)
     {
@@ -10,7 +10,7 @@
         this.ViewData["Title"] = Model.Title;
     }
 
-    ViewData["Description"] = Model.Excerpt ?? settings.Name + " | " + settings.Description;
+    ViewData["Description"] = Model.Excerpt ?? blog.Settings.Name + " | " + blog.Settings.Description;
     bool showFullPost = ViewContext.RouteData.Values.ContainsKey("slug");
     string host = Context.Request.Scheme + "://" + Context.Request.Host;
 }
@@ -95,7 +95,7 @@
                 await Html.RenderPartialAsync("_AuthorComponent.cshtml", Model.Author);
             }
 
-            <meta itemprop="author" content="@settings.Owner" />
+            <meta itemprop="author" content="@blog.Settings.Owner" />
             <meta itemprop="dateModified" content="@Model.LastModified.ToString("s")" />
             <meta itemprop="mainEntityOfPage" content="@(host + Model.GetLink())" />
         </footer>
@@ -115,12 +115,12 @@
         <link rel="stylesheet" href="~/css/admin.scss" />
     }
 
-    @if (settings.EmbedTwitter)
+    @if (blog.Settings.EmbedTwitter)
     {
         <script src="https://platform.twitter.com/widgets.js" defer></script>
     }
 
-    @if (settings.CommentoCommentsEnabled)
+    @if (blog.Settings.CommentoCommentsEnabled)
     {
         <link rel="stylesheet" href="~/css/commento.scss" />
         <script src="https://cdn.commento.io/js/count.js" defer></script>

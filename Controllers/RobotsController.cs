@@ -20,10 +20,10 @@ namespace blog
         private readonly IBlogService _blog;
         private readonly BlogSettings _settings;
 
-        public RobotsController(IBlogService blog, BlogSettings settings)
+        public RobotsController(IBlogService blog)
         {
             _blog = blog;
-            _settings = settings;
+            _settings = _blog.Settings;
         }
 
         [Route("/wallet.dat")]

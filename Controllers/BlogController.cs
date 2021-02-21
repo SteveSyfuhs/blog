@@ -21,12 +21,11 @@ namespace blog.Controllers
 
         public BlogController(
             IBlogService blog,
-            BlogSettings settings,
             IOutputCachingService cache
         )
         {
             _blog = blog;
-            _settings = settings;
+            _settings = _blog.Settings;
             _cache = cache;
         }
 
@@ -231,7 +230,6 @@ namespace blog.Controllers
 
             if (post != null)
             {
-                post.SetDomain(_settings.BaseDomain);
                 post.CurrentPage = page ?? 0;
 
                 if (!post.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase))
@@ -319,6 +317,69 @@ namespace blog.Controllers
             ViewData["next"] = $"/manage/{(page <= 1 ? null : page - 1 + "/")}";
 
             return View("Views/Blog/ManagePosts.cshtml", posts);
+        }
+
+        [Route("/manage/settings")]
+        [HttpGet, Authorize]
+        public IActionResult EditSettings()
+        {
+            return View("Views/Blog/Settings.cshtml", _blog.Settings);
+        }
+
+        [Route("/manage/settings")]
+        [HttpPost, Authorize]
+        public async Task<IActionResult> UpdateSettings(BlogSettings settings)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Views/Blog/Settings.cshtml", _blog.Settings);
+            }
+
+            AddUrlReplacements(settings);
+
+            AddRedirects(settings);
+
+            await _blog.UpdateSettings(settings);
+
+            return View("Views/Blog/Settings.cshtml", _blog.Settings);
+        }
+
+        private void AddRedirects(BlogSettings settings)
+        {
+            var find = Request.Form["AddRedirectFind"].ToString();
+            var replace = Request.Form["AddRedirectReplace"].ToString();
+
+            if (!string.IsNullOrWhiteSpace(find) && !string.IsNullOrWhiteSpace(replace))
+            {
+                settings.Redirects.Add(new UrlReplacement { Find = find, Replace = replace });
+            }
+
+            foreach (var redirect in settings.Redirects.ToArray())
+            {
+                if (string.IsNullOrWhiteSpace(redirect.Find))
+                {
+                    settings.Redirects.Remove(redirect);
+                }
+            }
+        }
+
+        private void AddUrlReplacements(BlogSettings settings)
+        {
+            var find = Request.Form["AddUrlFind"].ToString();
+            var replace = Request.Form["AddUrlReplace"].ToString();
+
+            if (!string.IsNullOrWhiteSpace(find) && !string.IsNullOrWhiteSpace(replace))
+            {
+                settings.UrlReplacements.Add(new UrlReplacement { Find = find, Replace = replace });
+            }
+
+            foreach (var replacement in settings.UrlReplacements.ToArray())
+            {
+                if (string.IsNullOrWhiteSpace(replacement.Find))
+                {
+                    settings.UrlReplacements.Remove(replacement);
+                }
+            }
         }
 
         [Route("/")]

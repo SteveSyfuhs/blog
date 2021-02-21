@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Azure.Storage.Blobs;
@@ -10,6 +11,8 @@ using Azure.Storage.Blobs.Models;
 using blog.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 namespace blog
 {
@@ -18,14 +21,53 @@ namespace blog
         private const string PostContainerName = "posts";
         private const string FilesContainerName = "files";
         private const string ImagesContainerName = "images";
+        private const string SettingsContainerName = "settings";
 
         public AzureStorageBlogService(
             IWebHostEnvironment env,
             IHttpContextAccessor contextAccessor,
-            BlogSettings settings
-        ) : base(env, contextAccessor, true, settings)
+            IConfiguration config
+        ) : base(env, contextAccessor, config)
         {
-            InitializeSync();
+        }
+
+        protected override async Task<BlogSettings> LoadSettings()
+        {
+            var container = LoadBlobContainer(SettingsContainerName);
+
+            var blogClient = container.GetBlobClient("blog.json");
+
+            if (!await blogClient.ExistsAsync())
+            {
+                var localSettings = await base.LoadSettings();
+
+                await UpdateSettings(localSettings);
+            }
+
+            var settings = await blogClient.DownloadAsync();
+
+            using JsonTextReader reader = new JsonTextReader(new StreamReader(settings.Value.Content));
+
+            var serializer = new JsonSerializer();
+            return serializer.Deserialize<BlogSettings>(reader);
+        }
+
+        public override async Task UpdateSettings(BlogSettings localSettings)
+        {
+            var container = LoadBlobContainer(SettingsContainerName);
+
+            await container.CreateIfNotExistsAsync(PublicAccessType.None);
+
+            var blogClient = container.GetBlobClient("blog.json");
+            
+            await blogClient.DeleteIfExistsAsync();
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(localSettings))))
+            {
+                await blogClient.UploadAsync(stream);
+            }
+
+            await Initialize();
         }
 
         protected override async Task PersistPost(Post post, XDocument doc)
@@ -47,20 +89,9 @@ namespace blog
             }
         }
 
-        private static readonly Dictionary<string, string> TrustedImageExtensions = new Dictionary<string, string>
-        {
-            { "png", "image/png" },
-            { "jpg", "image/jpeg" },
-            { "jpe", "image/jpeg" },
-            { "jpeg", "image/jpeg" },
-            { "gif", "image/gif" },
-            { "svg", "image/svg+xml" },
-            { "jfif", "image/jpeg" }
-        };
-
         protected override async Task<string> PersistDataFile(byte[] bytes, string fileName, string suffix)
         {
-            string ext = Path.GetExtension(fileName).Substring(1).ToLowerInvariant();
+            string ext = Path.GetExtension(fileName)[1..].ToLowerInvariant();
 
             try
             {
@@ -76,55 +107,22 @@ namespace blog
             }
         }
 
-        private async Task<string> Upload(byte[] bytes, string ext, string relative)
+        protected override async Task<IEnumerable<Post>> LoadPosts()
         {
-            BlobContainerClient container;
+            var posts = new List<Post>();
 
-            if (TrustedImageExtensions.TryGetValue(ext, out string contentType))
+            await IterateBlobItems(async (client, item) =>
             {
-                container = LoadBlobContainer(ImagesContainerName);
-            }
-            else
-            {
-                container = LoadBlobContainer(FilesContainerName);
-            }
+                var post = await LoadPost(client, item);
 
-            if (relative.StartsWith(container.Name + "/"))
-            {
-                relative = relative.Substring(container.Name.Length + 1);
-            }
-
-            var blob = container.GetBlobClient(relative);
-
-            if (await blob.ExistsAsync())
-            {
-                throw new FileOverwriteException();
-            }
-
-            var options = new BlobUploadOptions
-            {
-                HttpHeaders = new BlobHttpHeaders
+                if (post != null)
                 {
-                    CacheControl = "max-age=31536000"
+                    posts.Add(post);
                 }
-            };
 
-            if (!string.IsNullOrWhiteSpace(contentType))
-            {
-                options.HttpHeaders.ContentType = contentType;
-            }
+            }, PostContainerName);
 
-            using (var stream = new MemoryStream(bytes))
-            {
-                await blob.UploadAsync(stream, options);
-            }
-
-            return blob.Uri.OriginalString;
-        }
-
-        protected override async Task LoadPosts()
-        {
-            await IterateBlobItems(LoadPost, PostContainerName);
+            return posts;
         }
 
         public override async Task<ImagesModel> ListImages()
@@ -191,6 +189,52 @@ namespace blog
             await blob.DeleteIfExistsAsync();
         }
 
+        private async Task<string> Upload(byte[] bytes, string ext, string relative)
+        {
+            BlobContainerClient container;
+
+            if (TrustedImageExtensions.TryGetValue(ext, out string contentType))
+            {
+                container = LoadBlobContainer(ImagesContainerName);
+            }
+            else
+            {
+                container = LoadBlobContainer(FilesContainerName);
+            }
+
+            if (relative.StartsWith(container.Name + "/"))
+            {
+                relative = relative.Substring(container.Name.Length + 1);
+            }
+
+            var blob = container.GetBlobClient(relative);
+
+            if (await blob.ExistsAsync())
+            {
+                throw new FileOverwriteException();
+            }
+
+            var options = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    CacheControl = "max-age=31536000"
+                }
+            };
+
+            if (!string.IsNullOrWhiteSpace(contentType))
+            {
+                options.HttpHeaders.ContentType = contentType;
+            }
+
+            using (var stream = new MemoryStream(bytes))
+            {
+                await blob.UploadAsync(stream, options);
+            }
+
+            return blob.Uri.OriginalString;
+        }
+
         private async Task IterateBlobItems(Func<BlobClient, BlobItem, Task> loader, string containerName)
         {
             var container = LoadBlobContainer(containerName);
@@ -203,7 +247,7 @@ namespace blog
             }
         }
 
-        private async Task LoadPost(BlobClient blob, BlobItem item)
+        private async Task<Post> LoadPost(BlobClient blob, BlobItem item)
         {
             if (blob.Name.EndsWith(".xml"))
             {
@@ -211,14 +255,27 @@ namespace blog
                 {
                     var downloaded = await blob.DownloadAsync();
 
-                    LoadPost(blob.Name, downloaded.Value.Content);
+                    return LoadPost(blob.Name, downloaded.Value.Content);
                 }
             }
+
+            return null;
         }
+
+        private static readonly Dictionary<string, string> TrustedImageExtensions = new Dictionary<string, string>
+        {
+            { "png", "image/png" },
+            { "jpg", "image/jpeg" },
+            { "jpe", "image/jpeg" },
+            { "jpeg", "image/jpeg" },
+            { "gif", "image/gif" },
+            { "svg", "image/svg+xml" },
+            { "jfif", "image/jpeg" }
+        };
 
         private BlobContainerClient LoadBlobContainer(string containerName)
         {
-            return new BlobContainerClient(Settings.ConnectionString, containerName);
+            return new BlobContainerClient(Site.ConnectionString, containerName);
         }
     }
 }
