@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -33,13 +34,15 @@ namespace blog
         {
             Task lookupTask = Task.CompletedTask;
 
+            var address = GetIpAddress(context);
+
             using (var cts = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted))
             {
                 cts.CancelAfter(TimeSpan.FromSeconds(5));
 
                 try
                 {
-                    lookupTask = LookupAddress(context.Connection.RemoteIpAddress, cts.Token);
+                    lookupTask = LookupAddress(address, cts.Token);
                 }
                 catch (Exception ex)
                 {
@@ -57,6 +60,30 @@ namespace blog
                     client.TrackException(ex);
                 }
             }
+        }
+
+        public static IPAddress GetIpAddress(HttpContext context)
+        {
+            var request = context.Request;
+
+            if (request.Headers["CF-CONNECTING-IP"].Any())
+            {
+                return IPAddress.Parse(request.Headers["CF-CONNECTING-IP"]);
+            }
+
+            var ipAddress = context.GetServerVariable("HTTP_X_FORWARDED_FOR");
+
+            if (!string.IsNullOrEmpty(ipAddress))
+            {
+                var addresses = ipAddress.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                if (addresses.Length != 0)
+                {
+                    return IPAddress.Parse(addresses[0]);
+                }
+            }
+
+            return context.Connection.RemoteIpAddress;
         }
 
         private async Task<AddressCacheItem> LookupAddress(IPAddress remoteAddr, CancellationToken cancellation)

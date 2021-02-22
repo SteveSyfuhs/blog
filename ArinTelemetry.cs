@@ -5,21 +5,28 @@ using Arin.NET.Entities;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Http;
 using static blog.ArinMiddleware;
 
 namespace blog
 {
     public class ArinTelemetry : ITelemetryInitializer
     {
+        private readonly IHttpContextAccessor context;
+
+        public ArinTelemetry(IHttpContextAccessor context)
+        {
+            this.context = context;
+        }
+
         public void Initialize(ITelemetry telemetry)
         {
-            if (telemetry?.Context?.Location?.Ip == null)
-            {
-                return;
-            }
+            var address = GetIpAddress(context.HttpContext);
+
+            telemetry.Context.Location.Ip = address.ToString();
 
             if (telemetry is ISupportProperties propTelemetry &&
-                Cache.TryGetValue(telemetry.Context.Location.Ip, out AddressCacheItem value) &&
+                Cache.TryGetValue(address.ToString(), out AddressCacheItem value) &&
                 !propTelemetry.Properties.ContainsKey("org"))
             {
                 string orgName = TryGetOrgName(value.Value);
