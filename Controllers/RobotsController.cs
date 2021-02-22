@@ -70,7 +70,7 @@ namespace blog
         [Route("/status")]
         public async Task<IActionResult> Status()
         {
-            var ip = this.HttpContext.Connection.RemoteIpAddress.ToString();
+            var ip = GetIpAddress(this.HttpContext).ToString();
 
             Cache.TryGetValue(ip, out AddressCacheItem value);
 
