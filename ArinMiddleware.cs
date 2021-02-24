@@ -34,7 +34,7 @@ namespace blog
         {
             Task lookupTask = Task.CompletedTask;
 
-            var address = GetIpAddress(context);
+            var address = GetIpAddress(context, client);
 
             using (var cts = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted))
             {
@@ -62,13 +62,15 @@ namespace blog
             }
         }
 
-        public static IPAddress GetIpAddress(HttpContext context)
+        public static IPAddress GetIpAddress(HttpContext context, TelemetryClient telemetry = null)
         {
             var request = context.Request;
 
-            if (request.Headers["CF-CONNECTING-IP"].Any())
+            var cfAddr = request.Headers["CF-CONNECTING-IP"].FirstOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(cfAddr) && IPAddress.TryParse(cfAddr, out IPAddress addr))
             {
-                return IPAddress.Parse(request.Headers["CF-CONNECTING-IP"]);
+                return addr;
             }
 
             var ipAddress = context.GetServerVariable("HTTP_X_FORWARDED_FOR");
@@ -77,9 +79,9 @@ namespace blog
             {
                 var addresses = ipAddress.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
-                if (addresses.Length != 0)
+                if (addresses.Length != 0 && IPAddress.TryParse(addresses[0], out addr))
                 {
-                    return IPAddress.Parse(addresses[0]);
+                    return addr;
                 }
             }
 

@@ -3,14 +3,13 @@
 // Lazy loading of images. See /js/site.js for more
 .notloaded {
     opacity: 0;
-    transform: scale(.9);
 }
 
 .loaded {
     background: none;
     opacity: 1;
     transform: scale(1);
-    transition: all 100ms ease-in;
+    transition: all 100ms ease-out;
     // Don't animate when the reduced motion accessibility option
     // has been enabled in the browser or OS. Safari is supporting this
     @media screen and (prefers-reduced-motion: reduce) {
