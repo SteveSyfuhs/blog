@@ -91,6 +91,14 @@ namespace blog
             return Task.FromResult(posts);
         }
 
+        public virtual Task<IEnumerable<Post>> GetDraftPosts()
+        {
+            var posts = PostsWhere(includePages: true)
+                            .Where(p => !string.IsNullOrWhiteSpace(p.Draft));
+
+            return Task.FromResult(posts);
+        }
+
         private IEnumerable<Post> PostsWhere(bool includePages = false)
         {
             bool isAdmin = IsAdmin();
@@ -219,7 +227,8 @@ namespace blog
                                 new XElement("categories", string.Empty),
                                 new XElement("comments", string.Empty),
                                 new XElement("includeAuthor", post.IncludeAuthor),
-                                new XElement("isIndexed", post.IsIndexed)
+                                new XElement("isIndexed", post.IsIndexed),
+                                new XElement("lastDraft", post.Draft)
                             ));
 
             XElement categories = doc.XPathSelectElement("post/categories");
@@ -375,7 +384,8 @@ namespace blog
                 LastModified = DateTime.Parse(ReadValue(doc, "lastModified", DateTime.Now.ToString())),
                 IsPublished = bool.Parse(ReadValue(doc, "ispublished", "true")),
                 IncludeAuthor = bool.Parse(ReadValue(doc, "includeAuthor", "true")),
-                IsIndexed = bool.Parse(ReadValue(doc, "isIndexed", "true"))
+                IsIndexed = bool.Parse(ReadValue(doc, "isIndexed", "true")),
+                Draft = ReadValue(doc, "lastDraft", null)
             };
 
             LoadCategories(post, doc);

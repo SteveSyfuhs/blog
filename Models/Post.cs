@@ -49,6 +49,8 @@ namespace blog.Models
         [Required]
         public string Content { get; set; }
 
+        public string Draft { get; set; }
+
         public PostType Type { get; set; }
 
         [BindProperty, DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
@@ -73,6 +75,30 @@ namespace blog.Models
         public bool IsIndexed { get; set; }
 
         public int CurrentPage { get; set; }
+
+        public Post AsDraft()
+        {
+            return new Post(settings)
+            {
+                Author = this.Author,
+                IncludeAuthor = this.IncludeAuthor,
+                Categories = this.Categories,
+                Content = this.Draft,
+                Draft = this.Draft,
+                CurrentPage = this.CurrentPage,
+                Excerpt = this.Excerpt,
+                HeroBackgroundImageUrl = this.HeroBackgroundImageUrl,
+                ID = this.ID,
+                PubDate = this.PubDate,
+                PrimaryMediaUrl = this.PrimaryMediaUrl,
+                IsIndexed = this.IsIndexed,
+                Slug = this.Slug,
+                IsPublished = this.IsPublished,
+                LastModified = this.LastModified,
+                Title = this.Title,
+                Type = this.Type
+            };
+        }
 
         public string GetLink()
         {

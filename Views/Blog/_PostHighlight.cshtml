@@ -22,7 +22,7 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <text>|</text>
-                            <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
+                            <a asp-controller="Post" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
                         }
                     </span>
                     @if (Model.Excerpt?.Length <= 300)

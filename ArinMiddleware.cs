@@ -34,7 +34,7 @@ namespace blog
         {
             Task lookupTask = Task.CompletedTask;
 
-            var address = GetIpAddress(context, client);
+            var address = GetIpAddress(context);
 
             using (var cts = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted))
             {
@@ -62,7 +62,7 @@ namespace blog
             }
         }
 
-        public static IPAddress GetIpAddress(HttpContext context, TelemetryClient telemetry = null)
+        public static IPAddress GetIpAddress(HttpContext context)
         {
             var request = context.Request;
 

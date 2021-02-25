@@ -1,6 +1,11 @@
 ﻿@model Post
 @inject IBlogService BlogService
 @{
+    bool isDraft = this.Context.Request.Query.TryGetValue("draft", out var draftStrs)
+                    && draftStrs.Any()
+                    && bool.TryParse(draftStrs.First(), out bool draftMode)
+                    && draftMode;
+
     bool isNew = string.IsNullOrEmpty(Model.Title);
     ViewData["Title"] = "Edit: " + (Model.Title ?? "(new post)");
 }
@@ -9,9 +14,10 @@
     <link rel="stylesheet" href="~/css/admin.scss" />
 }
 
-<form method="post" id="edit" class="container edit-post" asp-controller="Blog" asp-action="UpdatePost" autocomplete="off">
+<form method="post" id="edit" class="container edit-post" asp-controller="Post" asp-action="UpdatePost" autocomplete="off">
     <div asp-validation-summary="All"></div>
     <input type="hidden" asp-for="@Model.ID" />
+    <input type="hidden" asp-for="@Model.Draft" />
 
     <div class="row post-meta">
         <div class="col-lg-8">
@@ -118,6 +124,24 @@
                         <span class="desc" id="desc_pubdate">Select when this content should be published</span>
 
                         <input class="form-control" asp-for="@Model.PubDate" asp-format="{0:yyyy-MM-ddTHH:mm}" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div id="draft-saving" class="draft-label badge bg-primary" hidden>Saving Draft</div>
+                        <div id="draft-saved" class="draft-label badge bg-success" @(!string.IsNullOrWhiteSpace(Model.Draft) ? "" : "hidden")>Draft Saved</div>
+                        <div id="draft-error" class="draft-label badge bg-warning" hidden>Draft didn't save</div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        @if (!isDraft && !string.IsNullOrWhiteSpace(Model.Draft))
+                        {
+                            <a href="/edit/@Model.ID?draft=true">Edit Draft</a>
+                        }
+                        else if (isDraft && !string.IsNullOrWhiteSpace(Model.Draft))
+                        {
+                            <a href="/edit/@Model.ID">Edit Original</a>
+                        }
                     </div>
                 </div>
                 <div class="row publishing-zone">

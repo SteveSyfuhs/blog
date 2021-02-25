@@ -22,6 +22,8 @@ namespace blog
 
         Task<Post> GetPostById(string id);
 
+        Task<IEnumerable<Post>> GetDraftPosts();
+
         Author GetAuthor();
 
         Task<IEnumerable<(string Category, int Count)>> GetCategories();

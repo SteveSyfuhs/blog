@@ -61,6 +61,11 @@
                     @post.Post.Excerpt
                 </div>
                 <div>
+                    @if (!string.IsNullOrWhiteSpace(post.Post.Draft))
+                    {
+                        <span class="badge bg-danger">In Draft</span>
+                    }
+
                     @if (post.Post.Type == PostType.Post)
                     {
                         <span class="badge bg-primary">Post</span>

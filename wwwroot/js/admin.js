@@ -96,6 +96,7 @@
     var edit = document.getElementById("edit");
 
     if (edit) {
+        var postId = document.getElementById("ID").value;
         // Setup editor
         var editPost = document.getElementById("Content");
 
@@ -212,6 +213,62 @@
             else {
                 console.log("Your browser does not support File API");
             }
+        }
+
+        setTimeout(function () {
+            var draft = document.querySelector('#Draft');
+
+            draft.value = tinymce.activeEditor.getContent();
+
+            setInterval(function () {
+                var content = tinymce.activeEditor.getContent();
+
+                if (content !== draft.value) {
+                    draft.value = content;
+
+                    saveDraft();
+                }
+
+            }, 5000);
+        }, 500);
+
+        function saveDraft() {
+            savingDraft();
+
+            var data = new FormData(document.querySelector('form'));
+            data.set('Content', tinymce.activeEditor.getContent());
+
+            fetch("/edit/" + postId + "/draft",
+                {
+                    method: "POST",
+                    body: data
+                })
+                .then(function (res) {
+                    if (res.ok) {
+                        draftSaved(res);
+                    }
+                    else {
+                        draftNotSaved();
+                    }
+                });
+        }
+
+        function savingDraft() {
+            document.getElementById('draft-saving').removeAttribute('hidden');
+            document.getElementById('draft-saved').setAttribute('hidden', true);
+            document.getElementById('draft-error').setAttribute('hidden', true);
+        }
+
+        function draftSaved(res) {
+            document.getElementById('draft-saving').setAttribute('hidden', true);
+            document.getElementById('draft-saved').removeAttribute('hidden');
+            document.getElementById('draft-error').setAttribute('hidden', true);
+        }
+
+        function draftNotSaved() {
+            document.getElementById('draft-saving').setAttribute('hidden', true);
+            document.getElementById('draft-saved').setAttribute('hidden', true);
+            document.getElementById('draft-error').removeAttribute('hidden');
         }
     }
 

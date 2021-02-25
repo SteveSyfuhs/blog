@@ -33,7 +33,7 @@
                 <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
+                    <a asp-controller="Post" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
                 }
             </header>
         </div>
@@ -47,7 +47,7 @@
                     <time datetime="@Model.PubDate.ToString("s")" itemprop="datePublished">Published @Model.PubDate.ToString("MMM d, yyyy")</time>
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <a asp-controller="Blog" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
+                        <a asp-controller="Post" asp-action="edit" asp-route-id="@Model.ID" title="Edit the post">Edit post</a>
                     }
                     @if (Model.Excerpt?.Length <= 300)
                     {
