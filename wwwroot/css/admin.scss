@@ -220,16 +220,17 @@ a.noline {
 
     .tt-menu {
         width: 100%;
-        margin-top: 1px;
-        min-width: 180px;
-        padding: 8px 0;
+        margin-top: 15px;
+        min-width: 300px;
         background-color: #fff;
-        border: 1px solid transparent;
-        border-radius: 3px;
         max-height: 300px;
         overflow-y: auto;
         -webkit-box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
         box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    }
+
+    input.tt-input {
+        margin-top: 7px !important;
     }
 
     .typeahead-scrollable .tt-menu {
