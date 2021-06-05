@@ -370,7 +370,7 @@ namespace blog
 
             XElement doc = XElement.Load(stream);
 
-            Post post = new Post(this.Settings)
+            Post post = new Post(this)
             {
                 ID = Path.GetFileNameWithoutExtension(file),
                 Title = ReadValue(doc, "title"),
@@ -446,7 +446,9 @@ namespace blog
         private static string ReadAttribute(XElement element, XName name, string defaultValue = "")
         {
             if (element.Attribute(name) != null)
+            {
                 return element.Attribute(name).Value;
+            }
 
             return defaultValue;
         }

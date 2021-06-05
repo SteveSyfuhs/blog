@@ -455,7 +455,7 @@ section#comments .container {
 
 .author-detail {
     margin: 25px 0;
-    padding: 25px 0;
+    padding: 25px 0 25px 25px;
     background: #f7f7f7;
     border: 1px solid #dee2e6;
 
@@ -468,12 +468,42 @@ section#comments .container {
         border: none !important;
     }
 
+    img {
+        box-shadow: none !important;
+        margin: 0 !important;
+    }
+
     .author-left {
         text-align: center;
 
         img {
             max-width: 200px;
-            margin: 0 .5em .5em 0;
+            margin: .5em;
+        }
+    }
+
+    @media only screen and (max-width : 400px) {
+        padding: 25px 0;
+
+        .author-right {
+            .about-author {
+                text-align: center;
+            }
+
+            img {
+                display: none;
+            }
+        }
+    }
+
+    @media only screen and (max-width : 1400px) {
+        .author-left {
+            text-align: center;
+            margin-right: .5em;
+
+            img {
+                max-width: 100%;
+            }
         }
     }
 
@@ -483,6 +513,10 @@ section#comments .container {
             font-weight: 500;
             font-size: 1.75rem;
             line-height: 1.2;
+        }
+
+        img {
+            margin-top: -2px !important;
         }
 
         @media (min-width: 1200px) {

@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using blog.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -24,15 +27,15 @@ namespace blog.Models
     {
         public static readonly string PlaceholderImage = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
 
-        private readonly BlogSettings settings;
+        private readonly IBlogService service;
 
         public Post()
         {
         }
 
-        public Post(BlogSettings settings)
+        public Post(IBlogService service)
         {
-            this.settings = settings;
+            this.service = service;
         }
 
         [Required]
@@ -78,7 +81,7 @@ namespace blog.Models
 
         public Post AsDraft()
         {
-            return new Post(settings)
+            return new Post(this.service)
             {
                 Author = this.Author,
                 IncludeAuthor = this.IncludeAuthor,
@@ -183,7 +186,7 @@ namespace blog.Models
                 return null;
             }
 
-            foreach (var rep in settings.UrlReplacements)
+            foreach (var rep in this.service.Settings.UrlReplacements)
             {
                 mediaUrl = mediaUrl.Replace(rep.Find, rep.Replace);
             }
@@ -196,7 +199,8 @@ namespace blog.Models
             KeyValuePair.Create(
                 "youtube",
                 "<div class=\"video\">" +
-                "<iframe width=\"560\" height=\"315\" title=\"YouTube embed\" src=\"about:blank\" data-src=\"https://www.youtube-nocookie.com/embed/{0}?modestbranding=1&amp;hd=1&amp;rel=0&amp;theme=light\" allowfullscreen></iframe>" +
+                "<iframe width=\"560\" height=\"315\" title=\"YouTube embed\" src=\"about:blank\" " +
+                "data-src=\"https://www.youtube-nocookie.com/embed/{0}?modestbranding=1&amp;hd=1&amp;rel=0&amp;theme=light\" allowfullscreen></iframe>" +
                 "</div>"
             ),
             KeyValuePair.Create(
@@ -207,11 +211,15 @@ namespace blog.Models
                 "iframe",
                 "<iframe src={0}></iframe>"
             ),
+            KeyValuePair.Create(
+                "gallery",
+                ""
+            )
         };
 
-        public string RenderAsPage()
+        public async Task<string> RenderAsPage(HttpContext context = null)
         {
-            var rendered = this.RenderContent();
+            var rendered = await this.RenderContent(context: context);
 
             var pages = rendered.Split("[page-break]", StringSplitOptions.RemoveEmptyEntries);
 
@@ -258,14 +266,16 @@ namespace blog.Models
             return pages[0];
         }
 
-        public string RenderContent(bool lazyLoad = true)
+        public async Task<string> RenderContent(bool lazyLoad = true, HttpContext context = null)
         {
-            var result = Content;
+            var result = this.Content;
 
             if (lazyLoad)
             {
                 result = result.Replace(" src=\"", $" src=\"{PlaceholderImage}\" data-src=\"");
             }
+
+            var components = new List<(string Key, string Value)>();
 
             foreach (var embed in EmbeddedReplaces)
             {
@@ -274,18 +284,61 @@ namespace blog.Models
 
                 result = Regex.Replace(result.ToString(), $@"\[{embed.Key}:(.*?)\]", (Match m) =>
                 {
-                    var str = string.Format(embed.Value, m.Groups[1].Value, m.Groups.Count > 2 ? m.Groups[2].Value : "");
+                    if (string.IsNullOrWhiteSpace(embed.Value) && m.Groups.Count > 1)
+                    {
+                        components.Add((embed.Key, m.Groups[1].Value));
 
-                    return str;
+                        return $"[component{components.Count - 1}]";
+                    }
+
+                    return string.Format(embed.Value, m.Groups[1].Value, m.Groups.Count > 2 ? m.Groups[2].Value : "");
                 });
             }
 
-            foreach (var rep in settings.UrlReplacements)
+            foreach (var rep in this.service.Settings.UrlReplacements)
             {
                 result = result.Replace(rep.Find, rep.Replace);
             }
 
+            for (var i = 0; i < components.Count; i++)
+            {
+                var component = components[i];
+
+                var renderedValue = await RenderComponent(component.Key, component.Value, context);
+
+                result = result.Replace($"[component{i}]", renderedValue);
+            }
+
             return result.ToString();
+        }
+
+        private async Task<string> RenderComponent(string key, string value, HttpContext context)
+        {
+            return key.Trim().ToLowerInvariant() switch
+            {
+                "gallery" => await RenderGallery(value, context),
+                _ => "",
+            };
+        }
+
+        private async Task<string> RenderGallery(string value, HttpContext httpContext)
+        {
+            var viewName = "~/views/shared/_GalleryComponent.cshtml";
+
+            var model = await this.service.ListImages();
+
+            string pattern = Regex.Escape(value).Replace("\\*", ".*?");
+
+            var filteredImages = model.Images.Where(i => Regex.IsMatch(i.Title, pattern) && !i.Title.Contains("-sm")).ToList();
+
+            model.Images.Clear();
+
+            foreach (var img in filteredImages)
+            {
+                model.Images.Add(img);
+            }
+
+            return await ViewRenderer.RenderView(httpContext, viewName, model);
         }
     }
 }

@@ -16,7 +16,7 @@
                     <span class="posted-in">
                         @if (Model.Categories.Any())
                         {
-                            <text>|</text>
+                            <text>| Posted in</text>
                             <a itemprop="articleSection" href="/category/@Model.Categories.First()" title="Posted in @Model.Categories.First()">@Model.Categories.First()</a>
                         }
                         @if (User.Identity.IsAuthenticated)

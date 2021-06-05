@@ -1,0 +1,32 @@
+﻿@model ImagesModel
+
+<h1>Gallery</h1>
+
+<link rel="stylesheet" href="~/css/admin.scss" />
+
+<div class="gallery">
+    <ul class="image-list">
+        <li>
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <ul>
+                        @foreach (var image in Model.Images.OrderByDescending(f => f.Created).ThenBy(f => f.Title))
+                        {
+                            <li>
+                                <a href="@image.Url" target="_blank" id="#@image.Id" class="no-link">
+                                    <img src="#" data-src="@image.Url" class="lib-image" />
+                                </a>
+
+                                <div>
+                                    Uploaded @image.Created.ToString("g")
+                                    <button class="btn btn-link" onclick="navigator.clipboard.writeText('@image.Url')">Copy Image URL</button>
+                                    <div>@image.Size</div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>

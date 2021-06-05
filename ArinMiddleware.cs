@@ -64,6 +64,11 @@ namespace blog
 
         public static IPAddress GetIpAddress(HttpContext context)
         {
+            if (context == null)
+            {
+                return null;
+            }
+
             var request = context.Request;
 
             var cfAddr = request.Headers["CF-CONNECTING-IP"].FirstOrDefault();
@@ -132,6 +137,11 @@ namespace blog
 
         private static AddressCacheItem LookupCache(IPAddress remoteAddr)
         {
+            if (remoteAddr == null)
+            {
+                return default;
+            }
+
             var key = remoteAddr.ToString();
 
             if (!ExpireOrGet(key, out AddressCacheItem value))

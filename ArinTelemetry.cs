@@ -23,6 +23,11 @@ namespace blog
         {
             var address = GetIpAddress(context.HttpContext);
 
+            if (address == null)
+            {
+                return;
+            }
+
             telemetry.Context.Location.Ip = address.ToString();
 
             if (telemetry is ISupportProperties propTelemetry &&

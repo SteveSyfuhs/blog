@@ -61,7 +61,7 @@
     <div class="container">
 
         <div itemprop="articleBody mainEntityOfPage" class="article-body" cdnify>
-            @Html.Raw(Model.RenderAsPage())
+            @Html.Raw(await Model.RenderAsPage(Context))
         </div>
 
         <footer>

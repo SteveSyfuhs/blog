@@ -48,6 +48,12 @@ nav.search-page {
     margin-bottom: 5vh;
 }
 
+@media only screen and (max-width : 990px) {
+    header.no-media {
+        text-align: center;
+    }
+}
+
 @media only screen and (max-width : 568px) {
     .siteheader {
         padding: .8em 0 !important;

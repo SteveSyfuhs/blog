@@ -110,19 +110,21 @@ namespace blog.Controllers
                 name = WebUtility.UrlEncode($"{uploadFolder}/{name}");
             }
 
-            await DuplicateSmallerImageIfLargeAndSave(formFileContent, name);
+            await DuplicateSmallerImageIfLargeAndSave(formFileContent, name, ifLargerThan: 1024, constrainX: 500, constrainY: 400);
 
-            return await EncodeToJpegAndSave(formFileContent, name);
+            return await EncodeToPreferredFormatAndSave(formFileContent, name);
         }
 
-        private async Task<string> EncodeToJpegAndSave(byte[] formFileContent, string name)
+        private async Task<string> EncodeToPreferredFormatAndSave(byte[] formFileContent, string name)
         {
             using (var job = new ImageJob())
             {
                 var info = await ImageJob.GetImageInfo(new BytesSource(formFileContent));
 
+                GetEncoder(info, out IEncoderPreset encoder, out string expectedExt);
+
                 var resized = await job.Decode(formFileContent)
-                                           .EncodeToBytes(new MozJpegEncoder(80, true))
+                                           .EncodeToBytes(encoder)
                                            .Finish()
                                            .InProcessAndDisposeAsync();
 
@@ -133,7 +135,7 @@ namespace blog.Controllers
                     var fileName = Path.GetFileName(name);
                     var ext = Path.GetExtension(fileName);
 
-                    var newFileName = name.Replace(ext, ".jpg");
+                    var newFileName = name.Replace(ext, expectedExt);
 
                     return await _blog.SaveFile(result.Value.Array, newFileName);
                 }
@@ -142,17 +144,19 @@ namespace blog.Controllers
             return null;
         }
 
-        private async Task DuplicateSmallerImageIfLargeAndSave(byte[] formFileContent, string name)
+        private async Task DuplicateSmallerImageIfLargeAndSave(byte[] formFileContent, string name, int ifLargerThan, int constrainX, int constrainY)
         {
             using (var job = new ImageJob())
             {
                 var info = await ImageJob.GetImageInfo(new BytesSource(formFileContent));
 
-                if (info.ImageWidth > 1024)
+                if (info.ImageWidth > ifLargerThan)
                 {
+                    GetEncoder(info, out IEncoderPreset encoder, out string expectedExt);
+
                     var resized = await job.Decode(formFileContent)
-                                           .ConstrainWithin(500, 400)
-                                           .EncodeToBytes(new MozJpegEncoder(80, true))
+                                           .ConstrainWithin((uint)constrainX, (uint)constrainY)
+                                           .EncodeToBytes(encoder)
                                            .Finish()
                                            .InProcessAndDisposeAsync();
 
@@ -163,11 +167,25 @@ namespace blog.Controllers
                         var fileName = Path.GetFileName(name);
                         var ext = Path.GetExtension(fileName);
 
-                        var newFileName = name.Replace(ext, "-sm.jpg");
+                        var newFileName = name.Replace(ext, "-sm" + expectedExt);
 
                         await _blog.SaveFile(result.Value.Array, newFileName);
                     }
                 }
+            }
+        }
+
+        private static void GetEncoder(Imageflow.Bindings.ImageInfo info, out IEncoderPreset encoder, out string expectedExt)
+        {
+            if (string.Equals("image/png", info.PreferredMimeType, StringComparison.OrdinalIgnoreCase))
+            {
+                encoder = new PngQuantEncoder(100, 80);
+                expectedExt = ".png";
+            }
+            else
+            {
+                encoder = new MozJpegEncoder(80, true);
+                expectedExt = ".jpg";
             }
         }
     }

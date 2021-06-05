@@ -261,7 +261,7 @@ namespace blog
             );
         }
 
-        private async Task SerializeFeed<T>(string type, IEnumerable<T> items, Func<DateTime> lastUpdated, Func<string, T, AtomEntry> serializer)
+        private async Task SerializeFeed<T>(string type, IEnumerable<T> items, Func<DateTime> lastUpdated, Func<string, T, Task<AtomEntry>> serializer)
         {
             Response.ContentType = "application/xml";
             string host = Request.Scheme + "://" + Request.Host;
@@ -272,7 +272,7 @@ namespace blog
 
                 foreach (var thing in items)
                 {
-                    var item = serializer(host, thing);
+                    var item = await serializer(host, thing);
 
                     await writer.Write(item);
 
@@ -285,7 +285,7 @@ namespace blog
             await Response.Body.FlushAsync();
         }
 
-        private AtomEntry SerializeComment(string host, Comment comment)
+        private static Task<AtomEntry> SerializeComment(string host, Comment comment)
         {
             var item = new AtomEntry
             {
@@ -299,15 +299,16 @@ namespace blog
 
             item.AddContributor(new SyndicationPerson(comment.Author, comment.Email, "Contributor"));
             item.AddLink(new SyndicationLink(new Uri(item.Id)));
-            return item;
+
+            return Task.FromResult(item);
         }
 
-        private AtomEntry SerializePost(string host, Post post)
+        private async Task<AtomEntry> SerializePost(string host, Post post)
         {
             var item = new AtomEntry
             {
                 Title = post.Title,
-                Description = post.RenderContent(lazyLoad: false),
+                Description = await post.RenderContent(lazyLoad: false),
                 Id = host + post.GetLink(),
                 Published = post.PubDate,
                 LastUpdated = post.LastModified,
