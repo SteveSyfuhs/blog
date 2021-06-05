@@ -512,12 +512,6 @@ namespace blog
 
             if (searchable)
             {
-                var regex = new Regex(
-                    string.Format(CultureInfo.InvariantCulture, "({0})", string.Join("|", words)),
-                    RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
-                    TimeSpan.FromSeconds(2)
-                );
-
                 foreach (var post in PostsWhere(includePages: true))
                 {
                     var count = 0;
@@ -527,14 +521,21 @@ namespace blog
                         count += 10000;
                     }
 
-                    count += Fuzz.PartialTokenSortRatio(post.Title, q) * 10;
                     count += Fuzz.PartialTokenSortRatio(post.Title, q);
 
-                    var contentMatches = regex.Matches(post.Content);
+                    var content = SplitWords(post.Content);
 
-                    count += contentMatches.Count;
+                    foreach (var qWord in words)
+                    {
+                        var extracted = Process.ExtractSorted(qWord, content);
 
-                    searchResults.Add(KeyValuePair.Create(count, post));
+                        count += extracted.Sum(e => e.Score > 75 ? e.Score : 0);
+                    }
+
+                    if (count > 100)
+                    {
+                        searchResults.Add(KeyValuePair.Create(count, post));
+                    }
                 }
             }
 
@@ -560,9 +561,15 @@ namespace blog
             return Task.FromResult(searchResult);
         }
 
+        private static readonly char[] WordSplits = new[]
+        {
+            ' ', ',', ';', ':', '=', '+', '-', '<', '>', '/', '\\', '&', '.', '!', '?', '\r', '\n',
+            '[', ']', '{', '}', '|', '(', ')'
+        };
+
         private static IEnumerable<string> SplitWords(string q)
         {
-            return q.ToLowerInvariant().Split(' ', ',', ';', ':', '=', '+', '-').Except(StopWords).Select(w => Regex.Escape(w));
+            return q.ToLowerInvariant().Split(WordSplits, StringSplitOptions.RemoveEmptyEntries).Except(StopWords).Where(s => s.Length > 2);
         }
 
         public virtual Task DeleteFile(string file)

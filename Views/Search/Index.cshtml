@@ -12,6 +12,43 @@
             return plural;
         }
     }
+
+    private static string Truncate(string value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length < maxLength)
+        {
+            return value;
+        }
+
+        var split = value.Split(' ');
+
+        var words = new List<string>();
+
+        var workingLength = split[0].Length;
+        words.Add(split[0]);
+
+        for (var i = 1; i < split.Length; i++)
+        {
+            if (workingLength + split[i].Length + 1 <= maxLength)
+            {
+                workingLength += split[i].Length;
+                words.Add(split[i]);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        var final = string.Join(' ', words.ToArray()).Trim();
+
+        if (final.EndsWith('?'))
+        {
+            final = final.Substring(0, final.Length - 1);
+        }
+
+        return final + "...";
+    }
 }
 
 <nav class="container search-page">
@@ -41,7 +78,7 @@
                 {
                     <li data-weight="@post.Key">
                         <a href="@post.Value.GetLink()">@post.Value.Title</a>
-                        <div>@Html.Raw(post.Value.Excerpt.Substring(0, post.Value.Excerpt.Length > 200 ? 200 : post.Value.Excerpt.Length))...</div>
+                        <div>@Html.Raw(Truncate(post.Value.Excerpt, 150))</div>
                     </li>
                 }
             </ul>
