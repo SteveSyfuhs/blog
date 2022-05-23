@@ -21,6 +21,9 @@ html {
 body {
     font: 19px/1.6 "Open Sans", Ubuntu, "Nimbus Sans L", Avenir, AvenirNext, "Segoe UI", Helvetica, Arial, sans-serif;
     color: $text_color;
+    background-repeat: no-repeat;
+    background-position: top left;
+    background-attachment: fixed;
 }
 
 .container {

@@ -57,6 +57,9 @@ namespace blog
         [DisplayName("URad User Key")]
         public string URadUserKey { get; set; }
 
+        [DisplayName("Background Image")]
+        public string BackgroundImageUrl { get; set; }
+
         public List<UrlReplacement> UrlReplacements { get; set; }
 
         public List<UrlReplacement> Redirects { get; set; }
