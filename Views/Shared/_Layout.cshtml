@@ -50,7 +50,7 @@
     }
     @if (!string.IsNullOrWhiteSpace(service.Settings.GoogleTagId))
     {
-        <script defer src="https://www.googletagmanager.com/gtag/js?id=@service.Settings.GoogleTagId"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=@service.Settings.GoogleTagId"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
             function gtag() { dataLayer.push(arguments); }
