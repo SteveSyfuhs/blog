@@ -18,6 +18,8 @@ namespace WebOptimizer.Sass
         /// </summary>
         public string CacheKey(HttpContext context) => string.Empty;
 
+        public string CacheKey(HttpContext context, IAssetContext config) => string.Empty;
+
         /// <summary>
         /// Executes the processor on the specified configuration.
         /// </summary>

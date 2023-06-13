@@ -13,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
 using WebEssentials.AspNetCore.OutputCaching;
-using WebMarkupMin.AspNetCore2;
+using WebMarkupMin.AspNetCore7;
 using WebMarkupMin.Core;
 using IWmmLogger = WebMarkupMin.Core.Loggers.ILogger;
 using WmmNullLogger = WebMarkupMin.Core.Loggers.NullLogger;
