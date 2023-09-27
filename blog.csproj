@@ -12,7 +12,7 @@
     </PackageReference>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0-beta.1" />
     <PackageReference Include="FuzzySharp" Version="2.0.2" />
-    <PackageReference Include="Imageflow.NativeRuntime.win-x86_64" Version="2.0.0-preview5" />
+    <PackageReference Include="Imageflow.NativeRuntime.win-x86_64" Version="2.0.0-preview8" />
     <PackageReference Include="Imageflow.Net" Version="0.10.0" />
     <PackageReference Include="LigerShark.WebOptimizer.Core" Version="3.0.384" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0-beta3" />
