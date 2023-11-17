@@ -160,6 +160,11 @@ namespace blog
 
         private static bool SlugEquals(string slug, Post p)
         {
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                return false;
+            }
+
             var searchingSlug = slug;
 
             if (searchingSlug.EndsWith('/'))
@@ -168,6 +173,11 @@ namespace blog
             }
 
             var postSlug = p.Slug;
+
+            if (string.IsNullOrWhiteSpace(postSlug))
+            {
+                return false;
+            }
 
             if (postSlug.EndsWith('/'))
             {
