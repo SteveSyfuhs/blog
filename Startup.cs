@@ -61,7 +61,7 @@ namespace blog
 
             services.AddMicrosoftIdentityWebAppAuthentication(Configuration);
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
             services
                 .AddWebMarkupMin(options =>

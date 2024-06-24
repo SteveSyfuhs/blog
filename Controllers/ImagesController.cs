@@ -119,7 +119,7 @@ namespace blog.Controllers
         {
             using (var job = new ImageJob())
             {
-                var info = await ImageJob.GetImageInfo(new BytesSource(formFileContent));
+                var info = await ImageJob.GetImageInfoAsync(new MemorySource(formFileContent), SourceLifetime.Borrowed);
 
                 GetEncoder(info, out IEncoderPreset encoder, out string expectedExt);
 
@@ -148,7 +148,7 @@ namespace blog.Controllers
         {
             using (var job = new ImageJob())
             {
-                var info = await ImageJob.GetImageInfo(new BytesSource(formFileContent));
+                var info = await ImageJob.GetImageInfoAsync(new MemorySource(formFileContent), SourceLifetime.Borrowed);
 
                 if (info.ImageWidth > ifLargerThan)
                 {
