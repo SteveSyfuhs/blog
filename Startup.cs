@@ -13,8 +13,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
 using WebEssentials.AspNetCore.OutputCaching;
-using WebMarkupMin.AspNetCore7;
-using WebMarkupMin.Core;
 using IWmmLogger = WebMarkupMin.Core.Loggers.ILogger;
 using WmmNullLogger = WebMarkupMin.Core.Loggers.NullLogger;
 
@@ -63,19 +61,6 @@ namespace blog
 
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
-            services
-                .AddWebMarkupMin(options =>
-                {
-                    options.AllowMinificationInDevelopmentEnvironment = true;
-                    options.DisablePoweredByHttpHeaders = true;
-                })
-                .AddHtmlMinification(options =>
-                {
-                    options.MinificationSettings.RemoveOptionalEndTags = false;
-                    options.MinificationSettings.WhitespaceMinificationMode = WhitespaceMinificationMode.Safe;
-                });
-            services.AddSingleton<IWmmLogger, WmmNullLogger>(); // Used by HTML minifier
-
             services.AddWebOptimizer(pipeline =>
             {
                 //HeaderNames.CacheControl] = $"max-age={time.TotalSeconds.ToString()}"
@@ -98,8 +83,6 @@ namespace blog
             }
 
             app.UseStatusCodePagesWithReExecute("/error/{0}");
-
-            app.UseMiddleware<WebMarkupMinFileNotFoundHandlerMiddleware>();
 
             app.UseResponseCompression();
 
@@ -144,7 +127,6 @@ namespace blog
             app.UseAuthentication();
 
             app.UseOutputCaching();
-            app.UseWebMarkupMin();
 
             app.UseRouting();
 
