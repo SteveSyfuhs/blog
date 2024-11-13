@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebEssentials.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace blog.Controllers
 {
@@ -17,20 +17,15 @@ namespace blog.Controllers
     {
         private readonly IBlogService _blog;
         private readonly BlogSettings _settings;
-        private readonly IOutputCachingService _cache;
 
-        public BlogController(
-            IBlogService blog,
-            IOutputCachingService cache
-        )
+        public BlogController(IBlogService blog)
         {
             _blog = blog;
             _settings = _blog.Settings;
-            _cache = cache;
         }
 
         [Route("/{page:int?}")]
-        [OutputCache(Profile = "default")]
+        [OutputCache(PolicyName = "default")]
         public async Task<IActionResult> Index([FromRoute] int page = 0)
         {
             var postsPerPage = _settings.PostsPerPage;
@@ -149,7 +144,7 @@ namespace blog.Controllers
 
         [Route("/tag/{category}/{page:int?}")]
         [Route("/category/{category}/{page:int?}")]
-        [OutputCache(Profile = "default")]
+        [OutputCache(PolicyName = "AuthenticatedOutputCachePolicy")]
         public async Task<IActionResult> Category(string category, int page = 0)
         {
             var allPosts = await _blog.GetPostsByCategory(category);
@@ -188,7 +183,7 @@ namespace blog.Controllers
         }
 
         [Route("/{year:int}/{month:int}/{day:int}/{slug}/{page:int?}")]
-        [OutputCache(Profile = "default")]
+        [OutputCache(PolicyName = "AuthenticatedOutputCachePolicy")]
         public Task<IActionResult> Post(int year, int month, int day, string slug, int? page)
         {
             var url = Request.Path.Value;
@@ -197,7 +192,7 @@ namespace blog.Controllers
         }
 
         [Route("/{year:int}/{month:int}/{day:int?}")]
-        [OutputCache(Profile = "default")]
+        [OutputCache(PolicyName = "AuthenticatedOutputCachePolicy")]
         public async Task<IActionResult> PostByMonth(int year, int month, int? day)
         {
             try
@@ -223,7 +218,7 @@ namespace blog.Controllers
         }
 
         [Route("/{slug?}/{page:int?}")]
-        [OutputCache(Profile = "default")]
+        [OutputCache(PolicyName = "AuthenticatedOutputCachePolicy")]
         public async Task<IActionResult> Post(string slug, int? page)
         {
             var post = await _blog.GetPostBySlug(slug);

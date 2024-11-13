@@ -12,9 +12,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
-using WebEssentials.AspNetCore.OutputCaching;
-using IWmmLogger = WebMarkupMin.Core.Loggers.ILogger;
-using WmmNullLogger = WebMarkupMin.Core.Loggers.NullLogger;
 
 namespace blog
 {
@@ -48,13 +45,9 @@ namespace blog
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddOutputCaching(options =>
+            services.AddOutputCache(options =>
             {
-                options.Profiles["default"] = new OutputCacheProfile
-                {
-                    UseAbsoluteExpiration = true,
-                    Duration = 5 * 60
-                };
+                options.AddPolicy("AuthenticatedOutputCachePolicy", OutputCacheAuthenticatedPolicy.Instance);
             });
 
             services.AddMicrosoftIdentityWebAppAuthentication(Configuration);
@@ -126,7 +119,7 @@ namespace blog
 
             app.UseAuthentication();
 
-            app.UseOutputCaching();
+            app.UseOutputCache();
 
             app.UseRouting();
 

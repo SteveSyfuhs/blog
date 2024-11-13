@@ -1,12 +1,13 @@
 ﻿using blog.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace blog.Controllers
 {
-    [OutputCache(Duration = 0, Order = 0)]
+    [OutputCache(Duration = 0)]
     public class RadController : Controller
     {
         private readonly IBlogService service;

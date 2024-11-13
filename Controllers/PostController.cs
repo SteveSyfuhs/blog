@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using blog.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebEssentials.AspNetCore.OutputCaching;
 
 namespace blog.Controllers
 {
@@ -13,16 +12,11 @@ namespace blog.Controllers
     {
         private readonly IBlogService _blog;
         private readonly BlogSettings _settings;
-        private readonly IOutputCachingService _cache;
 
-        public PostController(
-            IBlogService blog,
-            IOutputCachingService cache
-        )
+        public PostController(IBlogService blog)
         {
             _blog = blog;
             _settings = _blog.Settings;
-            _cache = cache;
         }
 
         [Route("/edit/{id?}")]
@@ -87,8 +81,6 @@ namespace blog.Controllers
             }
 
             await UpdateOrCreate(post);
-
-            _cache.Clear();
 
             return Redirect(post.GetLink());
         }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using blog.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Primitives;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Atom;
@@ -86,7 +87,7 @@ namespace blog
         }
 
         [Route("/robots.txt")]
-        [OutputCache(Profile = "default")]
+        [OutputCache(PolicyName = "AuthenticatedOutputCachePolicy")]
         public string RobotsTxt()
         {
             string host = Request.Scheme + "://" + Request.Host;
