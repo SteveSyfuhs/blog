@@ -194,7 +194,7 @@ namespace blog.Models
             return mediaUrl;
         }
 
-        private static readonly List<KeyValuePair<string, string>> EmbeddedReplaces = new List<KeyValuePair<string, string>>
+        private static readonly List<KeyValuePair<string, string>> EmbeddedReplaces = new()
         {
             KeyValuePair.Create(
                 "youtube",

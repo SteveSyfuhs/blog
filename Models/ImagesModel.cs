@@ -9,7 +9,7 @@ namespace blog.Models
     {
         public string Path { get; set; }
 
-        private readonly List<ImageFile> images = new List<ImageFile>();
+        private readonly List<ImageFile> images = new();
 
         public IEnumerable<ImageFile> Images => images;
 

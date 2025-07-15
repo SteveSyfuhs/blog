@@ -19,12 +19,12 @@ namespace blog
 {
     public class FileBlogService : IBlogService
     {
-        private readonly List<Post> _cache = new List<Post>();
+        private readonly List<Post> _cache = new();
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IConfiguration _config;
         private readonly string _folder;
 
-        private readonly object _sync = new object();
+        private readonly object _sync = new();
 
         public FileBlogService(
             IWebHostEnvironment env,

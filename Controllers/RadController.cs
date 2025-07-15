@@ -56,6 +56,6 @@ namespace blog.Controllers
             return await result.Content.ReadAsStringAsync();
         }
 
-        private static readonly Lazy<HttpClient> http = new Lazy<HttpClient>();
+        private static readonly Lazy<HttpClient> http = new();
     }
 }

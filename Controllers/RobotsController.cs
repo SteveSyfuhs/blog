@@ -269,6 +269,11 @@ namespace blog
 
             await using (XmlWriter xmlWriter = XmlWriter.Create(Response.Body, new XmlWriterSettings() { Async = true, Indent = true }))
             {
+                if (xmlWriter == null)
+                {
+                    return;
+                }
+
                 var writer = await GetWriter(type, xmlWriter, lastUpdated());
 
                 foreach (var thing in items)
@@ -332,21 +337,35 @@ namespace blog
 
             if (type.Equals("rss", StringComparison.OrdinalIgnoreCase))
             {
-                var rss = new RssFeedWriter(xmlWriter);
-                await rss.WriteTitle(_settings.Name);
-                await rss.WriteDescription(_settings.Description);
-                await rss.WriteGenerator("blog");
-                await rss.WriteValue("link", host);
-                return rss;
+                return await GetRssAsync(xmlWriter, host);
             }
 
+            return await GetAtomAsync(xmlWriter, updated, host);
+        }
+
+        private async Task<ISyndicationFeedWriter> GetAtomAsync(XmlWriter xmlWriter, DateTime updated, string host)
+        {
             var atom = new AtomFeedWriter(xmlWriter);
+
             await atom.WriteTitle(_settings.Name);
             await atom.WriteId(host);
             await atom.WriteSubtitle(_settings.Description);
             await atom.WriteGenerator("blog", _settings.BlogEngineName, "1.0");
             await atom.WriteValue("updated", updated.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+            
             return atom;
+        }
+
+        private async Task<ISyndicationFeedWriter> GetRssAsync(XmlWriter xmlWriter, string host)
+        {
+            var rss = new RssFeedWriter(xmlWriter);
+            
+            await rss.WriteTitle(_settings.Name);
+            await rss.WriteDescription(_settings.Description);
+            await rss.WriteGenerator("blog");
+            await rss.WriteValue("link", host);
+            
+            return rss;
         }
     }
 }

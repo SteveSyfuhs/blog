@@ -12,23 +12,17 @@ using Microsoft.AspNetCore.Http;
 
 namespace blog
 {
-    internal class ArinMiddleware
+    internal class ArinMiddleware(RequestDelegate next, TelemetryClient client)
     {
-        private static readonly ArinClient arinClient = new ArinClient();
+        private static readonly ArinClient arinClient = new();
 
-        private readonly RequestDelegate _next;
-        private readonly TelemetryClient client;
+        private readonly RequestDelegate _next = next;
+        private readonly TelemetryClient client = client;
 
         private static readonly TimeSpan Lifetime = TimeSpan.FromDays(1);
 
-        internal static readonly ConcurrentDictionary<string, AddressCacheItem> Cache = new ConcurrentDictionary<string, AddressCacheItem>();
+        internal static readonly ConcurrentDictionary<string, AddressCacheItem> Cache = new();
         internal static readonly DateTimeOffset Start = DateTimeOffset.UtcNow;
-
-        public ArinMiddleware(RequestDelegate next, TelemetryClient client)
-        {
-            _next = next;
-            this.client = client;
-        }
 
         public async Task InvokeAsync(HttpContext context)
         {

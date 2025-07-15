@@ -262,7 +262,7 @@ namespace blog
             return null;
         }
 
-        private static readonly Dictionary<string, string> TrustedImageExtensions = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> TrustedImageExtensions = new()
         {
             { "png", "image/png" },
             { "jpg", "image/jpeg" },
