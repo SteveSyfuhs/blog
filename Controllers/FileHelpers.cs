@@ -69,8 +69,8 @@ namespace blog.Controllers
             // a display name.
             MemberInfo property =
                 typeof(T).GetProperty(
-                    formFile.Name.Substring(formFile.Name.IndexOf(".",
-                    StringComparison.Ordinal) + 1));
+                    formFile.Name[(formFile.Name.IndexOf(".",
+                    StringComparison.Ordinal) + 1)..]);
 
             if (property != null)
             {

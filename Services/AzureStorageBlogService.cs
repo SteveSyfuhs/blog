@@ -178,7 +178,7 @@ namespace blog
                 substr = substr[1..];
             }
 
-            var containerName = substr.Substring(0, substr.IndexOf('/'));
+            var containerName = substr[..substr.IndexOf('/')];
 
             var container = LoadBlobContainer(containerName);
 
@@ -204,7 +204,7 @@ namespace blog
 
             if (relative.StartsWith(container.Name + "/"))
             {
-                relative = relative.Substring(container.Name.Length + 1);
+                relative = relative[(container.Name.Length + 1)..];
             }
 
             var blob = container.GetBlobClient(relative);

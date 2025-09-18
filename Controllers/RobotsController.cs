@@ -8,6 +8,7 @@ using System.Xml;
 using blog.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Atom;
@@ -16,16 +17,10 @@ using static blog.ArinMiddleware;
 
 namespace blog
 {
-    public class RobotsController : Controller
+    public class RobotsController(IBlogService blog, IConfiguration config) : Controller
     {
-        private readonly IBlogService _blog;
-        private readonly BlogSettings _settings;
-
-        public RobotsController(IBlogService blog)
-        {
-            _blog = blog;
-            _settings = _blog.Settings;
-        }
+        private readonly IBlogService _blog = blog;
+        private readonly BlogSettings _settings = blog.Settings;
 
         [Route("/wallet.dat")]
         [Route("/bitcoin/{path?}")]
@@ -71,7 +66,7 @@ namespace blog
         [Route("/status")]
         public async Task<IActionResult> Status()
         {
-            var ip = GetIpAddress(this.HttpContext).ToString();
+            var ip = GetIpAddress(this.HttpContext, config).ToString();
 
             Cache.TryGetValue(ip, out AddressCacheItem value);
 

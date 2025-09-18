@@ -188,7 +188,7 @@ namespace blog.Controllers
         {
             var url = Request.Path.Value;
 
-            return Post(url.Substring(0, page.HasValue ? url.LastIndexOf('/') + 1 : url.Length), page);
+            return Post(url[..(page.HasValue ? url.LastIndexOf('/') + 1 : url.Length)], page);
         }
 
         [Route("/{year:int}/{month:int}/{day:int?}")]

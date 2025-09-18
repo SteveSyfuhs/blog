@@ -9,10 +9,11 @@ using Arin.NET.Client;
 using Arin.NET.Entities;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace blog
 {
-    internal class ArinMiddleware(RequestDelegate next, TelemetryClient client)
+    internal class ArinMiddleware(RequestDelegate next, TelemetryClient client, IConfiguration config)
     {
         private static readonly ArinClient arinClient = new();
 
@@ -28,7 +29,7 @@ namespace blog
         {
             Task lookupTask = Task.CompletedTask;
 
-            var address = GetIpAddress(context);
+            var address = GetIpAddress(context, config);
 
             using (var cts = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted))
             {
@@ -49,14 +50,14 @@ namespace blog
                 {
                     await lookupTask;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not TaskCanceledException)
                 {
                     client.TrackException(ex);
                 }
             }
         }
 
-        public static IPAddress GetIpAddress(HttpContext context)
+        public static IPAddress GetIpAddress(HttpContext context, IConfiguration config)
         {
             if (context == null)
             {
@@ -84,7 +85,27 @@ namespace blog
                 }
             }
 
+            if (IsLoopback(context?.Connection?.RemoteIpAddress))
+            {
+                var fake = config?.GetValue<string>("fakeip");
+
+                if (!string.IsNullOrWhiteSpace(fake))
+                {
+                    return IPAddress.Parse(fake);
+                }
+            }
+
             return context.Connection.RemoteIpAddress;
+        }
+
+        private static bool IsLoopback(IPAddress address)
+        {
+            if (address == null)
+            {
+                return true;
+            }
+
+            return IPAddress.IsLoopback(address) || address.IsIPv6LinkLocal || address.IsIPv6SiteLocal;
         }
 
         private async Task<AddressCacheItem> LookupAddress(IPAddress remoteAddr, CancellationToken cancellation)
@@ -96,7 +117,7 @@ namespace blog
                 return value;
             }
 
-            if (IPAddress.IsLoopback(remoteAddr) || remoteAddr.IsIPv6LinkLocal || remoteAddr.IsIPv6SiteLocal)
+            if (IsLoopback(remoteAddr))
             {
                 return default;
             }

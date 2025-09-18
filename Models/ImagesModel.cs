@@ -50,7 +50,7 @@ namespace blog.Models
         {
             var lastIndex = url.LastIndexOf('/');
 
-            return url.Substring(0, lastIndex);
+            return url[..lastIndex];
         }
     }
 

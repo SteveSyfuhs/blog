@@ -6,22 +6,16 @@ using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using static blog.ArinMiddleware;
 
 namespace blog
 {
-    public class ArinTelemetry : ITelemetryInitializer
+    public class ArinTelemetry(IHttpContextAccessor context, IConfiguration config) : ITelemetryInitializer
     {
-        private readonly IHttpContextAccessor context;
-
-        public ArinTelemetry(IHttpContextAccessor context)
-        {
-            this.context = context;
-        }
-
         public void Initialize(ITelemetry telemetry)
         {
-            var address = GetIpAddress(context.HttpContext);
+            var address = GetIpAddress(context.HttpContext, config);
 
             if (address == null)
             {
@@ -92,7 +86,7 @@ namespace blog
 
                     if (indexOf >= 0)
                     {
-                        var domain = email.Substring(indexOf + 1);
+                        var domain = email[(indexOf + 1)..];
 
                         domains.Add(domain);
                     }
@@ -102,13 +96,15 @@ namespace blog
 
         private static string CommonDomain(IEnumerable<string> list)
         {
-            var reversed = list.Distinct().Select(s => new string(s.Reverse().ToArray()));
+            var reversed = list.Distinct().Select(s => new string([.. s.Reverse()]));
 
             var chars = reversed
-                            .First().Substring(0, reversed.Min(s => s.Length))
+                            .First()[..reversed.Min(s => s.Length)]
                             .TakeWhile((c, i) => reversed.All(s => s[i] == c)).ToArray();
 
-            return new string(chars.Reverse().ToArray());
+            chars.Reverse();
+
+            return new string(chars);
         }
 
         private static string TryGetOrgName(IpResponse value)

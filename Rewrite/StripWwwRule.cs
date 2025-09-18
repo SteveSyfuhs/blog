@@ -13,7 +13,7 @@ namespace blog.Rewrite
 
             if (request.Host.Value.StartsWith("www.", StringComparison.OrdinalIgnoreCase))
             {
-                host = request.Host.Value.Substring(4);
+                host = request.Host.Value[4..];
                 return true;
             }
 
