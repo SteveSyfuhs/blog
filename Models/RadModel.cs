@@ -1,9 +1,8 @@
-﻿namespace blog.Models
-{
-    public class RadModel
-    {
-        public string Device { get; set; }
+﻿namespace blog.Models;
 
-        public string Chart { get; set; }
-    }
+public class RadModel
+{
+    public string Device { get; set; }
+
+    public string Chart { get; set; }
 }

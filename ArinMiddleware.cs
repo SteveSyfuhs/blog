@@ -11,194 +11,193 @@ using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace blog
+namespace blog;
+
+internal class ArinMiddleware(RequestDelegate next, TelemetryClient client, IConfiguration config)
 {
-    internal class ArinMiddleware(RequestDelegate next, TelemetryClient client, IConfiguration config)
+    private static readonly ArinClient arinClient = new();
+
+    private readonly RequestDelegate _next = next;
+    private readonly TelemetryClient client = client;
+
+    private static readonly TimeSpan Lifetime = TimeSpan.FromDays(1);
+
+    internal static readonly ConcurrentDictionary<string, AddressCacheItem> Cache = new();
+    internal static readonly DateTimeOffset Start = DateTimeOffset.UtcNow;
+
+    public async Task InvokeAsync(HttpContext context)
     {
-        private static readonly ArinClient arinClient = new();
+        Task lookupTask = Task.CompletedTask;
 
-        private readonly RequestDelegate _next = next;
-        private readonly TelemetryClient client = client;
+        var address = GetIpAddress(context, config);
 
-        private static readonly TimeSpan Lifetime = TimeSpan.FromDays(1);
-
-        internal static readonly ConcurrentDictionary<string, AddressCacheItem> Cache = new();
-        internal static readonly DateTimeOffset Start = DateTimeOffset.UtcNow;
-
-        public async Task InvokeAsync(HttpContext context)
+        using (var cts = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted))
         {
-            Task lookupTask = Task.CompletedTask;
+            cts.CancelAfter(TimeSpan.FromSeconds(5));
 
-            var address = GetIpAddress(context, config);
-
-            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted))
+            try
             {
-                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                lookupTask = LookupAddress(address, cts.Token);
+            }
+            catch (Exception ex)
+            {
+                client.TrackException(ex);
+            }
 
-                try
-                {
-                    lookupTask = LookupAddress(address, cts.Token);
-                }
-                catch (Exception ex)
-                {
-                    client.TrackException(ex);
-                }
+            await _next(context);
 
-                await _next(context);
-
-                try
-                {
-                    await lookupTask;
-                }
-                catch (Exception ex) when (ex is not TaskCanceledException)
-                {
-                    client.TrackException(ex);
-                }
+            try
+            {
+                await lookupTask;
+            }
+            catch (Exception ex) when (ex is not TaskCanceledException)
+            {
+                client.TrackException(ex);
             }
         }
+    }
 
-        public static IPAddress GetIpAddress(HttpContext context, IConfiguration config)
+    public static IPAddress GetIpAddress(HttpContext context, IConfiguration config)
+    {
+        if (context == null)
         {
-            if (context == null)
-            {
-                return null;
-            }
+            return null;
+        }
 
-            var request = context.Request;
+        var request = context.Request;
 
-            var cfAddr = request.Headers["CF-CONNECTING-IP"].FirstOrDefault();
+        var cfAddr = request.Headers["CF-CONNECTING-IP"].FirstOrDefault();
 
-            if (!string.IsNullOrWhiteSpace(cfAddr) && IPAddress.TryParse(cfAddr, out IPAddress addr))
+        if (!string.IsNullOrWhiteSpace(cfAddr) && IPAddress.TryParse(cfAddr, out IPAddress addr))
+        {
+            return addr;
+        }
+
+        var ipAddress = context.GetServerVariable("HTTP_X_FORWARDED_FOR");
+
+        if (!string.IsNullOrEmpty(ipAddress))
+        {
+            var addresses = ipAddress.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+            if (addresses.Length != 0 && IPAddress.TryParse(addresses[0], out addr))
             {
                 return addr;
             }
-
-            var ipAddress = context.GetServerVariable("HTTP_X_FORWARDED_FOR");
-
-            if (!string.IsNullOrEmpty(ipAddress))
-            {
-                var addresses = ipAddress.Split(',', StringSplitOptions.RemoveEmptyEntries);
-
-                if (addresses.Length != 0 && IPAddress.TryParse(addresses[0], out addr))
-                {
-                    return addr;
-                }
-            }
-
-            if (IsLoopback(context?.Connection?.RemoteIpAddress))
-            {
-                var fake = config?.GetValue<string>("fakeip");
-
-                if (!string.IsNullOrWhiteSpace(fake))
-                {
-                    return IPAddress.Parse(fake);
-                }
-            }
-
-            return context.Connection.RemoteIpAddress;
         }
 
-        private static bool IsLoopback(IPAddress address)
+        if (IsLoopback(context?.Connection?.RemoteIpAddress))
         {
-            if (address == null)
-            {
-                return true;
-            }
+            var fake = config?.GetValue<string>("fakeip");
 
-            return IPAddress.IsLoopback(address) || address.IsIPv6LinkLocal || address.IsIPv6SiteLocal;
+            if (!string.IsNullOrWhiteSpace(fake))
+            {
+                return IPAddress.Parse(fake);
+            }
         }
 
-        private async Task<AddressCacheItem> LookupAddress(IPAddress remoteAddr, CancellationToken cancellation)
+        return context.Connection.RemoteIpAddress;
+    }
+
+    private static bool IsLoopback(IPAddress address)
+    {
+        if (address == null)
         {
-            var value = LookupCache(remoteAddr);
+            return true;
+        }
 
-            if (value.Value != null)
-            {
-                return value;
-            }
+        return IPAddress.IsLoopback(address) || address.IsIPv6LinkLocal || address.IsIPv6SiteLocal;
+    }
 
-            if (IsLoopback(remoteAddr))
-            {
-                return default;
-            }
+    private async Task<AddressCacheItem> LookupAddress(IPAddress remoteAddr, CancellationToken cancellation)
+    {
+        var value = LookupCache(remoteAddr);
 
-            var ipResponse = await arinClient.Query(remoteAddr, cancellation);
+        if (value.Value != null)
+        {
+            return value;
+        }
 
-            if (ipResponse is IpResponse response)
-            {
-                return CacheResult(remoteAddr, response);
-            }
-            else if (ipResponse is ErrorResponse error)
-            {
-                this.client.TrackException(new HttpRequestException(error?.Title ?? "Unknown HTTP error"));
-                return default;
-            }
-
+        if (IsLoopback(remoteAddr))
+        {
             return default;
         }
 
-        private static AddressCacheItem CacheResult(IPAddress remoteAddr, IpResponse ipResponse)
+        var ipResponse = await arinClient.Query(remoteAddr, cancellation);
+
+        if (ipResponse is IpResponse response)
         {
-            var value = new AddressCacheItem
-            {
-                Value = ipResponse,
-                Created = DateTimeOffset.UtcNow
-            };
-
-            Cache[remoteAddr.ToString()] = value;
-
-            return value;
+            return CacheResult(remoteAddr, response);
+        }
+        else if (ipResponse is ErrorResponse error)
+        {
+            this.client.TrackException(new HttpRequestException(error?.Title ?? "Unknown HTTP error"));
+            return default;
         }
 
-        private static AddressCacheItem LookupCache(IPAddress remoteAddr)
+        return default;
+    }
+
+    private static AddressCacheItem CacheResult(IPAddress remoteAddr, IpResponse ipResponse)
+    {
+        var value = new AddressCacheItem
         {
-            if (remoteAddr == null)
-            {
-                return default;
-            }
+            Value = ipResponse,
+            Created = DateTimeOffset.UtcNow
+        };
 
-            var key = remoteAddr.ToString();
+        Cache[remoteAddr.ToString()] = value;
 
-            if (!ExpireOrGet(key, out AddressCacheItem value))
-            {
-                return default;
-            }
+        return value;
+    }
 
-            return value;
+    private static AddressCacheItem LookupCache(IPAddress remoteAddr)
+    {
+        if (remoteAddr == null)
+        {
+            return default;
         }
 
-        private static bool ExpireOrGet(string key, out AddressCacheItem value)
-        {
-            if (!Cache.TryGetValue(key, out value))
-            {
-                return false;
-            }
+        var key = remoteAddr.ToString();
 
-            if (PurgeIfExpired(key, value))
-            {
-                return false;
-            }
+        if (!ExpireOrGet(key, out AddressCacheItem value))
+        {
+            return default;
+        }
+
+        return value;
+    }
+
+    private static bool ExpireOrGet(string key, out AddressCacheItem value)
+    {
+        if (!Cache.TryGetValue(key, out value))
+        {
+            return false;
+        }
+
+        if (PurgeIfExpired(key, value))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool PurgeIfExpired(string key, AddressCacheItem value)
+    {
+        if (value.Created.Add(Lifetime) < DateTimeOffset.UtcNow)
+        {
+            Cache.TryRemove(key.ToString(), out _);
 
             return true;
         }
 
-        private static bool PurgeIfExpired(string key, AddressCacheItem value)
-        {
-            if (value.Created.Add(Lifetime) < DateTimeOffset.UtcNow)
-            {
-                Cache.TryRemove(key.ToString(), out _);
+        return false;
+    }
 
-                return true;
-            }
+    internal struct AddressCacheItem
+    {
+        public IpResponse Value { get; set; }
 
-            return false;
-        }
-
-        internal struct AddressCacheItem
-        {
-            public IpResponse Value { get; set; }
-
-            public DateTimeOffset Created { get; set; }
-        }
+        public DateTimeOffset Created { get; set; }
     }
 }

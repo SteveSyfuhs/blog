@@ -1,20 +1,19 @@
 ﻿using System;
 
-namespace blog
+namespace blog;
+
+[Serializable]
+internal class FileOverwriteException : Exception
 {
-    [Serializable]
-    internal class FileOverwriteException : Exception
+    public FileOverwriteException()
     {
-        public FileOverwriteException()
-        {
-        }
+    }
 
-        public FileOverwriteException(string message) : base(message)
-        {
-        }
+    public FileOverwriteException(string message) : base(message)
+    {
+    }
 
-        public FileOverwriteException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public FileOverwriteException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

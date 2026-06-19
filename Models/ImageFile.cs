@@ -2,21 +2,20 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace blog.Models
+namespace blog.Models;
+
+[DebuggerDisplay("{Title}")]
+public class ImageFile
 {
-    [DebuggerDisplay("{Title}")]
-    public class ImageFile
-    {
-        public string Url { get; set; }
+    public string Url { get; set; }
 
-        public string Title { get; set; }
+    public string Title { get; set; }
 
-        public long Length { get; set; }
+    public long Length { get; set; }
 
-        public string Size => this.Length.ToFileSize();
+    public string Size => this.Length.ToFileSize();
 
-        public DateTimeOffset Created { get; set; }
+    public DateTimeOffset Created { get; set; }
 
-        public string Id => Path.GetFileNameWithoutExtension(this.Url);
-    }
+    public string Id => Path.GetFileNameWithoutExtension(this.Url);
 }

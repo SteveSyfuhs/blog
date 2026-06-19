@@ -3,45 +3,44 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace blog.Controllers
+namespace blog.Controllers;
+
+[Authorize]
+public class AccountController : Controller
 {
+    [HttpGet]
     [Authorize]
-    public class AccountController : Controller
+    [Route("/login")]
+    public IActionResult Login(string returnUrl = null)
     {
-        [HttpGet]
-        [Authorize]
-        [Route("/login")]
-        public IActionResult Login(string returnUrl = null)
+        return LocalRedirect(returnUrl ?? "/");
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/account/status")]
+    public IActionResult Status()
+    {
+        return View();
+    }
+
+    [Route("/logout")]
+    public async Task<IActionResult> LogOutAsync()
+    {
+        foreach (var cookie in Request.Cookies)
         {
-            return LocalRedirect(returnUrl ?? "/");
+            Response.Cookies.Delete(cookie.Key);
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        [Route("/account/status")]
-        public IActionResult Status()
-        {
-            return View();
-        }
+        await HttpContext.SignOutAsync();
 
-        [Route("/logout")]
-        public async Task<IActionResult> LogOutAsync()
-        {
-            foreach (var cookie in Request.Cookies)
-            {
-                Response.Cookies.Delete(cookie.Key);
-            }
+        return LocalRedirect("/");
+    }
 
-            await HttpContext.SignOutAsync();
-
-            return LocalRedirect("/");
-        }
-
-        [Authorize]
-        [Route("/kmsi")]
-        public IActionResult Kmsi()
-        {
-            return Ok();
-        }
+    [Authorize]
+    [Route("/kmsi")]
+    public IActionResult Kmsi()
+    {
+        return Ok();
     }
 }

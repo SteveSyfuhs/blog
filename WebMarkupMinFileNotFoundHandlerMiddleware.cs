@@ -3,27 +3,26 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace blog
+namespace blog;
+
+public class WebMarkupMinFileNotFoundHandlerMiddleware
 {
-    public class WebMarkupMinFileNotFoundHandlerMiddleware
+    private readonly RequestDelegate _next;
+
+    public WebMarkupMinFileNotFoundHandlerMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+    }
 
-        public WebMarkupMinFileNotFoundHandlerMiddleware(RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            _next = next;
+            await _next(context);
         }
-
-        public async Task InvokeAsync(HttpContext context)
+        catch (FileNotFoundException)
         {
-            try
-            {
-                await _next(context);
-            }
-            catch (FileNotFoundException)
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-            }
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
         }
     }
 }

@@ -9,42 +9,41 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace blog.Services
+namespace blog.Services;
+
+internal static class ViewRenderer
 {
-    internal static class ViewRenderer
+    public static async Task<string> RenderView<T>(HttpContext httpContext, string viewName, T model)
     {
-        public static async Task<string> RenderView<T>(HttpContext httpContext, string viewName, T model)
+        var sp = httpContext.RequestServices;
+
+        var viewEngine = sp.GetRequiredService<IRazorViewEngine>();
+        var tempDataProvider = sp.GetRequiredService<ITempDataProvider>();
+
+        var view = viewEngine.GetView("~/", viewName, false).View;
+
+        using (var output = new StringWriter())
         {
-            var sp = httpContext.RequestServices;
+            var actionContext = new ActionContext(httpContext, new Microsoft.AspNetCore.Routing.RouteData(), new ActionDescriptor());
 
-            var viewEngine = sp.GetRequiredService<IRazorViewEngine>();
-            var tempDataProvider = sp.GetRequiredService<ITempDataProvider>();
+            var viewContext = new ViewContext(
+                actionContext,
+                view,
+                new ViewDataDictionary<T>(
+                    metadataProvider: new EmptyModelMetadataProvider(),
+                    modelState: new ModelStateDictionary())
+                {
+                    Model = model
+                },
+                new TempDataDictionary(
+                    httpContext,
+                    tempDataProvider),
+                output,
+                new HtmlHelperOptions());
 
-            var view = viewEngine.GetView("~/", viewName, false).View;
+            await view.RenderAsync(viewContext);
 
-            using (var output = new StringWriter())
-            {
-                var actionContext = new ActionContext(httpContext, new Microsoft.AspNetCore.Routing.RouteData(), new ActionDescriptor());
-
-                var viewContext = new ViewContext(
-                    actionContext,
-                    view,
-                    new ViewDataDictionary<T>(
-                        metadataProvider: new EmptyModelMetadataProvider(),
-                        modelState: new ModelStateDictionary())
-                    {
-                        Model = model
-                    },
-                    new TempDataDictionary(
-                        httpContext,
-                        tempDataProvider),
-                    output,
-                    new HtmlHelperOptions());
-
-                await view.RenderAsync(viewContext);
-
-                return output.ToString();
-            }
+            return output.ToString();
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿namespace blog.Models
+﻿namespace blog.Models;
+
+public enum BlogMediaType
 {
-    public enum BlogMediaType
-    {
-        PostBackground,
-        PostPrimary
-    }
+    PostBackground,
+    PostPrimary
 }

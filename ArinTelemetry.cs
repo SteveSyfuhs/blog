@@ -9,127 +9,126 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using static blog.ArinMiddleware;
 
-namespace blog
+namespace blog;
+
+public class ArinTelemetry(IHttpContextAccessor context, IConfiguration config) : ITelemetryInitializer
 {
-    public class ArinTelemetry(IHttpContextAccessor context, IConfiguration config) : ITelemetryInitializer
+    public void Initialize(ITelemetry telemetry)
     {
-        public void Initialize(ITelemetry telemetry)
+        var address = GetIpAddress(context.HttpContext, config);
+
+        if (address == null)
         {
-            var address = GetIpAddress(context.HttpContext, config);
-
-            if (address == null)
-            {
-                return;
-            }
-
-            telemetry.Context.Location.Ip = address.ToString();
-
-            if (telemetry is ISupportProperties propTelemetry &&
-                Cache.TryGetValue(address.ToString(), out AddressCacheItem value) &&
-                !propTelemetry.Properties.ContainsKey("org"))
-            {
-                string orgName = TryGetOrgName(value.Value);
-
-                if (!string.IsNullOrWhiteSpace(orgName))
-                {
-                    propTelemetry.Properties.Add("org", orgName);
-                }
-
-                string domainName = TryGetDomainName(value.Value);
-
-                if (!string.IsNullOrWhiteSpace(domainName))
-                {
-                    propTelemetry.Properties.Add("networkDomain", domainName);
-                }
-            }
+            return;
         }
 
-        private static string TryGetDomainName(IpResponse value)
+        telemetry.Context.Location.Ip = address.ToString();
+
+        if (telemetry is ISupportProperties propTelemetry &&
+            Cache.TryGetValue(address.ToString(), out AddressCacheItem value) &&
+            !propTelemetry.Properties.ContainsKey("org"))
         {
-            if (value == null)
+            string orgName = TryGetOrgName(value.Value);
+
+            if (!string.IsNullOrWhiteSpace(orgName))
             {
-                return null;
+                propTelemetry.Properties.Add("org", orgName);
             }
 
-            var domains = new List<string>();
+            string domainName = TryGetDomainName(value.Value);
 
-            var entities = new List<Entity>();
-
-            entities.AddRange(value.Entities);
-
-            for (var i = 0; i < entities.Count; i++)
+            if (!string.IsNullOrWhiteSpace(domainName))
             {
-                var entity = entities[i];
-
-                entities.AddRange(entity.Entities);
-
-                ExtractDomain(domains, entity);
+                propTelemetry.Properties.Add("networkDomain", domainName);
             }
+        }
+    }
 
-            var common = new string(CommonDomain(domains));
-
-            if (domains.Contains(common))
-            {
-                return common;
-            }
-
-            return domains.FirstOrDefault();
+    private static string TryGetDomainName(IpResponse value)
+    {
+        if (value == null)
+        {
+            return null;
         }
 
-        private static void ExtractDomain(List<string> domains, Entity entity)
+        var domains = new List<string>();
+
+        var entities = new List<Entity>();
+
+        entities.AddRange(value.Entities);
+
+        for (var i = 0; i < entities.Count; i++)
         {
-            if (entity.VCard != null && entity.VCard.TryGetValue("email", out ContactCardProperty emailProp))
+            var entity = entities[i];
+
+            entities.AddRange(entity.Entities);
+
+            ExtractDomain(domains, entity);
+        }
+
+        var common = new string(CommonDomain(domains));
+
+        if (domains.Contains(common))
+        {
+            return common;
+        }
+
+        return domains.FirstOrDefault();
+    }
+
+    private static void ExtractDomain(List<string> domains, Entity entity)
+    {
+        if (entity.VCard != null && entity.VCard.TryGetValue("email", out ContactCardProperty emailProp))
+        {
+            foreach (var email in emailProp.Value)
             {
-                foreach (var email in emailProp.Value)
+                var indexOf = email.IndexOf('@');
+
+                if (indexOf >= 0)
                 {
-                    var indexOf = email.IndexOf('@');
+                    var domain = email[(indexOf + 1)..];
 
-                    if (indexOf >= 0)
-                    {
-                        var domain = email[(indexOf + 1)..];
-
-                        domains.Add(domain);
-                    }
+                    domains.Add(domain);
                 }
             }
         }
+    }
 
-        private static string CommonDomain(IEnumerable<string> list)
+    private static string CommonDomain(IEnumerable<string> list)
+    {
+        var reversed = list.Distinct().Select(s => new string([.. s.Reverse()]));
+
+        var chars = reversed
+                        .First()[..reversed.Min(s => s.Length)]
+                        .TakeWhile((c, i) => reversed.All(s => s[i] == c)).ToArray();
+
+        chars.Reverse();
+
+        return new string(chars);
+    }
+
+    private static string TryGetOrgName(IpResponse value)
+    {
+        if (value == null)
         {
-            var reversed = list.Distinct().Select(s => new string([.. s.Reverse()]));
-
-            var chars = reversed
-                            .First()[..reversed.Min(s => s.Length)]
-                            .TakeWhile((c, i) => reversed.All(s => s[i] == c)).ToArray();
-
-            chars.Reverse();
-
-            return new string(chars);
+            return null;
         }
 
-        private static string TryGetOrgName(IpResponse value)
+        string name = null;
+
+        foreach (var entity in value.Entities)
         {
-            if (value == null)
+            if (entity.VCard != null && entity.VCard.TryGetValue("fn", out ContactCardProperty prop))
             {
-                return null;
-            }
+                name = prop.Value.FirstOrDefault();
 
-            string name = null;
-
-            foreach (var entity in value.Entities)
-            {
-                if (entity.VCard != null && entity.VCard.TryGetValue("fn", out ContactCardProperty prop))
+                if (!string.IsNullOrWhiteSpace(name))
                 {
-                    name = prop.Value.FirstOrDefault();
-
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
-
-            return name;
         }
+
+        return name;
     }
 }

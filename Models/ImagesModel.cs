@@ -3,65 +3,64 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace blog.Models
+namespace blog.Models;
+
+public class ImagesFolder
 {
-    public class ImagesFolder
+    public string Path { get; set; }
+
+    private readonly List<ImageFile> images = new();
+
+    public IEnumerable<ImageFile> Images => images;
+
+    public IDictionary<string, ImagesFolder> Folders { get; set; } = new Dictionary<string, ImagesFolder>();
+
+    public bool Active { get; set; }
+
+    public void AddImage(ImageFile file)
     {
-        public string Path { get; set; }
+        var path = new Uri(ExtractFolder(file.Url)).AbsolutePath;
 
-        private readonly List<ImageFile> images = new();
+        char[] charSeparators = new char[] { '/' };
 
-        public IEnumerable<ImageFile> Images => images;
+        var parts = path.Split(charSeparators, StringSplitOptions.RemoveEmptyEntries);
 
-        public IDictionary<string, ImagesFolder> Folders { get; set; } = new Dictionary<string, ImagesFolder>();
+        ImagesFolder current = this;
 
-        public bool Active { get; set; }
+        Queue<string> pathSoFar = new Queue<string>();
 
-        public void AddImage(ImageFile file)
+        foreach (string part in parts)
         {
-            var path = new Uri(ExtractFolder(file.Url)).AbsolutePath;
+            pathSoFar.Enqueue(part);
 
-            char[] charSeparators = new char[] { '/' };
-
-            var parts = path.Split(charSeparators, StringSplitOptions.RemoveEmptyEntries);
-
-            ImagesFolder current = this;
-
-            Queue<string> pathSoFar = new Queue<string>();
-
-            foreach (string part in parts)
+            if (!current.Folders.TryGetValue(part, out ImagesFolder child))
             {
-                pathSoFar.Enqueue(part);
+                child = new ImagesFolder { Path = string.Join('/', pathSoFar) };
 
-                if (!current.Folders.TryGetValue(part, out ImagesFolder child))
-                {
-                    child = new ImagesFolder { Path = string.Join('/', pathSoFar) };
-
-                    current.Folders[part] = child;
-                }
-
-                current = child;
+                current.Folders[part] = child;
             }
 
-            current.images.Add(file);
+            current = child;
         }
 
-        private static string ExtractFolder(string url)
-        {
-            var lastIndex = url.LastIndexOf('/');
-
-            return url[..lastIndex];
-        }
+        current.images.Add(file);
     }
 
-    public class ImagesModel
+    private static string ExtractFolder(string url)
     {
-        public ICollection<ImageFile> Images { get; } = new List<ImageFile>();
+        var lastIndex = url.LastIndexOf('/');
 
-        [Display(Name = "Files")]
-        public ICollection<IFormFile> FormFiles { get; set; }
-
-        [Display(Name = "Upload Folder")]
-        public string UploadFolder { get; set; }
+        return url[..lastIndex];
     }
+}
+
+public class ImagesModel
+{
+    public ICollection<ImageFile> Images { get; } = new List<ImageFile>();
+
+    [Display(Name = "Files")]
+    public ICollection<IFormFile> FormFiles { get; set; }
+
+    [Display(Name = "Upload Folder")]
+    public string UploadFolder { get; set; }
 }

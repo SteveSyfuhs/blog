@@ -15,352 +15,351 @@ using Microsoft.SyndicationFeed.Atom;
 using Microsoft.SyndicationFeed.Rss;
 using static blog.ArinMiddleware;
 
-namespace blog
+namespace blog;
+
+public class RobotsController(IBlogService blog, IConfiguration config) : Controller
 {
-    public class RobotsController(IBlogService blog, IConfiguration config) : Controller
+    private readonly IBlogService _blog = blog;
+    private readonly BlogSettings _settings = blog.Settings;
+
+    [Route("/wallet.dat")]
+    [Route("/bitcoin/{path?}")]
+    [Route("/admin/{path?}")]
+    [Route("/admins/{path?}")]
+    [Route("/moderator/{path?}")]
+    [Route("/webadmin/{path?}")]
+    [Route("/siteadmin/{path?}")]
+    [Route("/adminpanel/{path?}")]
+    [Route("/modules/{path?}")]
+    [Route("/old/{path?}")]
+    [Route("/new/{path?}")]
+    [Route("/demo/{path?}")]
+    [Route("/site/{path?}")]
+    [Route("/wordpress/{path?}")]
+    [Route("/wp-admin/{path?}")]
+    [Route("/wp-content/{path?}")]
+    [Route("/wp-includes/{path?}")]
+    [Route("{file}.php")]
+    [Route("/wp-json/wp/v2/{resource?}")]
+    [Route("/inc/{file?}")]
+    [Route("/administrator/")]
+    [Route("/content/binary/WindowsLiveWriter/{path?}/{file?}")]
+    [Route("/Windows-Live-Writer/{path?}/{file?}")]
+    [Route("/media/blog/{file?}")]
+    [Route("/image_thumb_{file}")]
+    [Route("/{path?}/xmlrpc.php")]
+    public IActionResult Sinkhole()
     {
-        private readonly IBlogService _blog = blog;
-        private readonly BlogSettings _settings = blog.Settings;
+        return new EmptyResult();
+    }
 
-        [Route("/wallet.dat")]
-        [Route("/bitcoin/{path?}")]
-        [Route("/admin/{path?}")]
-        [Route("/admins/{path?}")]
-        [Route("/moderator/{path?}")]
-        [Route("/webadmin/{path?}")]
-        [Route("/siteadmin/{path?}")]
-        [Route("/adminpanel/{path?}")]
-        [Route("/modules/{path?}")]
-        [Route("/old/{path?}")]
-        [Route("/new/{path?}")]
-        [Route("/demo/{path?}")]
-        [Route("/site/{path?}")]
-        [Route("/wordpress/{path?}")]
-        [Route("/wp-admin/{path?}")]
-        [Route("/wp-content/{path?}")]
-        [Route("/wp-includes/{path?}")]
-        [Route("{file}.php")]
-        [Route("/wp-json/wp/v2/{resource?}")]
-        [Route("/inc/{file?}")]
-        [Route("/administrator/")]
-        [Route("/content/binary/WindowsLiveWriter/{path?}/{file?}")]
-        [Route("/Windows-Live-Writer/{path?}/{file?}")]
-        [Route("/media/blog/{file?}")]
-        [Route("/image_thumb_{file}")]
-        [Route("/{path?}/xmlrpc.php")]
-        public IActionResult Sinkhole()
+    [Route("/post.aspx")]
+    [Route("/index.php")]
+    [Route("/aggbug.ashx")]
+    [Route("/article/{id}.aspx")]
+    [Route("/author/{author}/")]
+    public IActionResult AggBug()
+    {
+        return Redirect("~/");
+    }
+
+    [Route("/status")]
+    public async Task<IActionResult> Status()
+    {
+        var ip = GetIpAddress(this.HttpContext, config).ToString();
+
+        Cache.TryGetValue(ip, out AddressCacheItem value);
+
+        return Json(new
         {
-            return new EmptyResult();
-        }
+            Cache.Count,
+            Uptime = (DateTimeOffset.UtcNow - Start).ToString(),
+            PostCount = await _blog.GetPostCount(includePages: true),
+            Caller = ip,
+            this.HttpContext.Connection.Id,
+            Network = value.Value
+        });
+    }
 
-        [Route("/post.aspx")]
-        [Route("/index.php")]
-        [Route("/aggbug.ashx")]
-        [Route("/article/{id}.aspx")]
-        [Route("/author/{author}/")]
-        public IActionResult AggBug()
-        {
-            return Redirect("~/");
-        }
+    [Route("/robots.txt")]
+    [OutputCache(PolicyName = "AuthenticatedOutputCachePolicy")]
+    public string RobotsTxt()
+    {
+        string host = Request.Scheme + "://" + Request.Host;
+        var sb = new StringBuilder();
 
-        [Route("/status")]
-        public async Task<IActionResult> Status()
-        {
-            var ip = GetIpAddress(this.HttpContext, config).ToString();
+        sb.AppendLine("User-agent: dotbot");
+        sb.AppendLine("Disallow: /");
+        sb.AppendLine("User-agent: rogerbot");
+        sb.AppendLine("Disallow: /");
+        sb.AppendLine("User-agent: *");
+        sb.AppendLine("Disallow:");
 
-            Cache.TryGetValue(ip, out AddressCacheItem value);
+        sb.AppendLine($"sitemap: {host}/sitemap.xml");
 
-            return Json(new
-            {
-                Cache.Count,
-                Uptime = (DateTimeOffset.UtcNow - Start).ToString(),
-                PostCount = await _blog.GetPostCount(includePages: true),
-                Caller = ip,
-                this.HttpContext.Connection.Id,
-                Network = value.Value
-            });
-        }
+        return sb.ToString();
+    }
 
-        [Route("/robots.txt")]
-        [OutputCache(PolicyName = "AuthenticatedOutputCachePolicy")]
-        public string RobotsTxt()
-        {
-            string host = Request.Scheme + "://" + Request.Host;
-            var sb = new StringBuilder();
+    [Route("/sitemap.txt")]
+    public async Task SiteMapText()
+    {
+        string host = Request.Scheme + "://" + Request.Host;
 
-            sb.AppendLine("User-agent: dotbot");
-            sb.AppendLine("Disallow: /");
-            sb.AppendLine("User-agent: rogerbot");
-            sb.AppendLine("Disallow: /");
-            sb.AppendLine("User-agent: *");
-            sb.AppendLine("Disallow:");
+        Response.ContentType = "text/plain";
 
-            sb.AppendLine($"sitemap: {host}/sitemap.xml");
-
-            return sb.ToString();
-        }
-
-        [Route("/sitemap.txt")]
-        public async Task SiteMapText()
-        {
-            string host = Request.Scheme + "://" + Request.Host;
-
-            Response.ContentType = "text/plain";
-
-            using (var body = new StreamWriter(Response.Body))
-            {
-                var posts = await _blog.GetPosts(int.MaxValue);
-
-                foreach (Post post in posts)
-                {
-                    await body.WriteLineAsync(host + post.GetLink());
-                }
-            }
-        }
-
-        [Route("/author-sitemap.xml")]
-        [Route("/sitemap.axd")]
-        [Route("/image-sitemap-{index}.xml")]
-        [Route("/sitemap-{index}.xml")]
-        [Route("/sitemap.xml")]
-        public async Task SitemapXml(string index = "1")
-        {
-            string host = Request.Scheme + "://" + Request.Host;
-
-            Response.ContentType = "application/xml";
-
-            await using (var xml = XmlWriter.Create(Response.Body, new XmlWriterSettings { Async = true, Indent = true }))
-            {
-                xml.WriteStartDocument();
-                xml.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
-
-                var posts = await _blog.GetPosts(int.MaxValue);
-
-                foreach (Post post in posts)
-                {
-                    var lastMod = new[] { post.PubDate, post.LastModified };
-
-                    xml.WriteStartElement("url");
-                    xml.WriteElementString("loc", host + post.GetLink());
-                    xml.WriteElementString("lastmod", lastMod.Max().ToString("yyyy-MM-ddThh:mmzzz"));
-                    xml.WriteEndElement();
-                }
-
-                xml.WriteEndElement();
-            }
-
-            await Response.Body.FlushAsync();
-        }
-
-        [Route("/rsd.xml")]
-        public void RsdXml()
-        {
-            string host = Request.Scheme + "://" + Request.Host;
-
-            Response.ContentType = "application/xml";
-            Response.Headers["cache-control"] = "no-cache, no-store, must-revalidate";
-
-            using (var xml = XmlWriter.Create(Response.Body, new XmlWriterSettings { Indent = true }))
-            {
-                xml.WriteStartDocument();
-                xml.WriteStartElement("rsd");
-                xml.WriteAttributeString("version", "1.0");
-
-                xml.WriteStartElement("service");
-
-                xml.WriteElementString("enginename", "blog");
-                xml.WriteElementString("enginelink", _settings.RootUrl);
-                xml.WriteElementString("homepagelink", host);
-
-                xml.WriteStartElement("apis");
-                xml.WriteStartElement("api");
-                xml.WriteAttributeString("name", "MetaWeblog");
-                xml.WriteAttributeString("preferred", "true");
-                xml.WriteAttributeString("apilink", host + "/metaweblog");
-                xml.WriteAttributeString("blogid", "1");
-
-                xml.WriteEndElement(); // api
-                xml.WriteEndElement(); // apis
-                xml.WriteEndElement(); // service
-                xml.WriteEndElement(); // rsd
-            }
-        }
-
-        [Route("/comments/feed/{type?}")]
-        public async Task CommentsFeed(string type = "rss")
+        using (var body = new StreamWriter(Response.Body))
         {
             var posts = await _blog.GetPosts(int.MaxValue);
 
-            var comments = posts.SelectMany(p => p.Comments);
-
-            await SerializeFeed(
-                type,
-                comments,
-                () => comments.OrderByDescending(c => c.PubDate).Select(c => c.PubDate).FirstOrDefault(),
-                SerializeComment
-            );
-        }
-
-        [Route("/atom.aspx")]
-        [Route("/atom/")]
-        public async Task Atom()
-        {
-            await Rss("atom");
-        }
-
-        [Route("/SyndicationService.asmx/GetRss")]
-        [Route("/rss.aspx")]
-        [Route("/rss/")]
-        [Route("/syndication.axd")]
-        [Route("/feed/{type?}")]
-        public async Task Rss(string type = "rss")
-        {
-            TryParseType(ref type);
-
-            var posts = await _blog.GetPosts(25);
-
-            await SerializeFeed(
-                type,
-                posts,
-                lastUpdated: () => posts.Any() ? posts.Max(p => p.LastModified) : DateTime.MinValue,
-                serializer: SerializePost
-            );
-        }
-
-        private void TryParseType(ref string type)
-        {
-            if (this.Request.Query.TryGetValue("format", out StringValues format))
+            foreach (Post post in posts)
             {
-                var types = format.Where(f => "rss".Equals(f, StringComparison.OrdinalIgnoreCase) ||
-                                              "atom".Equals(f, StringComparison.OrdinalIgnoreCase));
-
-                if (types.Any())
-                {
-                    type = types.First();
-                }
+                await body.WriteLineAsync(host + post.GetLink());
             }
         }
+    }
 
-        [Route("/category/{category}/feed/{type?}")]
-        [Route("/tag/{category}/feed/{type?}")]
-        public async Task CategoryRss(string category, string type = "rss")
+    [Route("/author-sitemap.xml")]
+    [Route("/sitemap.axd")]
+    [Route("/image-sitemap-{index}.xml")]
+    [Route("/sitemap-{index}.xml")]
+    [Route("/sitemap.xml")]
+    public async Task SitemapXml(string index = "1")
+    {
+        string host = Request.Scheme + "://" + Request.Host;
+
+        Response.ContentType = "application/xml";
+
+        await using (var xml = XmlWriter.Create(Response.Body, new XmlWriterSettings { Async = true, Indent = true }))
         {
-            TryParseType(ref type);
+            xml.WriteStartDocument();
+            xml.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
 
-            var posts = await _blog.GetPostsByCategory(category);
+            var posts = await _blog.GetPosts(int.MaxValue);
 
-            await SerializeFeed(
-                type,
-                posts,
-                lastUpdated: () => posts.Any() ? posts.Max(p => p.LastModified) : DateTime.MinValue,
-                serializer: SerializePost
-            );
+            foreach (Post post in posts)
+            {
+                var lastMod = new[] { post.PubDate, post.LastModified };
+
+                xml.WriteStartElement("url");
+                xml.WriteElementString("loc", host + post.GetLink());
+                xml.WriteElementString("lastmod", lastMod.Max().ToString("yyyy-MM-ddThh:mmzzz"));
+                xml.WriteEndElement();
+            }
+
+            xml.WriteEndElement();
         }
 
-        private async Task SerializeFeed<T>(string type, IEnumerable<T> items, Func<DateTime> lastUpdated, Func<string, T, Task<AtomEntry>> serializer)
+        await Response.Body.FlushAsync();
+    }
+
+    [Route("/rsd.xml")]
+    public void RsdXml()
+    {
+        string host = Request.Scheme + "://" + Request.Host;
+
+        Response.ContentType = "application/xml";
+        Response.Headers["cache-control"] = "no-cache, no-store, must-revalidate";
+
+        using (var xml = XmlWriter.Create(Response.Body, new XmlWriterSettings { Indent = true }))
         {
-            Response.ContentType = "application/xml";
-            string host = Request.Scheme + "://" + Request.Host;
+            xml.WriteStartDocument();
+            xml.WriteStartElement("rsd");
+            xml.WriteAttributeString("version", "1.0");
 
-            await using (XmlWriter xmlWriter = XmlWriter.Create(Response.Body, new XmlWriterSettings() { Async = true, Indent = true }))
+            xml.WriteStartElement("service");
+
+            xml.WriteElementString("enginename", "blog");
+            xml.WriteElementString("enginelink", _settings.RootUrl);
+            xml.WriteElementString("homepagelink", host);
+
+            xml.WriteStartElement("apis");
+            xml.WriteStartElement("api");
+            xml.WriteAttributeString("name", "MetaWeblog");
+            xml.WriteAttributeString("preferred", "true");
+            xml.WriteAttributeString("apilink", host + "/metaweblog");
+            xml.WriteAttributeString("blogid", "1");
+
+            xml.WriteEndElement(); // api
+            xml.WriteEndElement(); // apis
+            xml.WriteEndElement(); // service
+            xml.WriteEndElement(); // rsd
+        }
+    }
+
+    [Route("/comments/feed/{type?}")]
+    public async Task CommentsFeed(string type = "rss")
+    {
+        var posts = await _blog.GetPosts(int.MaxValue);
+
+        var comments = posts.SelectMany(p => p.Comments);
+
+        await SerializeFeed(
+            type,
+            comments,
+            () => comments.OrderByDescending(c => c.PubDate).Select(c => c.PubDate).FirstOrDefault(),
+            SerializeComment
+        );
+    }
+
+    [Route("/atom.aspx")]
+    [Route("/atom/")]
+    public async Task Atom()
+    {
+        await Rss("atom");
+    }
+
+    [Route("/SyndicationService.asmx/GetRss")]
+    [Route("/rss.aspx")]
+    [Route("/rss/")]
+    [Route("/syndication.axd")]
+    [Route("/feed/{type?}")]
+    public async Task Rss(string type = "rss")
+    {
+        TryParseType(ref type);
+
+        var posts = await _blog.GetPosts(25);
+
+        await SerializeFeed(
+            type,
+            posts,
+            lastUpdated: () => posts.Any() ? posts.Max(p => p.LastModified) : DateTime.MinValue,
+            serializer: SerializePost
+        );
+    }
+
+    private void TryParseType(ref string type)
+    {
+        if (this.Request.Query.TryGetValue("format", out StringValues format))
+        {
+            var types = format.Where(f => "rss".Equals(f, StringComparison.OrdinalIgnoreCase) ||
+                                          "atom".Equals(f, StringComparison.OrdinalIgnoreCase));
+
+            if (types.Any())
             {
-                if (xmlWriter == null)
-                {
-                    return;
-                }
+                type = types.First();
+            }
+        }
+    }
 
-                var writer = await GetWriter(type, xmlWriter, lastUpdated());
+    [Route("/category/{category}/feed/{type?}")]
+    [Route("/tag/{category}/feed/{type?}")]
+    public async Task CategoryRss(string category, string type = "rss")
+    {
+        TryParseType(ref type);
 
-                foreach (var thing in items)
-                {
-                    var item = await serializer(host, thing);
+        var posts = await _blog.GetPostsByCategory(category);
 
-                    await writer.Write(item);
+        await SerializeFeed(
+            type,
+            posts,
+            lastUpdated: () => posts.Any() ? posts.Max(p => p.LastModified) : DateTime.MinValue,
+            serializer: SerializePost
+        );
+    }
 
-                    await xmlWriter.FlushAsync();
-                }
+    private async Task SerializeFeed<T>(string type, IEnumerable<T> items, Func<DateTime> lastUpdated, Func<string, T, Task<AtomEntry>> serializer)
+    {
+        Response.ContentType = "application/xml";
+        string host = Request.Scheme + "://" + Request.Host;
+
+        await using (XmlWriter xmlWriter = XmlWriter.Create(Response.Body, new XmlWriterSettings() { Async = true, Indent = true }))
+        {
+            if (xmlWriter == null)
+            {
+                return;
+            }
+
+            var writer = await GetWriter(type, xmlWriter, lastUpdated());
+
+            foreach (var thing in items)
+            {
+                var item = await serializer(host, thing);
+
+                await writer.Write(item);
 
                 await xmlWriter.FlushAsync();
             }
 
-            await Response.Body.FlushAsync();
+            await xmlWriter.FlushAsync();
         }
 
-        private static Task<AtomEntry> SerializeComment(string host, Comment comment)
+        await Response.Body.FlushAsync();
+    }
+
+    private static Task<AtomEntry> SerializeComment(string host, Comment comment)
+    {
+        var item = new AtomEntry
         {
-            var item = new AtomEntry
-            {
-                Title = "comment",
-                Description = comment.Content,
-                Id = host + comment.ID,
-                Published = comment.PubDate,
-                LastUpdated = comment.PubDate,
-                ContentType = "html",
-            };
+            Title = "comment",
+            Description = comment.Content,
+            Id = host + comment.ID,
+            Published = comment.PubDate,
+            LastUpdated = comment.PubDate,
+            ContentType = "html",
+        };
 
-            item.AddContributor(new SyndicationPerson(comment.Author, comment.Email, "Contributor"));
-            item.AddLink(new SyndicationLink(new Uri(item.Id)));
+        item.AddContributor(new SyndicationPerson(comment.Author, comment.Email, "Contributor"));
+        item.AddLink(new SyndicationLink(new Uri(item.Id)));
 
-            return Task.FromResult(item);
-        }
+        return Task.FromResult(item);
+    }
 
-        private async Task<AtomEntry> SerializePost(string host, Post post)
+    private async Task<AtomEntry> SerializePost(string host, Post post)
+    {
+        var item = new AtomEntry
         {
-            var item = new AtomEntry
-            {
-                Title = post.Title,
-                Description = await post.RenderContent(lazyLoad: false),
-                Id = host + post.GetLink(),
-                Published = post.PubDate,
-                LastUpdated = post.LastModified,
-                ContentType = "html",
-            };
+            Title = post.Title,
+            Description = await post.RenderContent(lazyLoad: false),
+            Id = host + post.GetLink(),
+            Published = post.PubDate,
+            LastUpdated = post.LastModified,
+            ContentType = "html",
+        };
 
-            foreach (string category in post.Categories)
-            {
-                item.AddCategory(new SyndicationCategory(category));
-            }
-
-            item.AddContributor(new SyndicationPerson(_settings.Owner, email: _settings.Email));
-            item.AddLink(new SyndicationLink(new Uri(item.Id)));
-            return item;
-        }
-
-        private async Task<ISyndicationFeedWriter> GetWriter(string type, XmlWriter xmlWriter, DateTime updated)
+        foreach (string category in post.Categories)
         {
-            string host = Request.Scheme + "://" + Request.Host + "/";
-
-            if (type.Equals("rss", StringComparison.OrdinalIgnoreCase))
-            {
-                return await GetRssAsync(xmlWriter, host);
-            }
-
-            return await GetAtomAsync(xmlWriter, updated, host);
+            item.AddCategory(new SyndicationCategory(category));
         }
 
-        private async Task<ISyndicationFeedWriter> GetAtomAsync(XmlWriter xmlWriter, DateTime updated, string host)
+        item.AddContributor(new SyndicationPerson(_settings.Owner, email: _settings.Email));
+        item.AddLink(new SyndicationLink(new Uri(item.Id)));
+        return item;
+    }
+
+    private async Task<ISyndicationFeedWriter> GetWriter(string type, XmlWriter xmlWriter, DateTime updated)
+    {
+        string host = Request.Scheme + "://" + Request.Host + "/";
+
+        if (type.Equals("rss", StringComparison.OrdinalIgnoreCase))
         {
-            var atom = new AtomFeedWriter(xmlWriter);
-
-            await atom.WriteTitle(_settings.Name);
-            await atom.WriteId(host);
-            await atom.WriteSubtitle(_settings.Description);
-            await atom.WriteGenerator("blog", _settings.BlogEngineName, "1.0");
-            await atom.WriteValue("updated", updated.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-            
-            return atom;
+            return await GetRssAsync(xmlWriter, host);
         }
 
-        private async Task<ISyndicationFeedWriter> GetRssAsync(XmlWriter xmlWriter, string host)
-        {
-            var rss = new RssFeedWriter(xmlWriter);
-            
-            await rss.WriteTitle(_settings.Name);
-            await rss.WriteDescription(_settings.Description);
-            await rss.WriteGenerator("blog");
-            await rss.WriteValue("link", host);
-            
-            return rss;
-        }
+        return await GetAtomAsync(xmlWriter, updated, host);
+    }
+
+    private async Task<ISyndicationFeedWriter> GetAtomAsync(XmlWriter xmlWriter, DateTime updated, string host)
+    {
+        var atom = new AtomFeedWriter(xmlWriter);
+
+        await atom.WriteTitle(_settings.Name);
+        await atom.WriteId(host);
+        await atom.WriteSubtitle(_settings.Description);
+        await atom.WriteGenerator("blog", _settings.BlogEngineName, "1.0");
+        await atom.WriteValue("updated", updated.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+        
+        return atom;
+    }
+
+    private async Task<ISyndicationFeedWriter> GetRssAsync(XmlWriter xmlWriter, string host)
+    {
+        var rss = new RssFeedWriter(xmlWriter);
+        
+        await rss.WriteTitle(_settings.Name);
+        await rss.WriteDescription(_settings.Description);
+        await rss.WriteGenerator("blog");
+        await rss.WriteValue("link", host);
+        
+        return rss;
     }
 }
