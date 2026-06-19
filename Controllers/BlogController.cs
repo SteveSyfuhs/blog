@@ -21,7 +21,7 @@ public class BlogController : Controller
     public BlogController(IBlogService blog)
     {
         _blog = blog;
-        _settings = _blog.Settings;
+        _settings = _blog.Settings ?? new();
     }
 
     [Route("/{page:int?}")]
